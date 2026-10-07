@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WEBC Wafer Edge Simulator</title>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--card:#334155;--accent:#38bdf8;--text:#f8fafc;--muted:#94a3b8;--border:#475569;--danger:#ef4444;--warn:#fbbf24;--ok:#10b981;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--text);min-height:100%}
+header{background:var(--panel);border-bottom:1px solid var(--border);padding:.7rem 1rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.6rem}
+.logo{display:flex;align-items:center;gap:.6rem}
+.badge{background:linear-gradient(135deg,#38bdf8,#818cf8);color:#0f172a;font-weight:bold;padding:.25rem .5rem;border-radius:6px;font-size:.85rem}
+h1{font-size:1rem;font-weight:600}
+.presets{display:flex;flex-wrap:wrap;gap:.4rem}
+.btn-preset{padding:.45rem .7rem;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.75rem;cursor:pointer}
+.layout{display:flex;flex-direction:column;gap:12px;padding:10px;max-width:1400px;margin:0 auto}
+@media(min-width:900px){.layout{display:grid;grid-template-columns:400px 1fr;gap:14px;padding:14px;align-items:start}
+.p-set{grid-column:1;grid-row:1}.p-add{grid-column:1;grid-row:2}.p-recipe{grid-column:1;grid-row:3}.p-mat{grid-column:1;grid-row:4}
+.p-canvas{grid-column:2;grid-row:1/3;position:sticky;top:10px}.p-sum{grid-column:2;grid-row:3/5}}
+.box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:.9rem}
+.title{font-size:.8rem;font-weight:bold;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.7rem;display:flex;justify-content:space-between;cursor:default}
+summary.title{cursor:pointer;margin-bottom:0}details[open] summary.title{margin-bottom:.7rem}
+.fg{margin-bottom:.7rem;flex:1}
+.fg label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:.25rem}
+.row{display:flex;gap:.5rem}
+input[type=number],input[type=text],select{width:100%;padding:.55rem;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:16px;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.tabs{display:flex;flex-wrap:wrap;background:var(--bg);padding:.2rem;border-radius:8px;margin-bottom:.8rem;gap:2px}
+.tab{flex:1;min-width:56px;padding:.5rem .2rem;border:none;background:none;color:var(--muted);font-size:.78rem;cursor:pointer;border-radius:6px}
+.tab.active{background:var(--card);color:var(--accent);font-weight:bold}
+.btn-add{width:100%;padding:.75rem;background:var(--accent);color:#0f172a;border:none;border-radius:8px;font-weight:bold;font-size:.95rem;cursor:pointer}
+.recipe{display:flex;flex-direction:column;gap:.5rem}
+.item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.6rem;display:flex;justify-content:space-between;gap:.5rem;font-size:.8rem}
+.imp{margin-top:.3rem;font-size:.72rem;color:var(--muted);line-height:1.4}
+.imp.l1{color:var(--warn)}.imp.l2{color:var(--danger)}
+.bp{color:#f59e0b;font-weight:bold}.bd{color:#38bdf8;font-weight:bold}.bm{color:#fbbf24;font-weight:bold}.br{color:#ef4444;font-weight:bold}.be{color:#a78bfa;font-weight:bold}.bc{color:#34d399;font-weight:bold}
+.del{background:none;border:none;color:var(--muted);font-size:1.1rem;padding:.2rem .5rem;cursor:pointer}
+.canvas-wrap{width:100%;background:#090d16;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+canvas{display:block;width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;padding:.6rem;background:var(--bg);border-radius:8px;font-size:.75rem;margin-top:.7rem}
+.li{display:flex;align-items:center;gap:.35rem}
+.sw{width:13px;height:13px;border-radius:3px;flex:none}
+.sub{color:var(--muted);font-size:.7rem}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+.sc{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:.8rem}
+.sc h4{font-size:.68rem;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase}
+.sc p{font-size:1.05rem;font-weight:bold}
+table{width:100%;border-collapse:collapse;font-size:.74rem}
+th{color:var(--muted);font-weight:normal;text-align:left;padding:.2rem}
+td{padding:.2rem}table input{padding:.3rem;width:58px;font-size:14px}
+.note{font-size:.7rem;color:var(--muted);line-height:1.5;margin-top:.5rem}
+.p-warp{display:none}
+@media(min-width:900px){.p-warp{grid-column:1/3;grid-row:5}}
+.p-warp h5{font-size:.8rem;margin:.9rem 0 .4rem;color:var(--text)}
+.btn-s{padding:.45rem .8rem;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:.78rem;cursor:pointer}
+input[type=range]{flex:1;accent-color:#38bdf8}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span class="badge">WEBC</span><h1>Wafer Edge Cross-Section Simulator</h1></div>
+  <div class="presets">
+    <button class="btn-preset" onclick="loadMoldPreset()">Mold+PES+HM+HARC</button><button class="btn-preset" onclick="loadPhotoPreset('ebr')">Photo: 일반(EBR)</button><button class="btn-preset" onclick="loadPhotoPreset('ring')">Photo: Ring</button><button class="btn-preset" onclick="loadPhotoPreset('pses')">Photo: PSES</button>
+    <button class="btn-preset" onclick="loadBondPreset()">Bonding 준비 예시</button><button class="btn-preset" onclick="loadCellPreset()">3-Deck Cell Wafer 예시</button>
+    <button class="btn-preset" onclick="resetRecipe()">초기화</button>
+  </div>
+</header>
+
+<div class="layout">
+<!-- 1. 설정 -->
+<details class="box p-set" id="setBox" open>
+  <summary class="title">1. 보기 / Si Wafer 설정</summary>
+  <div class="row">
+    <div class="fg"><label>보기 범위 (Edge 기준 mm)</label>
+      <select id="viewSpan" onchange="render()"><option value="10">10 mm</option><option value="5">5 mm</option><option value="3" selected>3 mm</option><option value="2">2 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option></select></div>
+    <div class="fg"><label>Si Edge 형상</label>
+      <select id="siProf" onchange="render()"><option value="semi">SEMI형 22° + R≈0.2mm</option><option value="round">Full Round</option></select></div>
+  </div>
+  <div class="row">
+    <div class="fg"><label>Si 두께 (µm)</label><input type="number" id="waferThk" value="775" onchange="render()"></div>
+    <div class="fg"><label>막 수직배율 (px/µm)</label><input type="number" id="zScale" value="3" min="0.5" max="20" step="0.5" onchange="render()"></div>
+    <div class="fg"><label>컷 경사폭 (µm)</label><input type="number" id="rampUm" value="20" min="2" max="300" step="2" onchange="render()"></div>
+  </div>
+  <div class="sub">Si는 실축척, 막(film)과 Si 손실은 수직 과장 표시입니다.</div>
+</details>
+
+<!-- 2. 공정 추가 -->
+<div class="box p-add">
+  <div class="title">2. 공정 단계 추가</div>
+  <div class="tabs">
+    <button class="tab active" id="tabDepo" onclick="switchTab('Depo')">증착</button>
+    <button class="tab" id="tabMold" onclick="switchTab('Mold')">Mold</button>
+    <button class="tab" id="tabPhoto" onclick="switchTab('Photo')">Photo</button>
+    <button class="tab" id="tabEtch" onclick="switchTab('Etch')">Etch</button>
+    <button class="tab" id="tabClean" onclick="switchTab('Clean')">CLN</button>
+    <button class="tab" id="tabRemove" onclick="switchTab('Remove')">PES/제거</button>
+  </div>
+
+  <div id="regionGroup" class="fg"><label>증착 영역</label>
+    <select id="depoRegion"><option value="all">전체 (Front+Edge+Back)</option><option value="front">전면만</option><option value="back">후면만</option><option value="edge">베벨/에지만</option></select></div>
+
+  <div id="formDepo">
+    <div class="fg"><label>막질</label><select id="depoMat"></select></div>
+    <div class="fg"><label>두께 (평탄면 기준)</label><div class="row"><input type="number" id="depoThkVal" value="1.5" step="0.1">
+      <select id="depoThkUnit" style="width:84px"><option value="um">µm</option><option value="nm">nm</option><option value="A">Å</option></select></div></div>
+  </div>
+
+  <div id="formMold" style="display:none">
+    <div class="fg"><label>O/N 쌍 수 (Oxide→Nitride × N)</label><input type="number" id="moldPairs" value="48" min="1" max="100" onchange="moldInfo()"></div>
+    <div class="row"><div class="fg"><label>Oxide (nm)</label><input type="number" id="moldOx" value="90" onchange="moldInfo()"></div>
+    <div class="fg"><label>Nitride (nm)</label><input type="number" id="moldNit" value="60" onchange="moldInfo()"></div></div>
+    <div class="sub" id="moldTotal"></div>
+  </div>
+
+  <div id="formPhoto" style="display:none">
+    <div class="fg"><label>Edge 제어 방식</label><select id="photoMode" onchange="photoModeUI()">
+      <option value="ring">Ring Photo (edge X mm까지 PR barrier)</option>
+      <option value="pses">PSES (shot 기준 Nega PR 떡판)</option>
+      <option value="ebr">일반 Photo (EBR만, edge 제어 없음)</option></select></div>
+    <div class="row"><div class="fg"><label>패턴 PR 두께 (µm)</label><input type="number" id="prPat" value="1" step="0.1"></div>
+    <div class="fg" id="gBar"><label>Barrier/Slab PR 두께 (µm)</label><input type="number" id="prBar" value="6" step="0.5"></div></div>
+    <div class="row"><div class="fg"><label>Shot 크기 (mm, 반경방향)</label><input type="number" id="shotP" value="26" step="1" min="1"></div>
+    <div class="fg"><label>Edge→최외곽 완전 shot 경계 (mm)</label><input type="number" id="shotDf" value="6" step="0.5" min="0.5"></div></div>
+    <div class="fg" id="gW"><label id="lblW"></label><input type="number" id="photoW" value="5" step="0.5" min="0"></div>
+    <div class="fg" id="gPses" style="display:none"><label>PR 잔류(떡판) shot 패턴: edge부터 1=남김, 0=제거 (첫 칸=edge 부분 shot)</label><input type="text" id="psesPat" value="1" placeholder="예: 1 / 11 / 101"></div>
+    <div class="sub">부분(partial) shot은 pattern이 끊겨 Defect source가 됩니다. Ring은 경계가 shot 경계와 어긋나면 shot이 잘리고, PSES는 shot 경계에 맞춰 PR을 남기므로 끊김이 없습니다.</div>
+  </div>
+
+  <div id="formEtch" style="display:none">
+    <div class="fg"><label>Etch 종류 (목적 / target 막질)</label><select id="etchType" onchange="etchDefaults()"></select></div>
+    <div class="row"><div class="fg"><label>Target 깊이 (µm)</label><input type="number" id="etchDepth" step="0.1"></div>
+    <div class="fg"><label>Edge/Center 속도비</label><input type="number" id="etchEF" step="0.05"></div></div>
+    <div class="row"><div class="fg"><label>Edge 영역폭 (mm)</label><input type="number" id="etchZone" value="3" step="0.5"></div>
+    <div class="fg"><label>등방성 (0~1)</label><input type="number" id="etchIso" step="0.05" min="0" max="1"></div>
+    <div class="fg"><label>Edge 보호폭 (mm)</label><input type="number" id="etchProt" value="0" step="0.5" min="0"></div></div>
+    <div class="fg"><label>패턴 영역 open 비율 (%) — Photo 이후 pattern 영역의 target 막은 이 비율만 식각(홀), 그 외 영역은 전면 식각</label><input type="number" id="etchOpen" value="3" step="1" min="0" max="100"></div>
+    <div class="sub" id="etchDesc"></div>
+  </div>
+
+  <div id="formClean" style="display:none">
+    <div class="fg"><label>세정 종류</label><select id="clnType" onchange="clnDefaults()"></select></div>
+    <div class="row"><div class="fg"><label>목표 제거량 (nm)</label><input type="number" id="clnAmt"></div>
+    <div class="fg"><label>처리 방식</label><select id="clnMode"><option value="imm">침지 (전면 동시)</option><option value="front">전면 Spin (베벨 wrap)</option><option value="back">후면 Spin (베벨 wrap)</option></select></div></div>
+    <div class="sub" id="clnDesc"></div>
+  </div>
+
+  <div id="formRemove" style="display:none">
+    <div class="fg"><label>방식</label><select id="removeAction" onchange="toggleCut()">
+      <option value="strip">Plasma Edge Strip (전 막 → Bare Si)</option>
+      <option value="eew">EEW (전면 Edge, 최상단 막만)</option>
+      <option value="bew">BEW (후면 Edge, 최상단 막만)</option>
+      <option value="backClean">Backside Clean (후면 전체)</option>
+      <option value="cmp">CMP (평탄화 + Edge roll-off)</option>
+      <option value="edgeClean">Edge Clean (베벨 전체)</option></select></div>
+    <div class="fg" id="gCut"><label>제거 범위 (Edge에서 내측 mm)</label><input type="number" id="cutDistMm" value="2.5" step="0.1" min="0.1" max="10"></div>
+    <div id="gCmp" style="display:none"><div class="row"><div class="fg"><label>제거량 (µm)</label><input type="number" id="cmpAmt" value="1" step=".1"></div><div class="fg"><label>ERO 깊이 (µm)</label><input type="number" id="cmpEro" value=".1" step=".05"></div><div class="fg"><label>ERO 폭 (mm)</label><input type="number" id="cmpEroW" value="2" step=".5"></div></div></div>
+    <div id="gPes"><div class="fg"><label>PES 종류 (Si 선택성)</label><select id="pesType" onchange="$('siLoss').value=this.value">
+      <option value="0">Si 선택성 높음 (Si 손실 ≈0)</option><option value="0.3">Mild (≈0.3µm)</option><option value="1">비선택 (≈1µm)</option><option value="3">Aggressive (≈3µm)</option></select></div>
+    <div class="fg"><label>Si 파임 (µm, 직접 입력)</label><input type="number" id="siLoss" value="0" step="0.1" min="0"></div></div>
+  </div>
+  <button class="btn-add" onclick="addStep()">+ 공정 단계 추가</button>
+</div>
+
+<!-- 3. 이미지 -->
+<div class="box p-canvas">
+  <div class="title"><span>Cross-Section</span><span class="sub" id="viewInfo"></span></div>
+  <div class="canvas-wrap"><canvas id="cv"></canvas></div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<!-- 4. 요약 -->
+<div class="p-sum sum">
+  <div class="sc"><h4>Front THK (R=145)</h4><p id="sF">-</p></div>
+  <div class="sc"><h4>Back THK (R=145)</h4><p id="sB">-</p></div>
+  <div class="sc"><h4>Edge Apex THK</h4><p id="sE">-</p></div>
+  <div class="sc"><h4>Front Max Step</h4><p id="sS">-</p></div>
+  <div class="sc"><h4>Si 손실 (최대)</h4><p id="sSi">-</p></div>
+  <div class="sc"><h4>Bare Si 노출 (전면)</h4><p id="sEx">-</p></div>
+  <div class="sc"><h4>Arcing 위험 (최대, 규칙기반)</h4><p id="sArc">-</p><div class="sub" id="sArcs"></div></div>
+  <div class="sc" style="grid-column:1/-1"><h4>Bonding 준비도 (CBA/W2W) · 기준값은 가정</h4><div id="bondBox" style="font-size:.78rem;line-height:1.6"></div>
+    <div class="row" style="margin-top:.5rem"><div class="fg"><label>허용 edge step (µm)</label><input type="number" id="bStep" value=".3" step=".1" onchange="render()"></div><div class="fg"><label>허용 bow (µm)</label><input type="number" id="bBow" value="300" step="50" onchange="render()"></div><div class="fg"><label>peel 지수 기준 (N/m)</label><input type="number" id="bPeel" value="1500" step="100" onchange="render()"></div></div></div>
+  <div class="sc"><h4>Edge Pattern (Photo)</h4><p id="sDef">-</p><div class="sub" id="sDefs"></div></div>
+  <div class="sc" style="cursor:pointer;border-color:#38bdf8" onclick="openWarp()"><h4>Warpage ▸ 눌러서 형상 보기</h4><p id="sW">-</p><div class="sub" id="sWs"></div></div>
+</div>
+
+<!-- Warpage 형상 -->
+<div class="box p-warp" id="warpBox">
+  <div class="title"><span>Warpage 형상</span><button class="btn-s" onclick="closeWarp()">닫기 ✕</button></div>
+  <div class="sub" id="warpInfo"></div>
+  <h5>① 전체 단면 (300mm) — Tensile / Compressive</h5>
+  <div class="canvas-wrap"><canvas id="wc2"></canvas></div>
+  <div class="legend"><div class="li"><div class="sw" style="background:#f43f5e"></div>Tensile (막이 수축하려 함 → 화살표 안쪽)</div><div class="li"><div class="sw" style="background:#38bdf8"></div>Compressive (막이 팽창하려 함 → 화살표 바깥쪽)</div></div>
+  <h5>② 3D 형상 (대각선 시점 · 붉은색 + / 푸른색 − Heatmap) — 드래그로 회전 (아래로 스크롤하면 계속 보입니다)</h5>
+  <div class="canvas-wrap"><canvas id="wc3" style="touch-action:pan-y;cursor:grab"></canvas></div>
+  <div class="row" style="margin-top:.6rem;align-items:center"><span class="sub">수직 과장</span><input type="range" min=".3" max="2" step=".1" value="1" oninput="w3.k=+this.value"><button class="btn-s" onclick="w3.auto=!w3.auto">자동회전</button><button class="btn-s" onclick="w3.auto=false;w3.rot=.785">대각선 시점</button></div>
+  <div class="note">Stoney 식(κ = 6Σσt / (M·tₛ²), Si(100) 이축탄성계수 180GPa 가정)으로 구한 축대칭 bow 추정입니다. 막 응력값은 가정치이며 형상은 크게 과장되어 있습니다. Mold 같은 두꺼운 ON 막은 실제로 수백 µm~mm급 bow가 날 수 있습니다.</div>
+</div>
+
+<!-- 5. 레시피 -->
+<div class="box p-recipe">
+  <div class="title"><span>3. 공정 레시피 · Edge 영향 추정</span><span class="sub" id="stepCount"></span></div>
+  <div class="recipe" id="recipe"></div>
+  <details style="margin-top:.8rem"><summary class="title">Excel 붙여넣기 / 내보내기</summary>
+    <div class="sub">엑셀에서 행을 복사(Ctrl+C) → 아래 칸에 붙여넣기(Ctrl+V) → 적용.</div>
+    <textarea id="xlText" rows="8" style="width:100%;margin-top:.5rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.5rem;font-size:12px"></textarea>
+    <div class="row" style="margin:.5rem 0;flex-wrap:wrap"><button class="btn-s" onclick="xlApply(false)">적용(덮어쓰기)</button><button class="btn-s" onclick="xlApply(true)">뒤에 추가</button><button class="btn-s" onclick="xlExport()">현재 레시피 → 표</button></div>
+    <div class="sub" id="xlMsg"></div>
+    <div class="note">열 순서 (탭 구분, 빈 칸은 기본값):<br>DEPO | 막질 | 두께 | um/nm/A | all/front/back/edge<br>MOLD | 쌍수 | Ox nm | Nit nm | 영역<br>PHOTO | ring/pses/ebr | Ring·EBR 폭mm (pses는 1,0 패턴) | 패턴PR µm | barrier PR µm | shot mm | 완전shot경계 mm<br>ETCH | HARC/SLIT/ACL/TEOS/POLY/NIT | 깊이µm | edge비 | zone mm | 등방성 | 보호폭mm<br>CLN | DHF/LAL/H3PO4/SPM/ASH | 제거량 nm | imm/front/back<br>PES | 거리mm | Si파임µm · EEW/BEW | 거리mm · CMP | 제거량µm | ERO µm | ERO폭 mm · BACKCLEAN · EDGECLEAN<br>막질은 HT-TEOS, MT-ACL, E-SOH, 질화막, 산화막 같은 별칭도 인식합니다. 인식 못한 행은 목록으로 알려드립니다.</div>
+  </details>
+</div>
+
+<!-- 6. 막질 -->
+<details class="box p-mat">
+  <summary class="title">4. 막질별 Step Coverage (편집 가능)</summary>
+  <table><thead><tr><th></th><th>막질</th><th>Side%</th><th>Bot%</th><th>Planar%</th></tr></thead><tbody id="matTable"></tbody></table>
+  <div class="note">Side=측벽/상면, Bot=단차 하부/상면, Planar=스핀온 평탄화율.<br>TEOS는 특허 문헌(400℃ 50% → 300℃ 84%)을 기준, ACL·SOH·Mold·Etch/CLN 선택비는 <b>가정값</b>입니다. Si Edge 형상은 특허 기준(bevel ≤22°, 300mm R≈200µm 예시)을 반영했으며 SEMI M1 template 수치는 유료 규격이라 근사입니다.</div>
+</details>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const smooth=(a,b,v)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t);};
+const MATERIALS={
+  SiO2:{name:'SiO2 (Oxide, PECVD)',color:'#38bdf8',stress:-150,side:.60,bot:.50,plan:0},
+  SiN:{name:'SiN (Nitride)',color:'#f43f5e',stress:800,side:.70,bot:.60,plan:0},
+  Poly:{name:'Poly-Si (LPCVD)',color:'#fbbf24',stress:-300,side:.95,bot:.90,plan:0},
+  HTTEOS:{name:'HT-TEOS (≥400℃)',color:'#34d399',stress:-200,side:.50,bot:.40,plan:0},
+  MTTEOS:{name:'MT-TEOS (~350℃)',color:'#10b981',stress:-180,side:.75,bot:.65,plan:0},
+  HTACL:{name:'HT-ACL',color:'#64748b',stress:-150,side:.25,bot:.15,plan:0},
+  MTACL:{name:'MT-ACL',color:'#94a3b8',stress:-250,side:.35,bot:.25,plan:0},
+  SOH:{name:'SOH (Spin-on)',color:'#fb923c',stress:50,side:1,bot:1,plan:.85},
+  ESOH:{name:'E-SOH',color:'#f97316',stress:80,side:1,bot:1,plan:.60},
+  W:{name:'W (Tungsten)',color:'#a855f7',stress:1200,side:.80,bot:.70,plan:0},
+  PR:{name:'PR (Photoresist)',color:'#ef4444',stress:0,side:1,bot:1,plan:.50},
+  SiON:{name:'SiON (Bevel 보호막)',color:'#14b8a6',stress:-100,side:.70,bot:.60,plan:0}
+};
+const KEYS=Object.keys(MATERIALS);
+const rt=o=>{const r={};KEYS.forEach(k=>r[k]=o[k]||0);r.Si=o.Si||0;return r;};
+// 상대 제거율: target 막 1 µm(깊이) 제거 시 해당 막이 깎이는 µm (가정값)
+const ETCH={
+ harc:{name:'HARC (Mold ON 식각)',depth:7.2,iso:.1,ef:1.15,r:rt({SiO2:1,SiN:1,HTTEOS:.9,MTTEOS:.9,HTACL:.08,MTACL:.1,SOH:.12,ESOH:.12,PR:.5,Poly:.15,W:.05,Si:.12})},
+ acl:{name:'ACL/SOH Hardmask Open (O2/COS)',depth:1.5,iso:.1,ef:1.1,r:rt({HTACL:1,MTACL:1,SOH:1,ESOH:1,PR:1.5,Poly:.05,Si:.03,SiO2:.02,SiN:.02,HTTEOS:.02,MTTEOS:.02})},
+ teos:{name:'TEOS Hardmask Open (CF4/CHF3)',depth:.3,iso:.1,ef:1.1,r:rt({HTTEOS:1,MTTEOS:1.1,SiO2:1.1,SiN:.5,PR:.3,HTACL:.1,MTACL:.1,SOH:.15,ESOH:.15,Poly:.1,Si:.1})},
+ poly:{name:'Poly-Si Etch (Cl2/HBr)',depth:2,iso:.2,ef:1.1,r:rt({Poly:1,Si:.9,SiO2:.03,HTTEOS:.03,MTTEOS:.03,SiN:.05,PR:.3,HTACL:.1,MTACL:.1,SOH:.15,ESOH:.15,W:.1})},
+ nit:{name:'SiN Dry Etch (CH3F/O2)',depth:.5,iso:.2,ef:1.1,r:rt({SiN:1,SiO2:.1,HTTEOS:.1,MTTEOS:.1,Poly:.05,Si:.05,PR:.3,HTACL:.05,MTACL:.05,SOH:.1,ESOH:.1})},
+ si:{name:'Si Trench Etch (HBr/Cl2)',depth:3,iso:.1,ef:1.1,r:rt({Si:1,Poly:1,SiO2:.05,HTTEOS:.05,MTTEOS:.05,SiN:.05,HTACL:.05,MTACL:.05,SOH:.1,ESOH:.1,PR:.3})}
+};
+const CLEAN={
+ dhf:{name:'DHF / BOE (Oxide)',amt:50,r:rt({SiO2:1,MTTEOS:.9,HTTEOS:.6,SiN:.03})},
+ lal:{name:'LAL (Oxide/Nitride)',amt:100,r:rt({SiO2:1,MTTEOS:.9,HTTEOS:.6,SiN:.15})},
+ hotp:{name:'Hot H3PO4 (Nitride)',amt:100,r:rt({SiN:1,SiO2:.01,HTTEOS:.01,MTTEOS:.01,Si:.002})},
+ spm:{name:'SPM / SC1 (유기물)',amt:1000,r:rt({PR:1,SOH:.4,ESOH:.5,HTACL:.02,MTACL:.03})},
+ ash:{name:'O2 Ashing (PR/ACL/SOH)',amt:1500,r:rt({PR:1,SOH:.8,ESOH:.8,HTACL:.6,MTACL:.8})}
+};
+const PROF={semi:{ang:22,Lb:.30,dB:.06,dC:.20},round:{ang:30,Lb:.38,dB:.20,dC:.38},chamfer:{ang:22,Lb:.30,dB:.01,dC:.01}};
+ETCH.harc.r.SiON=.9;ETCH.teos.r.SiON=.9;ETCH.nit.r.SiON=.5;CLEAN.dhf.r.SiON=.25;CLEAN.lal.r.SiON=.35;
+ETCH.slit={...ETCH.harc,name:'Slit Etch (WL 분리, ON stack)',ef:1.1,r:{...ETCH.harc.r}};
+delete ETCH.si;delete PROF.chamfer;
+ETCH.harc.tg=ETCH.slit.tg=['SiO2','SiN','HTTEOS','MTTEOS','SiON'];ETCH.acl.tg=['HTACL','MTACL','SOH','ESOH'];ETCH.teos.tg=['HTTEOS','MTTEOS','SiO2'];ETCH.poly.tg=['Poly'];ETCH.nit.tg=['SiN'];
+
+let tab='Depo',steps=[],layers=[],pts=[],NP=0,S=[],BP=[],LV=null,rec=null,Z=3,rampMm=.02,W1,W2,W3,arc=[],ds=[],LB=.3;
+
+function switchTab(t){tab=t;['Depo','Mold','Photo','Etch','Clean','Remove'].forEach(n=>{$('tab'+n).classList.toggle('active',n===t);$('form'+n).style.display=n===t?'block':'none';});
+  $('regionGroup').style.display=(t==='Depo'||t==='Mold')?'block':'none';}
+function toggleCut(){const a=$('removeAction').value;$('gCut').style.display=['eew','bew','strip'].includes(a)?'block':'none';$('gPes').style.display=a==='strip'?'block':'none';$('gCmp').style.display=a==='cmp'?'block':'none';}
+function moldInfo(){const n=+$('moldPairs').value,o=+$('moldOx').value,t=+$('moldNit').value;$('moldTotal').innerText=`총 Mold ≈ ${(n*(o+t)/1000).toFixed(2)} µm (${2*n} layers)`;}
+function etchDefaults(){const e=ETCH[$('etchType').value];$('etchDepth').value=e.depth;$('etchEF').value=e.ef;$('etchIso').value=e.iso;
+  const tg=KEYS.filter(k=>e.r[k]>=.5).map(k=>MATERIALS[k].name.split(' ')[0]),rs=KEYS.filter(k=>e.r[k]<.2&&e.r[k]>0).map(k=>MATERIALS[k].name.split(' ')[0]);
+  $('etchDesc').innerText=`Target: ${tg.join(', ')}${e.r.Si>=.5?', Si':''} · 저항(마스크): ${rs.join(', ')} · Si 식각비 ${e.r.Si}`;}
+function clnDefaults(){const c=CLEAN[$('clnType').value];$('clnAmt').value=c.amt;
+  $('clnDesc').innerText='제거 대상: '+KEYS.filter(k=>c.r[k]>=.3).map(k=>MATERIALS[k].name.split(' ')[0]).join(', ')+' · 그 외 막은 거의 영향 없음 (가정)';}
+
+function addStep(){
+  if(tab==='Depo'){const v=parseFloat($('depoThkVal').value)||0,u=$('depoThkUnit').value;
+    steps.push({type:'depo',region:$('depoRegion').value,material:$('depoMat').value,thicknessUm:u==='nm'?v/1e3:u==='A'?v/1e4:v,rawVal:v,unit:u});}
+  else if(tab==='Mold'){const p=+$('moldPairs').value||1,o=+$('moldOx').value||0,n=+$('moldNit').value||0;steps.push({type:'mold',region:$('depoRegion').value,pairs:p,ox:o,nit:n,thicknessUm:p*(o+n)/1e3});}
+  else if(tab==='Photo')steps.push({type:'photo',mode:$('photoMode').value,prPat:+$('prPat').value||0,prBar:+$('prBar').value||0,pitch:+$('shotP').value||26,dfull:+$('shotDf').value||0,w:+$('photoW').value||0,pat:($('psesPat').value||'').replace(/[^01]/g,'')});
+  else if(tab==='Etch')steps.push({type:'etch',key:$('etchType').value,depth:+$('etchDepth').value||0,ef:+$('etchEF').value||1,zone:+$('etchZone').value||3,iso:+$('etchIso').value,prot:+$('etchProt').value||0,open:+$('etchOpen').value});
+  else if(tab==='Clean')steps.push({type:'clean',key:$('clnType').value,amt:+$('clnAmt').value||0,mode:$('clnMode').value});
+  else steps.push({type:'remove',action:$('removeAction').value,distMm:parseFloat($('cutDistMm').value)||0,siLoss:+$('siLoss').value||0,amt:+$('cmpAmt').value||0,ero:+$('cmpEro').value||0,eroW:+$('cmpEroW').value||1});
+  updateUI();}
+function removeStep(i){steps.splice(i,1);updateUI();}
+function resetRecipe(){steps=[];updateUI();}
+function loadNandPreset(){steps=[
+ {type:'depo',region:'all',material:'MTTEOS',thicknessUm:1.5,rawVal:1.5,unit:'um'},
+ {type:'depo',region:'all',material:'SiN',thicknessUm:.5,rawVal:500,unit:'nm'},
+ {type:'remove',action:'eew',distMm:2.5,siLoss:0},
+ {type:'depo',region:'all',material:'Poly',thicknessUm:2,rawVal:2,unit:'um'},
+ {type:'remove',action:'backClean',distMm:0,siLoss:0},
+ {type:'remove',action:'bew',distMm:1,siLoss:0}];updateUI();}
+function loadMoldPreset(){steps=[
+ {type:'mold',region:'all',pairs:48,ox:90,nit:60,thicknessUm:7.2},
+ {type:'remove',action:'strip',distMm:2.5,siLoss:.3},
+ {type:'depo',region:'all',material:'HTACL',thicknessUm:1,rawVal:1,unit:'um'},
+ {type:'depo',region:'all',material:'MTTEOS',thicknessUm:.3,rawVal:300,unit:'nm'},
+ {type:'etch',key:'harc',depth:7.2,ef:1.15,zone:3,iso:.1,prot:0},
+ {type:'clean',key:'ash',amt:1500,mode:'imm'}];updateUI();}
+function updateUI(){renderLegend();render();}
+
+function renderRecipe(){
+  const el=$('recipe');el.innerHTML='';$('stepCount').innerText=`${steps.length} steps`;
+  steps.forEach((st,i)=>{let t;
+    if(st.type==='depo')t=`<span class="bd">[DEPO] ${st.region.toUpperCase()}</span> ${MATERIALS[st.material].name} ${st.rawVal}${st.unit==='um'?'µm':st.unit==='A'?'Å':st.unit}`;
+    else if(st.type==='mold')t=`<span class="bm">[MOLD] ${st.region.toUpperCase()}</span> ON ×${st.pairs} (${st.ox}/${st.nit}nm, ${st.thicknessUm.toFixed(2)}µm)`;
+    else if(st.type==='photo')t=`<span class="bp">[PHOTO]</span> ${{ring:'RING PHOTO',pses:'PSES',ebr:'일반 PHOTO(EBR)'}[st.mode]} ${st.mode==='pses'?'slab '+(st.pat||'-'):st.w+'mm'} · PR ${st.prPat}/${st.prBar}µm · shot ${st.pitch}mm`;
+    else if(st.type==='etch')t=`<span class="be">[ETCH]</span> ${ETCH[st.key].name} ${st.depth}µm · edge×${st.ef} · iso ${st.iso}${st.prot?` · 보호 ${st.prot}mm`:''}`;
+    else if(st.type==='clean')t=`<span class="bc">[CLN]</span> ${CLEAN[st.key].name} ${st.amt}nm · ${{imm:'침지',front:'전면Spin',back:'후면Spin'}[st.mode]}`;
+    else{const nm={strip:'PLASMA EDGE STRIP',eew:'EEW',bew:'BEW',backClean:'BACK CLEAN',frontClean:'FRONT CLEAN',edgeClean:'EDGE CLEAN',cmp:`CMP −${st.amt}µm · ERO ${st.ero}µm/${st.eroW}mm`}[st.action];
+      t=`<span class="br">[REMOVE] ${nm}</span>${['eew','bew','strip'].includes(st.action)?` ${st.distMm}mm`:''}${st.action==='strip'?` · Si파임 ${st.siLoss}µm`:''}`;}
+    const im=(st.impact?`<div class="imp l${st.impact.lvl}">⚑ ${st.impact.t}</div>`:'')+(st.arc?`<div class="imp l${st.arc.lvl}">⚡ Arcing ${['낮음','중간','높음'][st.arc.lvl]}(${st.arc.score}) — ${st.arc.why.join(' · ')||'특이 요인 없음'}</div>`:'');
+    const d=document.createElement('div');d.className='item';d.innerHTML=`<div>${i+1}. ${t}${im}</div><button class="del" onclick="removeStep(${i})">✕</button>`;el.appendChild(d);});}
+
+function renderLegend(){
+  const b=$('legend');b.innerHTML='<div class="li"><div class="sw" style="background:#475569"></div>Bare Si</div>';
+  const used=[];steps.forEach(s=>(s.type==='mold'?['SiO2','SiN']:s.material?[s.material]:[]).forEach(m=>{if(!used.includes(m))used.push(m);}));
+  used.forEach(m=>{const M=MATERIALS[m];b.innerHTML+=`<div class="li"><div class="sw" style="background:${M.color}"></div>${M.name}<span class="sub">${M.plan>0?`planar ${Math.round(M.plan*100)}%`:`SC ${Math.round(M.side*100)}/${Math.round(M.bot*100)}%`}</span></div>`;});
+  if(steps.some(s=>s.type==='mold'))b.innerHTML+='<div class="li sub">Mold = SiO2/SiN 교번 줄무늬</div>';
+  if(steps.some(s=>s.type==='photo'))b.innerHTML+='<div class="li"><div class="sw" style="background:#64748b"></div>PR 없음(EBR)</div><div class="li"><div class="sw" style="background:#a78bfa"></div>PR barrier/떡판</div><div class="li"><div class="sw" style="background:#22c55e"></div>Pattern 영역</div><div class="li"><div class="sw" style="background:#ef4444"></div>끊긴 pattern (Defect)</div><div class="li sub">주황 점선 = shot 경계</div>';}
+
+function buildMat(){
+  $('depoMat').innerHTML=KEYS.map(k=>`<option value="${k}">${MATERIALS[k].name}</option>`).join('');
+  $('etchType').innerHTML=Object.entries(ETCH).map(([k,e])=>`<option value="${k}">${e.name}</option>`).join('');
+  $('clnType').innerHTML=Object.entries(CLEAN).map(([k,e])=>`<option value="${k}">${e.name}</option>`).join('');
+  $('matTable').innerHTML=KEYS.map(k=>{const m=MATERIALS[k];return`<tr><td><div class="sw" style="background:${m.color}"></div></td><td>${m.name}</td>`+
+    ['side','bot','plan'].map(f=>`<td><input type="number" min="0" max="100" value="${Math.round(m[f]*100)}" onchange="setMat('${k}','${f}',this.value)"></td>`).join('')+'</tr>';}).join('');}
+function setMat(k,f,v){MATERIALS[k][f]=Math.min(1,Math.max(0,(+v||0)/100));renderLegend();render();}
+
+// ---------- Si Edge 프로파일 (mm) ----------
+function buildProfile(){
+  const P=PROF[$('siProf').value],T=(+$('waferThk').value||775)/1000,h=T/2;
+  const dv=Math.min(P.Lb*Math.tan(P.ang*Math.PI/180),h*.9);
+  const raw=[[140,-h],[150-P.Lb,-h],[150,-h+dv],[150,h-dv],[150-P.Lb,h],[140,h]],d=[0,P.dB,P.dC,P.dC,P.dB,0],out=[raw[0]];
+  for(let k=1;k<5;k++){const a=raw[k-1],c=raw[k],b=raw[k+1],la=Math.hypot(c[0]-a[0],c[1]-a[1]),lb=Math.hypot(b[0]-c[0],b[1]-c[1]),e=Math.min(d[k],la*.45,lb*.45);
+    const p0=[c[0]+(a[0]-c[0])*e/la,c[1]+(a[1]-c[1])*e/la],p1=[c[0]+(b[0]-c[0])*e/lb,c[1]+(b[1]-c[1])*e/lb];
+    for(let s=0;s<=10;s++){const t=s/10,u=1-t;out.push([u*u*p0[0]+2*u*t*c[0]+t*t*p1[0],u*u*p0[1]+2*u*t*c[1]+t*t*p1[1]]);}}
+  out.push(raw[5]);
+  const mx=Math.max(...out.map(p=>p[0]));out.forEach(p=>p[0]+=150-mx);
+  const cum=[0];for(let i=1;i<out.length;i++)cum.push(cum[i-1]+Math.hypot(out[i][0]-out[i-1][0],out[i][1]-out[i-1][1]));
+  const res=[];let s=0,i=1;
+  while(s<cum[cum.length-1]){while(cum[i]<s)i++;const t=(s-cum[i-1])/((cum[i]-cum[i-1])||1);
+    const x=out[i-1][0]+(out[i][0]-out[i-1][0])*t;res.push({R:x,y:out[i-1][1]+(out[i][1]-out[i-1][1])*t});s+=x<148?.04:.01;}
+  res.push({R:out[out.length-1][0],y:out[out.length-1][1]});
+  return{res,Lb:P.Lb,T};}
+
+function normalsOf(A){return A.map((s,i)=>{const a=A[Math.max(0,i-2)],b=A[Math.min(NP-1,i+2)],tx=b.x-a.x,ty=b.y-a.y,l=Math.hypot(tx,ty)||1;return{x:ty/l,y:-tx/l};});}
+function win(Wd){const lo=[],hi=[];let a=0,b=0;for(let i=0;i<NP;i++){while(arc[i]-arc[a]>Wd)a++;if(b<i)b=i;while(b+1<NP&&arc[b+1]-arc[i]<=Wd)b++;lo.push(a);hi.push(b);}return{lo,hi};}
+
+// ---------- 엔진 ----------
+function recalc(){
+  BP=pts.map((p,i)=>({x:p.x-p.nx*rec[i]*Z,y:p.y-p.ny*rec[i]*Z}));
+  S=BP.map(p=>({x:p.x,y:p.y}));LV=new Float64Array(NP);
+  layers.forEach(ly=>{for(let i=0;i<NP;i++){const h=ly.h[i];if(h){S[i].x+=ly.n[i].x*h*Z;S[i].y+=ly.n[i].y*h*Z;LV[i]+=h;}}});}
+function depoWeight(r,p){if(r==='front')return smooth(-.25,.6,p.f);if(r==='back')return smooth(-.25,.6,-p.f);if(r==='edge')return 1-smooth(LB,LB+.6,p.d);return 1;}
+function shadow(i,n,M){
+  if(Math.abs(n.y)<.8)return 1;let s=0;
+  for(let j=W3.lo[i];j<=W3.hi[i];j++){if(j===i||pts[i].f*pts[j].f<0||Math.abs(pts[j].f)<.5)continue;
+    const rise=LV[j]-LV[i];if(rise>.2){const dx=Math.abs(pts[j].R-pts[i].R)*1000;s=Math.max(s,rise/(rise+dx/3));}}
+  return 1-(1-M.bot)*s;}
+function deposit(mat,t,region,thin){
+  const M=MATERIALS[mat],n=normalsOf(S),h=new Float64Array(NP);let T=null;
+  if(M.plan>0){const mx=new Float64Array(NP);T=new Float64Array(NP);
+    for(let i=0;i<NP;i++){let m=LV[i];for(let j=W1.lo[i];j<=W1.hi[i];j++)if(pts[i].f*pts[j].f>=0&&LV[j]>m)m=LV[j];mx[i]=m;}
+    for(let i=0;i<NP;i++){let s=0,c=0;for(let j=W2.lo[i];j<=W2.hi[i];j++)if(pts[i].f*pts[j].f>=0){s+=mx[j];c++;}T[i]=s/c;}}
+  for(let i=0;i<NP;i++){const w=depoWeight(region,pts[i]);if(w<=.001)continue;let v;
+    if(T)v=t+M.plan*(T[i]-LV[i]);else if(region==='edge')v=t;
+    else{const ny=Math.abs(n[i].y);v=t*(M.side+(1-M.side)*ny*ny)*shadow(i,n[i],M);}
+    h[i]=w*Math.max(0,v);}
+  layers.push({mat,n,h,thin});
+  for(let i=0;i<NP;i++)if(h[i]){S[i].x+=n[i].x*h[i]*Z;S[i].y+=n[i].y*h[i]*Z;LV[i]+=h[i];}}
+function topLayerAt(i){for(let L=layers.length-1;L>=0;L--)if(layers[L].h[i]>1e-4)return L;return -1;}
+
+function removal(st){
+  const n=normalsOf(S),r=rampMm,dd=st.distMm;
+  for(let i=0;i<NP;i++){const p=pts[i],cut=1-smooth(dd-r,dd+r,p.d);let w=0;
+    switch(st.action){case'strip':w=cut;break;case'eew':w=smooth(-.3,.3,p.f)*cut;break;case'bew':w=smooth(-.3,.3,-p.f)*cut;break;
+      case'frontClean':w=smooth(.15,.6,p.f);break;case'backClean':w=smooth(.15,.6,-p.f);break;case'edgeClean':w=1-smooth(LB-.05,LB+.05,p.d);break;}
+    if(w<=0)continue;
+    if(st.action==='eew'||st.action==='bew'){const L=topLayerAt(i);if(L>=0)layers[L].h[i]*=(1-w);}
+    else layers.forEach(ly=>{ly.h[i]*=(1-w);});
+    if(st.action==='strip'&&st.siLoss>0)rec[i]+=st.siLoss*w*(.5+.5*Math.abs(n[i].y));}
+  recalc();}
+
+// 위에서부터 budget(target 막 기준 µm)을 소모: 저항막(r≈0)을 만나면 정지, 막이 다 없어지면 Si 침식
+const isPat=p=>!!PHOTO&&p.f>.3&&PHOTO.zones.some(q=>(q.k==='pattern'||q.k==='broken')&&p.d>=q.a&&p.d<q.b);
+function etch(rates,D,iso,ef,zone,prot,wfn,tg,open){
+  const n=normalsOf(S);
+  for(let i=0;i<NP;i++){const p=pts[i];
+    const pz=tg&&isPat(p);let bud=D*wfn(p)*(1+(ef-1)*(1-smooth(zone*.5,zone,p.d)))*(iso+(1-iso)*Math.abs(n[i].y));
+    if(prot>0)bud*=.05+.95*smooth(prot-rampMm,prot+rampMm,p.d);
+    if(bud<=1e-9)continue;let blocked=false;
+    for(let L=layers.length-1;L>=0&&bud>1e-9;L--){const ly=layers[L],h=ly.h[i];if(h<1e-5){ly.h[i]=0;continue;}
+      const r=rates[ly.mat];if(r<=.0005){blocked=true;break;}
+      if(pz&&tg.includes(ly.mat)){ly.h[i]=h-Math.min(h,bud*open*r);bud=0;blocked=true;break;}
+      const need=h/r;if(bud>=need){ly.h[i]=0;bud-=need;}else{ly.h[i]=h-bud*r;bud=0;}}
+    if(!blocked&&bud>1e-9)rec[i]+=bud*rates.Si;}
+  recalc();}
+
+function metrics(){let eL=0,eW=0,cL=0,cW=0,ex=0;
+  for(let i=0;i<NP;i++){const p=pts[i],w=ds[i];
+    if(p.d<2){eL+=LV[i]*w;eW+=w;}if(p.f>.99&&p.d>4&&p.d<6){cL+=LV[i]*w;cW+=w;}if(p.f>.9&&LV[i]<1e-3)ex+=w;}
+  let si=0;for(let i=0;i<NP;i++)if(rec[i]>si)si=rec[i];
+  return{e:eL/eW,c:cL/cW,ex,si};}
+function impactOf(a,b){
+  const e=a.e-b.e,c=a.c-b.c,s=b.si-a.si,x=b.ex-a.ex;
+  if(e<.005&&s<.005&&Math.abs(x)<.005)return{t:'Edge 영향 거의 없음',lvl:0};
+  let t=`Edge(0~2mm) 평균 막 손실 ${e.toFixed(2)}µm`+(c>.005?` · 중심 ${c.toFixed(2)}µm (edge/center ×${(e/c).toFixed(1)})`:' · 중심 영향 없음');
+  if(s>.005)t+=` · Si 손실 +${s.toFixed(2)}µm`;if(x>.005)t+=` · Si 노출 +${x.toFixed(2)}mm`;
+  const lvl=(s>.2||x>.3)?2:(e>c*1.3+.01||s>.02)?1:0;
+  if(lvl===2)t+=' — Edge Si 손상/노출 주의';else if(lvl===1)t+=' — Edge 가속 영향';
+  return{t,lvl};}
+
+function render(){
+  Z=+$('zScale').value||3;rampMm=(+$('rampUm').value||20)/1000;
+  const span=+$('viewSpan').value,cv=$('cv'),ctx=cv.getContext('2d'),dpr=window.devicePixelRatio||1;
+  const Wd=Math.max(280,cv.parentElement.clientWidth),padL=12,padR=26,ppm=(Wd-padL-padR)/span;
+  const pr=buildProfile();LB=pr.Lb;
+  let est=0;steps.forEach(s=>{if(s.thicknessUm)est+=s.thicknessUm;});
+  const H=Math.round(Math.min(760,Math.max(240,pr.T*ppm+2*(est*Z+34)))),cy=H/2+4;
+  cv.width=Wd*dpr;cv.height=H*dpr;cv.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  pts=pr.res.map(p=>({R:p.R,d:150-p.R,x:padL+(p.R-(150-span))*ppm,y:cy+p.y*ppm}));NP=pts.length;
+  arc=[0];for(let i=1;i<NP;i++)arc.push(arc[i-1]+Math.hypot(pr.res[i].R-pr.res[i-1].R,pr.res[i].y-pr.res[i-1].y));
+  ds=pts.map((_,i)=>(arc[Math.min(NP-1,i+1)]-arc[Math.max(0,i-1)])/2);
+  const n0=normalsOf(pts);pts.forEach((p,i)=>{p.nx=n0[i].x;p.ny=n0[i].y;p.f=-p.ny;});
+  W1=win(.15);W2=win(.07);W3=win(.06);
+  rec=new Float64Array(NP);layers=[];PHOTO=null;recalc();
+
+  steps.forEach(st=>{
+    if(st.type==='depo'){deposit(st.material,st.thicknessUm,st.region,false);return;}
+    if(st.type==='mold'){for(let k=0;k<st.pairs;k++){deposit('SiO2',st.ox/1e3,st.region,true);deposit('SiN',st.nit/1e3,st.region,true);}return;}
+    if(st.type==='photo'){applyPhoto(st);return;}
+    const bias=st.type==='etch'?({harc:1,slit:1,teos:.6,acl:.5,poly:.5,nit:.5}[st.key]||.5):st.type==='clean'?(st.key==='ash'?.3:0):(st.type==='remove'&&st.action==='strip')?.6:0;
+    st.arc=bias>0?arcRisk(bias):null;
+    const a=metrics();
+    if(st.type==='etch'){const e=ETCH[st.key];etch(e.r,st.depth,st.iso,st.ef,st.zone,st.prot,p=>(1+p.f)/2,e.tg,(st.open===undefined?3:st.open)/100);}
+    else if(st.type==='clean'){const wf={imm:()=>1,front:p=>(1+p.f)/2,back:p=>(1-p.f)/2}[st.mode];etch(CLEAN[st.key].r,st.amt/1000,1,1,1,0,wf);}
+    else if(st.action==='cmp')cmp(st);else removal(st);
+    st.impact=impactOf(a,metrics());});
+
+  // ---- 그리기 ----
+  ctx.clearRect(0,0,Wd,H);ctx.font='10px sans-serif';
+  const tick=span<=.5?.1:span<=1?.2:span<=3?.5:1;
+  for(let r=Math.ceil((150-span)/tick-1e-9)*tick;r<=150+1e-9;r+=tick){const x=padL+(r-(150-span))*ppm;
+    ctx.strokeStyle='#1e293b';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(x,18);ctx.lineTo(x,H-18);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#64748b';ctx.fillText(Math.abs(r-150)<1e-6?'150 (Edge)':r.toFixed(tick<1?1:0),Math.min(x-8,Wd-48),12);}
+  const hh=pr.T/2*ppm,g=ctx.createLinearGradient(0,cy-hh,0,cy+hh);g.addColorStop(0,'#52627b');g.addColorStop(.5,'#3b4a61');g.addColorStop(1,'#2c3749');
+  ctx.beginPath();BP.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#64748b';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='#cbd5e1';ctx.font='bold 11px sans-serif';ctx.fillText(`Bare Si (${$('waferThk').value}µm, 실축척)`,padL+8,cy+4);
+
+  let cur=BP.map(p=>({x:p.x,y:p.y}));
+  layers.forEach(ly=>{
+    const outer=cur.map((c,i)=>({x:c.x+ly.n[i].x*ly.h[i]*Z,y:c.y+ly.n[i].y*ly.h[i]*Z})),color=MATERIALS[ly.mat].color;let i=0;
+    while(i<NP){if(ly.h[i]<=1e-4){i++;continue;}let j=i;while(j+1<NP&&ly.h[j+1]>1e-4)j++;
+      const s=Math.max(0,i-1),e=Math.min(NP-1,j+1);
+      ctx.beginPath();for(let k=s;k<=e;k++)k===s?ctx.moveTo(outer[k].x,outer[k].y):ctx.lineTo(outer[k].x,outer[k].y);
+      for(let k=e;k>=s;k--)ctx.lineTo(cur[k].x,cur[k].y);ctx.closePath();ctx.fillStyle=color;ctx.fill();
+      ctx.lineWidth=ly.thin?.4:1;ctx.strokeStyle=ly.thin?color:'rgba(9,13,22,.55)';ctx.stroke();i=j+1;}
+    cur=outer;});
+  drawPhoto(ctx,span,padL,ppm,H);ctx.fillStyle='#64748b';ctx.font='10px sans-serif';ctx.fillText(`Film·Si손실 수직 ×${Math.round(Z*1000/ppm)} 과장`,padL,H-6);
+  $('viewInfo').innerText=`${(150-span).toFixed(1)}~150mm`;
+
+  // ---- 요약 ----
+  const near=pred=>{let b=-1;pts.forEach((p,i)=>{if(pred(p)&&(b<0||Math.abs(p.d-5)<Math.abs(pts[b].d-5)))b=i;});return b;};
+  const iF=near(p=>p.f>.99),iB=near(p=>p.f<-.99),iA=pts.reduce((b,p,i)=>p.R>pts[b].R?i:b,0);
+  const sa=(i,fn)=>layers.reduce((a,ly)=>a+ly.h[i]*fn(ly),0);
+  let mx=-1e9,mn=1e9;pts.forEach((p,i)=>{if(p.f>.99){mx=Math.max(mx,LV[i]);mn=Math.min(mn,LV[i]);}});
+  const m=metrics();
+  $('sF').innerText=sa(iF,()=>1).toFixed(2)+' µm';$('sB').innerText=sa(iB,()=>1).toFixed(2)+' µm';$('sE').innerText=sa(iA,()=>1).toFixed(2)+' µm';
+  $('sS').innerText=(mx-mn).toFixed(2)+' µm';$('sSi').innerText=m.si.toFixed(2)+' µm';$('sEx').innerText=m.ex.toFixed(2)+' mm';
+  $('sSi').style.color=m.si>.2?'#ef4444':m.si>.02?'#fbbf24':'';
+  const ph=PHOTO&&PHOTO.r;$('sDef').innerText=ph?(ph.br>.2?`끊김 ${ph.br.toFixed(1)} mm`:'정상'):'-';$('sDef').style.color=ph?(ph.br>.2?'#ef4444':'#10b981'):'';
+  $('sDefs').innerText=ph?({ring:'Ring',pses:'PSES',ebr:'EBR'}[PHOTO.st.mode])+(ph.lost?` · 정상 shot ${ph.lost}개 희생`:''):'Photo 단계 없음';
+  const am=steps.reduce((a,t)=>t.arc&&(!a||t.arc.score>a.score)?t.arc:a,null);
+  $('sArc').innerText=am?`${['낮음','중간','높음'][am.lvl]} (${am.score})`:'-';$('sArc').style.color=am?['#10b981','#fbbf24','#ef4444'][am.lvl]:'';$('sArcs').innerText=am?(am.why[0]||'특이 요인 없음'):'plasma 단계 없음';
+  const fS=sa(iF,l=>MATERIALS[l.mat].stress),bS=sa(iB,l=>MATERIALS[l.mat].stress),net=fS-bS,el=$('sW'),sb=$('sWs');WARP={X:net,fS,bS,ts:+$('waferThk').value||775};
+  if(Math.abs(net)<50){el.innerText='Flat / Balanced';el.style.color='#10b981';sb.innerText='전/후면 응력 균형';}
+  else if(net>0){el.innerText='Concave (스마일)';el.style.color='#38bdf8';sb.innerText='전면 인장 우세';}
+  else{el.innerText='Convex (울상)';el.style.color='#f43f5e';sb.innerText='후면 인장 우세';}
+  bondCheck(iF,iA,sa);renderRecipe();if(warpOpen)draw2D();}
+
+// ---------- Warpage 시각화 ----------
+let WARP={X:0,fS:0,bS:0,ts:775},w3={rot:.785,auto:false,drag:0,k:1,raf:0,bound:0},warpOpen=false;
+const kappa=()=>{const t=WARP.ts*1e-6;return 6*WARP.X/(180e9*t*t);};   // 1/m, +면 앞면 concave(smile)
+const bowUm=()=>kappa()*.15*.15/2*1e6;
+const sRGB=(v,a)=>{const t=Math.min(1,Math.abs(v)/1500),o=a*(.35+.65*t);return v>0?`rgba(244,63,94,${o})`:`rgba(56,189,248,${o})`;};
+function openWarp(){const b=$('warpBox');b.style.display='block';warpOpen=true;initW3();draw2D();loop3();setTimeout(()=>b.scrollIntoView({behavior:'smooth',block:'start'}),50);}
+function closeWarp(){$('warpBox').style.display='none';warpOpen=false;}
+function initW3(){const c=$('wc3'),W=Math.max(280,c.parentElement.clientWidth),d=devicePixelRatio||1,H=Math.round(Math.min(520,W*.75));
+  c.width=W*d;c.height=H*d;c.style.height=H+'px';w3.W=W;w3.H=H;w3.d=d;
+  if(!w3.bound){w3.bound=1;let lx=0;c.addEventListener('pointerdown',e=>{w3.drag=1;lx=e.clientX;c.setPointerCapture(e.pointerId);});
+    c.addEventListener('pointermove',e=>{if(w3.drag){w3.rot+=(e.clientX-lx)*.01;lx=e.clientX;}});
+    ['pointerup','pointercancel'].forEach(n=>c.addEventListener(n,()=>w3.drag=0));}}
+function loop3(){if(w3.raf)return;const f=()=>{if(!warpOpen){w3.raf=0;return;}if(w3.auto&&!w3.drag)w3.rot+=.007;draw3D();w3.raf=requestAnimationFrame(f);};w3.raf=requestAnimationFrame(f);}
+function draw2D(){
+  const c=$('wc2'),W=Math.max(280,c.parentElement.clientWidth),d=devicePixelRatio||1,H=Math.round(Math.min(300,Math.max(210,W*.42)));
+  c.width=W*d;c.height=H*d;c.style.height=H+'px';const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);
+  const bow=bowUm(),sg=bow>=0?1:-1,vis=Math.min(60,Math.abs(bow)*.2),pad=22,L=W-2*pad,yE=H/2-sg*vis/2;
+  const X=u=>pad+(u+1)/2*L,Y=u=>yE+sg*vis*(1-u*u);
+  x.setLineDash([4,4]);x.strokeStyle='#475569';x.lineWidth=1;x.beginPath();x.moveTo(pad,yE);x.lineTo(W-pad,yE);x.stroke();x.setLineDash([]);
+  const band=(o,w,col)=>{x.beginPath();for(let k=0;k<=80;k++){const u=-1+k/40;k?x.lineTo(X(u),Y(u)+o):x.moveTo(X(u),Y(u)+o);}x.lineWidth=w;x.strokeStyle=col;x.stroke();};
+  band(0,10,'#475569');
+  if(Math.abs(WARP.fS)>1)band(-9,6,sRGB(WARP.fS,1));
+  if(Math.abs(WARP.bS)>1)band(9,6,sRGB(WARP.bS,1));
+  const arrow=(cx,y,dr,col)=>{x.strokeStyle=x.fillStyle=col;x.lineWidth=2;x.beginPath();x.moveTo(cx-13*dr,y);x.lineTo(cx+13*dr,y);x.stroke();x.beginPath();x.moveTo(cx+13*dr,y);x.lineTo(cx+7*dr,y-4);x.lineTo(cx+7*dr,y+4);x.fill();};
+  const face=(v,o)=>{if(Math.abs(v)<=1)return;const t=v>0?1:-1;[-.55,.55].forEach(u=>arrow(X(u),Y(u)+o,(u<0?1:-1)*t,sRGB(v,1)));};
+  face(WARP.fS,-24);face(WARP.bS,24);
+  x.font='11px sans-serif';x.fillStyle='#cbd5e1';
+  const lb=(v,n)=>`${n} Σσt ${v.toFixed(0)} N/m ${Math.abs(v)<=1?'(막 없음)':v>0?'Tensile':'Compressive'}`;
+  x.fillText(lb(WARP.fS,'Front'),pad,14);x.fillText(lb(WARP.bS,'Back'),pad,H-6);
+  const R=Math.abs(kappa())>1e-9?Math.abs(1/kappa()):Infinity,ex=Math.abs(bow)>1?vis/(Math.abs(bow)/1000*L/300):0;
+  const t=Math.abs(bow)<1?'Flat (|bow|<1µm)':`Bow ≈ ${Math.abs(bow).toFixed(0)}µm ${bow>=0?'Smile ∪ (전면 concave)':'Frown ∩ (전면 convex)'} · R≈${R.toFixed(1)}m · 수직 ×${Math.round(ex)} 과장`;
+  x.textAlign='center';x.fillText(t,W/2,H/2+(sg>0?-vis/2-40:vis/2+46));x.textAlign='left';
+  $('warpInfo').innerText=`Σσt Front ${WARP.fS.toFixed(0)} / Back ${WARP.bS.toFixed(0)} N/m → 곡률 κ=${kappa().toFixed(3)} 1/m, 300mm 기준 bow ≈ ${Math.abs(bow).toFixed(0)}µm`;}
+function draw3D(){
+  const c=$('wc3'),x=c.getContext('2d'),W=w3.W,H=w3.H;x.setTransform(w3.d,0,0,w3.d,0,0);x.clearRect(0,0,W,H);
+  const bow=bowUm(),sg=bow>=0?1:-1,R=Math.min(W*.38,H*.6),A=sg*R*.22*Math.min(1,Math.sqrt(Math.abs(bow)/200))*w3.k;
+  const ph=.5,cp=Math.cos(ph),sp=Math.sin(ph),ca=Math.cos(w3.rot),sa=Math.sin(w3.rot),cx=W/2,cy=H*.55;
+  const P=(r,t,f)=>{const X0=r*Math.cos(t),Y0=r*Math.sin(t),z=f?A*(r/R)**2:0,x1=X0*ca-Y0*sa,y1=X0*sa+Y0*ca;return{x:cx+x1,y:cy-(z*cp+y1*sp),d:y1*cp-z*sp};};
+  const nr=22,nt=72,q=[],amp=Math.min(1,Math.abs(bow)/20),mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t),heat=t=>t>=0?mix([240,240,240],[220,38,38],t):mix([240,240,240],[37,99,235],-t);
+  for(let i=0;i<nr;i++)for(let j=0;j<nt;j++){
+    const r0=R*i/nr,r1=R*(i+1)/nr,t0=6.2832*j/nt,t1=6.2832*(j+1)/nt,p=[P(r0,t0,1),P(r1,t0,1),P(r1,t1,1),P(r0,t1,1)];
+    const rm=(r0+r1)/2,tm=(t0+t1)/2,sl=2*A*rm/(R*R),nx=-sl*Math.cos(tm),ny=-sl*Math.sin(tm),nl=Math.hypot(nx,ny,1),
+      n1x=(nx*ca-ny*sa)/nl,n1y=(nx*sa+ny*ca)/nl,n1z=1/nl,dot=Math.max(0,-.3*n1x-.45*n1y+.84*n1z),b=(.4+.6*dot)*(i%2?.94:1);
+    const hc=heat(Math.max(-1,Math.min(1,((rm/R)**2-.5)*2*sg*amp))),col=`rgb(${hc.map(v=>Math.round(v*(.7+.3*b))).join(',')})`;
+    q.push({p,d:(p[0].d+p[1].d+p[2].d+p[3].d)/4,col});}
+  q.sort((a,b)=>b.d-a.d);
+  x.setLineDash([4,4]);x.strokeStyle='#475569';x.lineWidth=1;x.beginPath();for(let k=0;k<=72;k++){const a=P(R,6.2832*k/72,0);k?x.lineTo(a.x,a.y):x.moveTo(a.x,a.y);}x.stroke();x.setLineDash([]);
+  q.forEach(o=>{x.beginPath();o.p.forEach((a,k)=>k?x.lineTo(a.x,a.y):x.moveTo(a.x,a.y));x.closePath();x.fillStyle=x.strokeStyle=o.col;x.lineWidth=.6;x.fill();x.stroke();});
+  x.beginPath();for(let k=0;k<=72;k++){const a=P(R,6.2832*k/72,1);k?x.lineTo(a.x,a.y):x.moveTo(a.x,a.y);}x.strokeStyle='#e2e8f0';x.lineWidth=1.2;x.stroke();
+  // heatmap 컬러바 (+ 붉은색 / − 푸른색)
+  const bx=W-24,by=26,bh=H-80,g=x.createLinearGradient(0,by,0,by+bh);g.addColorStop(0,'rgb(220,38,38)');g.addColorStop(.5,'rgb(240,240,240)');g.addColorStop(1,'rgb(37,99,235)');
+  x.fillStyle=g;x.fillRect(bx,by,10,bh);x.strokeStyle='#64748b';x.lineWidth=1;x.strokeRect(bx,by,10,bh);
+  const hv=Math.abs(bow)/2;x.fillStyle='#cbd5e1';x.font='10px sans-serif';x.textAlign='right';
+  x.fillText(`+${hv.toFixed(0)}µm`,W-30,by+8);x.fillText('0',W-30,by+bh/2+3);x.fillText(`−${hv.toFixed(0)}µm`,W-30,by+bh);x.textAlign='left';
+  x.font='11px sans-serif';
+  x.fillText(`${Math.abs(bow)<1?'Flat':'Bow ≈ '+Math.abs(bow).toFixed(0)+'µm '+(bow>=0?'(Smile)':'(Frown)')}`,10,H-24);
+  x.fillText('붉은색(+)=앞면 방향으로 솟음 · 푸른색(−)=처짐 (평균면 대비) · 점선=평면',10,H-8);}
+
+// ---------- Photo (Ring / PSES / EBR) ----------
+let PHOTO=null;
+function photoModeUI(){const m=$('photoMode').value;
+  $('lblW').innerText=m==='ebr'?'EBR 폭 (mm, PR 미도포 폭)':'Ring 폭 X (mm, edge→내측 PR barrier)';
+  $('photoW').value=m==='ebr'?1.5:5;$('gW').style.display=m==='pses'?'none':'block';$('gPses').style.display=m==='pses'?'block':'none';$('gBar').style.display=m==='ebr'?'none':'block';}
+function photoZones(st){
+  const P=st.pitch,df=st.dfull,z=[],bar=[],bare=[];let br=0,lost=0,nSlab=0;
+  // X 지점에서 pattern이 잘릴 때: 끊긴 폭(br)과 통째로 희생되는 정상 shot 수(lost)
+  const cutAt=X=>{if(X<df-.2)return{br:df-X,lost:0};if(X<=df+.2)return{br:0,lost:0};
+    const k=Math.floor((X-df)/P+1e-9),off=X-(df+k*P);if(off<.2)return{br:0,lost:k};if(P-off<.2)return{br:0,lost:k+1};return{br:P-off,lost:k};};
+  if(st.mode==='ebr'||st.mode==='ring'){const X=st.w,c=cutAt(X);br=c.br;lost=c.lost;
+    if(st.mode==='ebr'){bare.push([-1,X]);z.push({a:0,b:X,k:'bare'});}else{bar.push([-1,X]);z.push({a:0,b:X,k:'barrier'});}
+    if(br>.01)z.push({a:X,b:X+br,k:'broken'});z.push({a:X+br,b:99,k:'pattern'});}
+  else{const c=(st.pat||'0').split('').map(v=>v==='1');
+    c.forEach((on,k)=>{const a=k?df+(k-1)*P:0,b=k?df+k*P:df;
+      if(on){bar.push([k?a:-1,b]);z.push({a,b,k:'barrier'});nSlab++;if(k)lost++;}else z.push({a,b,k:k?'pattern':'broken'});});
+    if(!c[0])br=df;z.push({a:df+(c.length-1)*P,b:99,k:'pattern'});}
+  return{z,bar,bare,br,lost,nSlab};}
+function photoImpact(st,r){let t,lvl=0;
+  if(r.br>.2){t=`끊긴 pattern(truncated shot) 폭 ${r.br.toFixed(1)}mm → Defect source 위험`;lvl=2;}else t='pattern 경계가 shot 경계와 정렬 — 끊긴 pattern 없음';
+  if(st.mode==='ebr'){t='EBR만 적용: edge 무보호(PR 없음) · '+t;lvl=Math.max(lvl,1);}
+  else if(st.mode==='ring')t=`Ring ${st.w}mm: `+t;else t=`PSES 떡판 ${r.nSlab}개 shot: `+t;
+  if(r.lost>0){t+=` · 정상 shot ${r.lost}개(≈${(r.lost*st.pitch).toFixed(0)}mm) 희생`;lvl=Math.max(lvl,1);}
+  return{t,lvl};}
+function applyPhoto(st){
+  const r=photoZones(st),rp=rampMm,n=normalsOf(S),h=new Float64Array(NP),win=(d,q)=>smooth(q[0]-rp,q[0]+rp,d)*(1-smooth(q[1]-rp,q[1]+rp,d));
+  for(let i=0;i<NP;i++){const p=pts[i],wf=depoWeight('front',p);if(wf<=.001)continue;let wb=0,wz=0;
+    r.bar.forEach(q=>wb=Math.max(wb,win(p.d,q)));r.bare.forEach(q=>wz=Math.max(wz,win(p.d,q)));
+    h[i]=wf*(1-wz)*(st.prPat*(1-wb)+st.prBar*wb);}
+  layers.push({mat:'PR',n,h,thin:false});
+  for(let i=0;i<NP;i++)if(h[i]){S[i].x+=n[i].x*h[i]*Z;S[i].y+=n[i].y*h[i]*Z;LV[i]+=h[i];}
+  PHOTO={st,r,zones:r.z};st.impact=photoImpact(st,r);}
+function drawPhoto(x,span,padL,ppm,H){
+  if(!PHOTO)return;const X=d=>padL+(span-d)*ppm,col={bare:'#64748b',barrier:'#a78bfa',pattern:'#22c55e',broken:'#ef4444'},y=22,hh=9,st=PHOTO.st;
+  PHOTO.zones.forEach(q=>{const a=Math.max(0,q.a),b=Math.min(span,q.b);if(b<=a)return;
+    x.globalAlpha=q.k==='pattern'?.55:.95;x.fillStyle=col[q.k];x.fillRect(X(b),y,X(a)-X(b),hh);x.globalAlpha=1;
+    if(q.k==='broken'){x.strokeStyle='#fff';x.lineWidth=1;for(let u=X(b);u<X(a);u+=5){x.beginPath();x.moveTo(u,y+hh);x.lineTo(Math.min(u+5,X(a)),y);x.stroke();}}});
+  x.setLineDash([2,3]);x.strokeStyle='#f59e0b';x.fillStyle='#f59e0b';x.font='9px sans-serif';x.lineWidth=1;
+  for(let k=0;k<20;k++){const d=st.dfull+k*st.pitch;if(d>span)break;x.beginPath();x.moveTo(X(d),y+hh+2);x.lineTo(X(d),H-18);x.stroke();x.fillText('shot',X(d)+3,y+hh+12);}
+  x.setLineDash([]);}
+function loadPhotoPreset(mode){steps=[
+ {type:'mold',region:'all',pairs:48,ox:90,nit:60,thicknessUm:7.2},
+ {type:'depo',region:'all',material:'HTACL',thicknessUm:1,rawVal:1,unit:'um'},
+ {type:'photo',mode,prPat:1,prBar:6,pitch:26,dfull:6,w:mode==='ebr'?1.5:5,pat:'1'},
+ {type:'etch',key:'harc',depth:7.2,ef:1.15,zone:3,iso:.1,prot:0},
+ {type:'clean',key:'ash',amt:6000,mode:'imm'}];updateUI();}
+
+// ---------- CMP / Arcing / Bonding / Excel ----------
+function cmp(st){
+  let ref=0,c=0;for(let i=0;i<NP;i++)if(pts[i].f>.99&&pts[i].d>4.5&&pts[i].d<5.5){ref+=LV[i];c++;}
+  const T0=ref/c-st.amt;
+  for(let i=0;i<NP;i++){const p=pts[i];if(p.f<.3)continue;const w=smooth(.3,.8,p.f),T=Math.max(0,T0-st.ero*(1-smooth(0,st.eroW,p.d)));
+    let ex=(LV[i]-T)*w;for(let L=layers.length-1;L>=0&&ex>1e-6;L--){const h=layers[L].h[i];if(!h)continue;const r=Math.min(h,ex);layers[L].h[i]=h-r;ex-=r;}}
+  recalc();}
+function arcRisk(bias){
+  const DI=['SiO2','SiN','HTTEOS','MTTEOS','SiON'];let dl=0,dw=0,metal=false,step=0,be=0,bw=0;
+  for(let i=0;i<NP;i++){const p=pts[i];if(p.d>4)continue;
+    if(p.f>.3&&p.d>.3){let t=0;layers.forEach(ly=>{if(DI.includes(ly.mat))t+=ly.h[i];});dl+=t*ds[i];dw+=ds[i];}
+    const tl=topLayerAt(i);if(tl>=0&&layers[tl].mat==='W'&&p.d<3)metal=true;
+    for(let j=W1.lo[i];j<=W1.hi[i];j++)if(p.f*pts[j].f>=0)step=Math.max(step,Math.abs(LV[j]-LV[i]));
+    if(p.d<1){bw+=ds[i];if(LV[i]<1e-3)be+=ds[i];}}
+  const dT=dw?dl/dw:0,bare=bw&&be/bw>.5&&dT>1,why=[];
+  let sc=35*Math.min(1,dT/5)+(metal?30:0)+25*Math.min(1,step/5)+(bare?10:0);
+  if(dT>1)why.push(`edge 4mm 내 유전체 ${dT.toFixed(1)}µm → 전하 축적`);if(metal)why.push('Edge W(금속) 노출');
+  if(step>.5)why.push(`edge 단차 ${step.toFixed(1)}µm → 전계 집중`);if(bare)why.push('bevel Si 노출 + 두꺼운 유전체 경계');
+  sc=Math.round(sc*bias);return{score:sc,lvl:sc>=50?2:sc>=25?1:0,why};}
+function bondCheck(iF,iA,sa){
+  let e=0,ec=0,peel=0;
+  for(let i=0;i<NP;i++){const p=pts[i];if(p.f>.99&&p.d>.3&&p.d<1.5){e+=LV[i]*ds[i];ec+=ds[i];}
+    if(p.d<1){let t=0;layers.forEach(l=>t+=Math.abs(MATERIALS[l.mat].stress)*l.h[i]);peel=Math.max(peel,t);}}
+  const dE=(ec?e/ec:0)-LV[iF],bow=Math.abs(bowUm()),lim={s:+$('bStep').value||.3,b:+$('bBow').value||300,p:+$('bPeel').value||1500};
+  const row=(ok,w,t)=>`<div style="color:${ok?'#10b981':w?'#fbbf24':'#ef4444'}">${ok?'✔':w?'⚠':'✖'} ${t}</div>`;
+  $('bondBox').innerHTML=
+   row(Math.abs(dE)<=lim.s,Math.abs(dE)<=lim.s*3,`Edge step/roll-off ${dE>=0?'+':''}${dE.toFixed(2)}µm (R=0.3~1.5mm vs 중심, 허용 ±${lim.s}µm)${dE<-lim.s?' — edge가 낮아 접합 gap/void 위험':dE>lim.s?' — edge가 높아 접촉 간섭':''}`)+
+   row(bow<=lim.b,bow<=lim.b*1.5,`Bow ${bow.toFixed(0)}µm (허용 ${lim.b}µm) — 접합 void/정렬 위험`)+
+   row(peel<=lim.p,peel<=lim.p*2,`Bevel 막 응력·두께 지수 ${peel.toFixed(0)} N/m (기준 ${lim.p}) — peeling/shard 위험`);}
+function matKey(t){const u=(t||'').toUpperCase().replace(/[\s_\-()]/g,'');
+  if(/ESOH/.test(u))return'ESOH';if(/SOH/.test(u))return'SOH';if(/MT.?ACL/.test(u))return'MTACL';if(/ACL|CARBON/.test(u))return'HTACL';
+  if(/MT.?TEOS/.test(u))return'MTTEOS';if(/TEOS/.test(u))return'HTTEOS';if(/SION/.test(u))return'SiON';if(/SIN|NITRIDE|질화/.test(u))return'SiN';
+  if(/POLY|폴리/.test(u))return'Poly';if(/^W$|TUNGSTEN|텅스텐/.test(u))return'W';if(/^PR|PHOTORESIST|레지스트/.test(u))return'PR';
+  if(/SIO2|OXIDE|산화|^SIO/.test(u))return'SiO2';return null;}
+function parseTSV(txt){
+  const out=[],err=[],num=(v,d)=>{const x=parseFloat(v);return isNaN(x)?d:x;};
+  const reg=v=>{const q=(v||'').toUpperCase();return /FRONT|전면/.test(q)?'front':/BACK|후면/.test(q)?'back':/EDGE|에지|베벨|BEVEL/.test(q)?'edge':'all';};
+  txt.split(/\r?\n/).forEach((ln,ri)=>{if(!ln.trim())return;const c=ln.split(/\t|;/).map(v=>v.trim()),u=(c[0]||'').toUpperCase().replace(/[\s_\-]/g,'');let st=null;
+    if(/MOLD|몰드/.test(u)){const p=num(c[1],48),o=num(c[2],90),n=num(c[3],60);st={type:'mold',region:reg(c[4]),pairs:p,ox:o,nit:n,thicknessUm:p*(o+n)/1e3};}
+    else if(/PHOTO|포토|^RING|PSES|^EBR/.test(u)){const q=(u+(c[1]||'')).toUpperCase(),m=/PSES/.test(q)?'pses':/EBR|일반/.test(q)?'ebr':'ring';
+      st={type:'photo',mode:m,prPat:num(c[3],1),prBar:num(c[4],6),pitch:num(c[5],26),dfull:num(c[6],6),w:m==='pses'?0:num(c[2],m==='ebr'?1.5:5),pat:m==='pses'?(c[2]||'1').replace(/[^01]/g,''):'1'};}
+    else if(/CMP/.test(u))st={type:'remove',action:'cmp',distMm:0,siLoss:0,amt:num(c[1],1),ero:num(c[2],.1),eroW:num(c[3],2)};
+    else if(/PES|STRIP|스트립/.test(u))st={type:'remove',action:'strip',distMm:num(c[1],2.5),siLoss:num(c[2],0)};
+    else if(/^EEW/.test(u))st={type:'remove',action:'eew',distMm:num(c[1],2)};
+    else if(/^BEW/.test(u))st={type:'remove',action:'bew',distMm:num(c[1],1)};
+    else if(/BACKCLEAN|후면세정/.test(u))st={type:'remove',action:'backClean',distMm:0};
+    else if(/EDGECLEAN/.test(u))st={type:'remove',action:'edgeClean',distMm:0};
+    else if(/CLN|CLEAN|세정|WET/.test(u)||/^ASH/.test(u)){const q=(c[1]||c[0]).toUpperCase(),k=/LAL/.test(q)?'lal':/H3PO4|PHOS|인산/.test(q)?'hotp':/SPM|SC1/.test(q)?'spm':/ASH|애싱/.test(q)?'ash':'dhf';
+      st={type:'clean',key:k,amt:num(c[2],CLEAN[k].amt),mode:/FRONT|전면/i.test(c[3]||'')?'front':/BACK|후면/i.test(c[3]||'')?'back':'imm'};}
+    else if(/ETCH|식각|HARC|SLIT/.test(u)){const q=((c[1]||'')+u).toUpperCase().replace(/[\s_\-]/g,''),k=/SLIT/.test(q)?'slit':/HARC/.test(q)?'harc':/TEOS/.test(q)?'teos':/ACL|SOH|OPEN/.test(q)?'acl':/POLY/.test(q)?'poly':/SIN|NIT/.test(q)?'nit':'harc',e=ETCH[k];
+      st={type:'etch',key:k,depth:num(c[2],e.depth),ef:num(c[3],e.ef),zone:num(c[4],3),iso:num(c[5],e.iso),prot:num(c[6],0)};}
+    else if(/DEPO|증착|CVD|PVD|ALD|COAT|DEP/.test(u)){const m=matKey(c[1]);
+      if(m){const v=num(c[2],1),un=/NM/i.test(c[3]||'')?'nm':/^A|Å|옹스/i.test(c[3]||'')?'A':'um';st={type:'depo',region:reg(c[4]),material:m,thicknessUm:un==='nm'?v/1e3:un==='A'?v/1e4:v,rawVal:v,unit:un};}}
+    if(st)out.push(st);else err.push(`${ri+1}행 "${c[0]}${c[1]?' / '+c[1]:''}"`);});
+  return{out,err};}
+function xlApply(add){const r=parseTSV($('xlText').value);if(!r.out.length&&r.err.length){$('xlMsg').innerText='인식된 step 없음: '+r.err.join(', ');return;}
+  steps=add?steps.concat(r.out):r.out;$('xlMsg').innerText=`${r.out.length}개 step 적용`+(r.err.length?` · 무시 ${r.err.length}건: ${r.err.join(', ')}`:'');updateUI();}
+function xlExport(){const f=(...a)=>a.join('\t');
+  $('xlText').value=steps.map(s=>{
+    if(s.type==='depo')return f('DEPO',s.material,s.rawVal,s.unit,s.region);if(s.type==='mold')return f('MOLD',s.pairs,s.ox,s.nit,s.region);
+    if(s.type==='photo')return f('PHOTO',s.mode,s.mode==='pses'?s.pat:s.w,s.prPat,s.prBar,s.pitch,s.dfull);
+    if(s.type==='etch')return f('ETCH',s.key.toUpperCase(),s.depth,s.ef,s.zone,s.iso,s.prot);if(s.type==='clean')return f('CLN',s.key.toUpperCase(),s.amt,s.mode);
+    const a=s.action;return a==='strip'?f('PES',s.distMm,s.siLoss):a==='cmp'?f('CMP',s.amt,s.ero,s.eroW):(a==='eew'||a==='bew')?f(a.toUpperCase(),s.distMm):f(a==='backClean'?'BACKCLEAN':'EDGECLEAN');}).join('\n');
+  $('xlMsg').innerText='현재 레시피를 표 형식으로 채웠습니다. 엑셀에 붙여넣어 편집 후 다시 가져오세요.';}
+function loadCellPreset(){
+  const A=[],dep=(m,v,u,r)=>A.push({type:'depo',region:r||'all',material:m,thicknessUm:u==='nm'?v/1e3:v,rawVal:v,unit:u||'um'}),
+    et=(k,d)=>A.push({type:'etch',key:k,depth:d,ef:k==='harc'?1.15:1.1,zone:3,iso:k==='poly'?.2:.1,prot:0,open:3});
+  for(let d=1;d<=3;d++){
+    dep('SiO2',500,'nm','back');                                          // BSO (backside oxide)
+    A.push({type:'mold',region:'all',pairs:80,ox:45,nit:45,thicknessUm:7.2}); // deck mold (80 tier)
+    dep('HTACL',1,'um');dep('MTTEOS',300,'nm');                            // hard mask
+    A.push({type:'photo',mode:'pses',prPat:1,prBar:6,pitch:26,dfull:6,w:0,pat:'1'}); // HARC로부터 edge 보호
+    et('teos',.3);et('acl',1.5);et('harc',7.2);                            // mask etch → HARC
+    A.push({type:'clean',key:'ash',amt:7000,mode:'imm'});                  // PR/ACL strip
+    if(d<3){dep('Poly',1,'um');A.push({type:'remove',action:'cmp',distMm:0,siLoss:0,amt:1,ero:.05,eroW:1.5});} // 희생막 fill + CMP
+    else{et('poly',1);dep('SiO2',20,'nm');dep('SiN',6,'nm');dep('SiO2',5,'nm');dep('Poly',8,'nm');}          // 희생막 제거 → ONOP
+    A.push({type:'remove',action:'backClean',distMm:0,siLoss:0});          // BSO 포함 후면 막 제거
+  }
+  steps=A;updateUI();}
+function loadBondPreset(){steps=[
+ {type:'mold',region:'all',pairs:48,ox:90,nit:60,thicknessUm:7.2},
+ {type:'remove',action:'strip',distMm:2.5,siLoss:0},
+ {type:'depo',region:'all',material:'MTTEOS',thicknessUm:8,rawVal:8,unit:'um'},
+ {type:'remove',action:'cmp',distMm:0,siLoss:0,amt:6,ero:.15,eroW:2}];updateUI();}
+
+buildMat();toggleCut();photoModeUI();etchDefaults();clnDefaults();moldInfo();
+if(innerWidth<900)$('setBox').open=false;
+loadMoldPreset();
+let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{render();if(warpOpen)initW3();},120);});
+</script>
+</body>
+</html>
