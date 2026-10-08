@@ -17,6 +17,5 @@ Wafer Edge 단면에 공정을 쌓아 가며 **지금 Edge가 어떤 상황인�
 - `index.html` — 최신 시뮬레이터 (v3)
 - `legacy/webc_simulator_v2.html` — 이전 버전
 - `research/` — 문헌 조사·분석 노트
-- `design/ui-spec.md` — UI 설계 문서
 - `CLAUDE.md`, `.claude/agents/` — 개발에 쓴 작업 규칙과 Sub Agent 정의
 - `tools/` — 사내 단방향 설정·동기화 스크립트, push 차단 hook
