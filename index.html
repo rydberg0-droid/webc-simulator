@@ -314,7 +314,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
 :root[data-theme="light"] .stbl tr.on td{background:#ffefe5}
 :root[data-theme="light"] .ly.si{background:#e5e7ea}
 :root[data-theme="light"] .ly.si .nm,:root[data-theme="light"] .ly.si .t{color:#333d4b}
-:root[data-theme="light"] .canvas-wrap{background:#090d16;border-radius:12px}
+:root[data-theme="light"] .canvas-wrap{background:#eef1f5;border-radius:12px}
 </style>
 </head>
 <body>
@@ -534,6 +534,8 @@ const hasOwn=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
 const NUM_RE=/^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
 const strictNum=v=>typeof v==='number'?v:typeof v==='string'&&NUM_RE.test(v.trim())?Number(v.trim()):NaN;
 const smooth=(a,b,v)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t);};
+// 단면도 배경색(테마별, CSS .canvas-wrap 과 동일)
+const cvBg=()=>document.documentElement.getAttribute('data-theme')==='light'?'#eef1f5':'#090d16';
 // ---- 막질 팔레트 (다크 배경 #090d16 대비 3:1 이상) ----
 // 계열(fam)별 색상군: Oxide=파랑(명도로 구분) · Nitride=녹색 · Oxynitride=청록 · Carbon=보라(명도·채도로 구분) · Metal=금속 톤(W 은색 · Cu 구리 · TiN 금빛 갈색) · Poly=노랑 · Resist=빨강
 //   Void = 측면 wet etch로 비운 공동(표시 전용 막 — 그리기는 반투명·점선 권장, 색은 범례 견본용 무채색)
@@ -2436,7 +2438,7 @@ function drawSiBreak(ctx,lay,sx,sy,dpr){const B=SI_BREAK,hh=lay.T/2*lay.ppm,xb=s
   if(!isFinite(xb)||tB-tA<1||xb<-B.amp-B.gap||xb>lay.Wd+B.amp)return false;
   const zx=(t,dx)=>xb+dx+(t%2?B.amp:-B.amp),zig=dx=>{for(let t=tA;t<=tB;t++){const y=yS+t*B.step;t===tA?ctx.moveTo(zx(t,dx),y):ctx.lineTo(zx(t,dx),y);}};
   ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.beginPath();zig(0);for(let t=tB;t>=tA;t--)ctx.lineTo(zx(t,B.gap),yS+t*B.step);ctx.closePath();ctx.fillStyle='#090d16';ctx.fill();
+  ctx.beginPath();zig(0);for(let t=tB;t>=tA;t--)ctx.lineTo(zx(t,B.gap),yS+t*B.step);ctx.closePath();ctx.fillStyle=cvBg();ctx.fill();
   ctx.strokeStyle=SI_COLOR;ctx.lineWidth=1;[0,B.gap].forEach(dx=>{ctx.beginPath();zig(dx);ctx.stroke();});
   ctx.restore();return true;}
 // ---- CMP 패턴 밀도 띠 (표시 전용, 과장·실축척): 선택 단계가 패턴 밀도를 쓴 CMP이면 단면도 아래쪽에 ρ_eff 띠 (밝을수록 밀도 낮음) ----
@@ -3540,7 +3542,7 @@ let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{zoomRe
   const apply=t=>{if(t==='light')root.setAttribute('data-theme','light');else root.removeAttribute('data-theme');
     const b=document.getElementById('themeBtn');if(b)b.textContent=t==='light'?'◐ 다크':'◐ 오렌지 라이트';};
   apply(get());
-  const b=document.getElementById('themeBtn');if(b)b.addEventListener('click',()=>{const t=get()==='light'?'dark':'light';set(t);apply(t);});
+  const b=document.getElementById('themeBtn');if(b)b.addEventListener('click',()=>{const t=get()==='light'?'dark':'light';set(t);apply(t);try{if(typeof redraw==='function')redraw();}catch(e){}});
 })();
 </script>
 </body>
