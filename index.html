@@ -1857,14 +1857,16 @@ const hasVoid=()=>layers.some(l=>isVoid(l.mat)&&l.h.some(v=>v>LAT_DEF.EPS));
 function lateralMetrics(res,nVoid){const M=LAT_DEF,E=res.ends;
   const act=E.filter(e=>e.L>M.minUm),eav=act.filter(e=>e.eave>=0),main=E.filter(e=>e.r>=M.mainR);
   const ar=e=>e.heEff>0?e.L/e.heEff:Infinity,maxBy=(a,f)=>a.reduce((x,e)=>!x||f(e)>f(x)?e:x,null);
-  const top=maxBy(act,e=>e.L),worst=maxBy(eav,ar),nJ=a=>new Set(a.map(e=>e.j)).size;
+  // 처마 대표값: PES 계단의 얇은 쐐기 끝 표본이 최댓값을 끌어올리므로 유한 AR의 중앙값 끝단을 대표로 쓴다
+  const eavF=eav.filter(e=>e.heEff>0).sort((a,b)=>ar(a)-ar(b));
+  const top=maxBy(act,e=>e.L),worst=eavF.length?eavF[(eavF.length-1)>>1]:null,nJ=a=>new Set(a.map(e=>e.j)).size;
   const prot=main.filter(e=>!(e.Blat>0)&&e.D>0),protOk=prot.filter(e=>!e.nd),exh=act.filter(e=>e.cov&&!e.nd);
   const margin=protOk.length?Math.min(...protOk.map(e=>isFinite(e.B)?1-e.D/e.B:1)):null;
   const mode=a=>{const c=new Map();a.forEach(x=>{if(x)c.set(x,(c.get(x)||0)+1);});let b=null;c.forEach((n,k)=>{if(!b||n>c.get(b))b=k;});return b;};
   const pt=e=>({mat:e.mat,L:e.L,AR:e.eave>=0?ar(e):null,heEff:e.heEff,eaveMat:e.eaveMat,hj:e.hj,cov:e.cov,d:pts[e.b].d,f:pts[e.b].f,dir:e.dir});
   const byMat={};act.forEach(e=>{byMat[e.mat]=Math.max(byMat[e.mat]||0,e.L);});
   return{Lmax:top?top.L:0,mat:top?top.mat:null,n:nJ(act),nEave:nJ(eav),ARmax:worst?ar(worst):0,heMin:worst?worst.heEff:null,eaveMat:worst?worst.eaveMat:null,
-    gone:eav.some(e=>!(e.heEff>0)),released:act.some(e=>e.released),
+    gone:eav.length>0&&eavF.length<eav.length/2,released:act.some(e=>e.released),
     nMain:main.length,nProt:protOk.length,margin,protCov:mode(protOk.map(e=>e.cov)),
     nProtND:prot.length-protOk.length,ndCov:mode(prot.filter(e=>e.nd).map(e=>e.cov)),
     exhausted:exh.length?{n:nJ(exh),Lmax:Math.max(...exh.map(e=>e.L)),cov:mode(exh.map(e=>e.cov))}:null,
