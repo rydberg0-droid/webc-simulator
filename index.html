@@ -663,7 +663,7 @@ const SLURRY_DB={
    er:{Poly:150,Si:150,SiO2:3,MTTEOS:3,HTTEOS:3},est:['*'],note:'원문 대조 전 — 전부 추정'},
  cu:{name:'Cu Bulk (Alumina + Oxalic)',ab:'Cu',tgt:'Cu',stop:'SiO2',cond:'Al2O3 0.2~0.7 wt% + oxalic acid, 2 psi, 150 rpm',
    src:'K. Yang et al. (AMD), US 6,332,989 B1',
-   er:{Cu:600},est:[],note:'Cu:Ta 최대 ~500 · 10µm line dishing ~40nm · oxide RR 미보고(데이터 없음 = 정지) · Rodel 2002 자료는 CONFIDENTIAL 표기로 제외'},
+   er:{Cu:600},est:[],note:'10µm line dishing ~40nm · oxide RR 미보고(데이터 없음 = 정지) · Rodel 2002 자료는 CONFIDENTIAL 표기로 제외'},
  legacy:{name:'비선택 (v3 기존 CMP 근사)',ab:'Non-sel',tgt:'SiO2',stop:'SiN',cond:'모든 막 같은 속도 · Si 미연마',
    src:'v3 기존 모델(기준 R145 평면 절단, 비선택)의 하위 호환 근사 — 문헌값 아님',
    er:{...Object.fromEntries(Object.keys(MATERIALS).map(k=>[k,100])),Si:0},est:['*'],note:'구 레시피(ERO µm 형식) 전용 — 새 공정은 막질 슬러리 선택 권장'}};
