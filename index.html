@@ -50,7 +50,14 @@ h1{font-size:.95rem;font-weight:600}
 #ov{position:absolute;left:0;top:0;pointer-events:none}
 #cv.grab{cursor:grab}#cv.grabbing{cursor:grabbing}
 /* 확대 상태 미니맵: 전체 단면 + 현재 보기 사각형 (클릭·드래그로 이동) */
-#mini{position:absolute;bottom:22px;right:8px;display:none;width:150px;border:1px solid var(--line);border-radius:6px;background:rgba(9,13,22,.9);cursor:pointer;touch-action:none}
+#mini{position:absolute;bottom:22px;right:8px;display:none;width:132px;border:1px solid var(--line);border-radius:6px;background:rgba(9,13,22,.78);cursor:pointer;touch-action:none;opacity:.72;transition:opacity .15s}
+#mini:hover,#mini:active{opacity:1}
+.minitgl{position:absolute;z-index:2;background:rgba(15,23,42,.85);border:1px solid var(--line);border-radius:5px;color:var(--muted);font-size:.66rem;line-height:1;padding:.18rem .35rem;cursor:pointer}
+.minitgl:hover,.minitgl:focus-visible{color:var(--accent);border-color:var(--accent)}
+#cmpBadge{position:absolute;top:24px;left:50%;transform:translateX(-50%);max-width:calc(100% - 16px);background:rgba(15,23,42,.9);border:1px dashed var(--muted);color:var(--text);border-radius:6px;padding:.15rem .5rem;font-size:.72rem;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cmpBadge i{display:inline-block;width:.8em;height:.6em;margin:0 .2rem 0 .35rem;border-radius:2px;vertical-align:0}
+#cmpBadge i.cut{background:rgba(239,68,68,.6)}#cmpBadge i.add{background:rgba(16,185,129,.6)}#cmpBadge i.ln{height:0;border-top:2px dashed #f8fafc;border-radius:0;vertical-align:.2em}
+@media(max-width:600px){#cmpBadge{top:58px;left:8px;transform:none}}
 #gestHint{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);display:none;max-width:calc(100% - 32px);background:rgba(15,23,42,.94);border:1px solid var(--accent);border-radius:8px;padding:.45rem .7rem;font-size:.8rem;color:var(--text);pointer-events:none;text-align:center}
 #gestHint.on{display:block}
 @media(max-width:600px){#zbadge{top:32px}}   /* 모바일: 축척 배지와 겹치지 않게 둘째 줄 */
@@ -121,6 +128,7 @@ canvas{display:block;width:100%}
 @media(max-width:999px){.p-st .chiprow{display:none}.p-st.open .chiprow{display:flex}
   .p-st .verdict{order:2;flex-basis:100%;font-size:.9rem;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}   /* 판정은 2줄까지 */
   .p-st .stbar{cursor:pointer}
+  .p-st .cmpsum{order:3;flex-basis:100%}
   .sttgl{display:inline-flex;order:1;margin-left:auto;padding:.3rem .6rem}}
 .note-step{padding:.7rem .8rem;background:var(--bg);border-radius:8px;font-size:.76rem;line-height:1.55}
 .imp{margin-top:.35rem;color:var(--muted)}
@@ -203,6 +211,27 @@ button.chip:hover,button.chip:focus-visible{border-color:var(--accent)}
 .tgl{background:var(--bg);border:1px solid var(--line);color:var(--muted);border-radius:999px;font-size:.66rem;padding:.12rem .5rem;cursor:pointer;letter-spacing:0;text-transform:none}
 .tgl[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 .ly.gone{opacity:.45}
+.ly.rm .nm s,.ly.rm .t s{text-decoration-thickness:1px;color:var(--muted)}
+.ly.rm .nm small{font-style:normal}
+.ly.rm .bar{opacity:.55;background-clip:content-box;outline:1px dashed var(--muted);outline-offset:-1px}
+.tiprm{margin-top:.25rem;padding-top:.2rem;border-top:1px dashed var(--line);color:var(--muted);font-size:.72rem}
+.tiprm .sw,.sw.ghost{opacity:.5;outline:1px dashed var(--muted)}
+.tgl.peek{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+@media(max-width:999px){.tgl.peek{padding:.32rem .75rem;font-size:.72rem}}   /* 터치로 누르고 있기 쉽게 */
+.tgl.peek[aria-pressed="true"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.cmpgrp #cmpBase .sub{font-size:.68rem}
+.cmpsum{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem .55rem;font-size:.74rem;padding:.25rem .55rem;border:1px dashed var(--line);border-radius:8px;background:var(--bg);font-variant-numeric:tabular-nums}
+.cmpsum[hidden]{display:none}
+.cmpsum .k{color:var(--muted)}.cmpsum b{color:var(--text)}
+.cmpsum>.k{font-weight:600}
+.stbl td.ops{white-space:nowrap}
+.stbl .pin{opacity:0;background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;padding:0 .15rem}
+.stbl tr.on .pin,.stbl tr:hover .pin,.stbl .pin:focus-visible,.stbl .pin.on{opacity:1}
+.stbl .pin.on,.stbl .pin:hover{color:var(--accent)}
+.stbl tr.base td.n::before{content:'기준 ';color:var(--accent);font-size:.62rem;font-weight:600}
+@media(max-width:600px){.stbl tr.base td.n::before{content:'◉ ';font-size:.6rem}}
+.stbl tr.base.dflt td.n::before{color:var(--muted);font-weight:400}
+.stbl tr.base td{border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}
 button.ly{width:100%;background:none;border:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .ly.fold .nm{color:#cbd5e1}
 .ly.fold .nm::before{content:'▸ ';color:var(--muted)}.ly.fold[aria-expanded="true"] .nm::before{content:'▾ '}
@@ -217,6 +246,34 @@ button.ly{width:100%;background:none;border:none;color:var(--text);font:inherit;
 .toast.on{display:flex}
 .toast.err{border-color:var(--danger)}
 .toast button[hidden]{display:none}
+/* 레시피 파일: 저장 상태 점 · 자동 복구 배너 · 드롭 영역 · 모달 */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dirty{color:var(--warn);font-size:.7rem;margin-left:.25rem;vertical-align:2px}
+.dirty[hidden]{display:none}
+.restore{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;margin:12px 12px 0;padding:.55rem .8rem;border:1px solid var(--accent);border-radius:10px;background:#0c1a2b;font-size:.82rem}
+.restore[hidden]{display:none}
+.restore .rbtn{display:flex;gap:.4rem;margin-left:auto}
+@media(min-width:1000px){.restore{margin:16px max(16px,calc((100% - 1568px)/2)) 0}}
+.cvwrap.densOn #viewHint{bottom:46px}   /* 밀도 띠 + 라벨 위로 */
+.dropzone{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(9,13,22,.78);pointer-events:none}
+.dropzone[hidden]{display:none}
+.dropzone>div{border:2px dashed var(--accent);border-radius:14px;padding:1.4rem 1.8rem;font-size:1rem;font-weight:600;color:var(--accent);text-align:center;background:rgba(15,23,42,.92);max-width:calc(100vw - 32px)}
+.dropzone .sub{display:block;margin-top:.4rem;font-weight:normal}
+.dlg{margin:auto;width:min(520px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+.dlg::backdrop{background:rgba(0,0,0,.55)}
+.dlg h2{font-size:1rem;margin-bottom:.7rem}
+.dlg textarea{margin-top:0;font-size:14px;resize:vertical}
+.dlgfoot{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.7rem}
+.secwarn{margin-bottom:.8rem;padding:.6rem .7rem;border:1px solid var(--warn);border-radius:8px;background:rgba(251,191,36,.08);color:var(--warn);font-size:.8rem;line-height:1.55}
+.codechk{margin-top:.6rem;padding:.6rem .7rem;border:1px solid var(--danger);border-radius:8px;background:rgba(239,68,68,.08);font-size:.8rem;line-height:1.6}
+.codechk[hidden]{display:none}
+.codechk code{background:var(--bg);border-radius:4px;padding:0 .3rem;margin-right:.3rem;font-family:ui-monospace,Consolas,monospace}
+.warnbtn{border-color:var(--danger)}
+.errlist{margin:.6rem 0 .4rem 1.1rem;font-size:.8rem;line-height:1.6;color:var(--danger);max-height:45vh;overflow:auto}
+.errlist li{margin-bottom:.15rem;overflow-wrap:anywhere}
+.cmdhelp code[data-cmd]{cursor:pointer}
+.cmdhelp code[data-cmd]:hover{outline:1px solid var(--accent)}
+@media(max-width:600px){.btn-file .lbl{display:none}.btn-file{padding:.42rem .55rem}.hctl{flex:1 1 100%;flex-wrap:nowrap}.hctl select{flex:1 1 4rem}.hctl .btn-s{padding-left:.5rem;padding-right:.5rem}}   /* 모바일: 헤더 버튼 한 줄 (저장·불러오기는 아이콘만) */
 /* 모바일 단계 이동 */
 .stepnav{display:none;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.6rem}
 .stepnav button{min-width:44px;height:40px}
@@ -245,7 +302,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
 </head>
 <body>
 <header>
-  <div class="logo"><span class="badge">WEBC</span><h1>Wafer Edge Simulator</h1></div>
+  <div class="logo"><span class="badge">WEBC</span><h1>Wafer Edge Simulator <span class="dirty" id="dirtyDot" title="마지막 저장 이후 변경됨 (💾 저장)" hidden>●<span class="sr">저장 안 된 변경 있음</span></span></h1></div>
   <div class="hctl">
     <select id="presetSel" aria-label="예시 레시피 불러오기">
       <option value="">예시 레시피 불러오기…</option>
@@ -258,8 +315,13 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
     </select>
     <button class="btn-s" data-act="reset">초기화</button>
     <button class="btn-s" data-act="advOpen">⚙ 고급</button>
+    <button class="btn-s btn-file" data-act="saveOpen" title="레시피를 이 PC에 .webc.json 파일로 저장 (Ctrl+S)" aria-label="레시피 저장"><span aria-hidden="true">💾</span><span class="lbl"> 저장</span></button>
+    <button class="btn-s btn-file" data-act="loadOpen" title="저장한 .webc.json 파일 불러오기 — 파일을 페이지에 끌어다 놓아도 됩니다" aria-label="레시피 불러오기"><span aria-hidden="true">📂</span><span class="lbl"> 불러오기</span></button>
+    <input type="file" id="fileIn" accept=".json,.webc.json,application/json" hidden>
   </div>
 </header>
+<div class="restore" id="restoreBar" role="status" hidden><span id="restoreMsg"></span><span class="rbtn"><button class="btn-s" data-act="restoreYes">복구</button><button class="btn-s" data-act="restoreNo">무시</button></span></div>
+<div class="dropzone" id="dropZone" hidden><div>여기에 놓으면 레시피를 불러옵니다<span class="sub">.webc.json · 2MB 이하 · 불러온 뒤 Ctrl+Z로 취소</span></div></div>
 
 <div class="layout">
 <!-- 단계 추가 -->
@@ -285,14 +347,15 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
       PR strip: O2 Ashing → SPM (또는 N2/H2) · Carbon(ACL/SOH) strip: O2 Plasma, Bevel이면 <code>BEVEL O2 PLASMA 2mm</code><br>
       SiN strip: Hot H3PO4 (Oxide 선택비 높음) / NF3 Remote · Oxide·TEOS strip: DHF·BOE, LAL, Vapor HF, CHF3/CF4<br>
       Poly·Si: HF/HNO3(wet), SF6·NF3·Cl2/HBr(plasma), ClF3(gas) · W: SF6/NF3<br>
-      Bevel 비선택 strip(PES): CF4/O2/Ar 계열 — <code>PES 2.5mm</code>는 전 막 제거, <code>PES CF4 2.5mm 1um</code>처럼 Gas를 쓰면 그 Gas 선택비로 식각</div>
+      Bevel 비선택 strip(PES): CF4/O2/Ar 계열 — <code>PES 2.5mm</code>는 전 막 제거, <code>PES CF4 2.5mm 1um</code>처럼 Gas를 쓰면 그 Gas 선택비로 식각 · <code>BVS 0.5mm</code>(BEVEL STRIP)는 베벨 집중 strip(전/후면 범위 따로, 가정 모델)</div>
   </div></details>
   <details class="cmdhelp" id="cmdHelp"><summary></summary><div class="note" style="margin:0">
     <b>증착</b> 막질 + 두께 [+ 영역] · <code>HT-TEOS 8.5K 전면만 DEPO</code> <code>SiN 300nm</code> <code>MT ACL 1.2um 후면</code><br>
     <b>Mold</b> <code>MOLD 48단</code> <code>ON 80쌍</code><br>
     <b>세정·Strip</b> [영역] + 약액/Gas + 시간 또는 제거량 · <code>BS LAL 5s</code> <code>BEVEL O2 PLASMA 2mm</code> <code>FS CF4 300nm</code> <code>VHF 50A</code> <code>BACKSIDE CLEAN</code>(종류 선택 칸) — 영역: 전체/전면/후면/베벨, 시간은 가정 식각률로 환산<br>
     <b>Etch</b> <code>HARC ETCH 7.2um</code> <code>ACL OPEN</code> <code>POLY ETCH 1um</code><br>
-    <b>Edge</b> <code>PES 2.5mm</code> <code>EEW 2mm</code> <code>BEW 1mm</code> <code>CMP 1um</code> <code>BACKSIDE CLEAN</code> <code>EDGE CLEAN</code><br>
+    <b>Edge</b> <code>PES 2.5mm</code> <code>BVS 0.5mm</code>(베벨 strip, <code>BVS 전면 0.5mm 후면 1mm</code>) <code>EEW 2mm</code> <code>BEW 1mm</code> <code>BACKSIDE CLEAN</code> <code>EDGE CLEAN</code><br>
+    <b>CMP</b> <code>CMP 1um</code> <code>OXIDE CMP 1um</code> <code>W CMP STOP OX OP 20%</code> <code>CMP STOP SIN</code> <code>STI CMP</code> <code>CMP 1um 패턴 30% 5mm</code>(패턴 밀도·경계) <code>CMP 1um LP 5mm</code>(평탄화 길이) — 슬러리 선택비는 문헌값, 베벨은 pad 미접촉<br>
     <b>Photo</b> <code>RING PHOTO 5mm</code> <code>EBR 1.5mm POSI</code> <code>PSES</code><br>
     단위: <code>K</code>=kÅ (8.5K = 0.85µm), <code>A</code>/<code>Å</code>, <code>nm</code>, <code>um</code>, 거리는 <code>mm</code>, 시간은 <code>s</code>/<code>min</code>/<code>h</code>. 단위 없는 두께는 Å로 봅니다. 범위(2~3um) 대신 값 하나를 적습니다.<br>
     <b>약어</b> <code>BSO 5K</code> Backside Oxide(후면만) · <code>BSN 3K</code> Backside Nitride(후면만, warpage 제어·후면 보호) · <code>BVO 1K 2mm</code> Bevel Oxide(베벨, Edge→2mm까지) · 면별로 다르면 <code>APEX SiN 500A 전면 2mm 후면 1mm</code><br>
@@ -307,6 +370,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
   <div class="stbar">
     <span class="stat" id="stAt"></span>
     <div class="verdict" id="verdict">-</div>
+    <div class="cmpsum" id="cmpSum" hidden></div>
     <button class="btn-s sttgl" id="stToggle" aria-expanded="false" aria-controls="stChips" title="지표 칩 펼치기/접기"><span id="eeSum">EE 없음</span><span aria-hidden="true">▾</span></button>
   </div>
   <div class="chiprow" id="stChips"><div class="chips" id="inds"></div><span class="eebox" id="eeBox"></span></div>
@@ -318,11 +382,12 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
   <div class="cvhead">
     <div class="cvname">단면 <span class="sub">R (mm)</span> <span class="sub zinfo" title="드래그 ↘ 확대 · ↖ 축소(한 단계 뒤로) · 더블클릭 원래 크기&#10;확대 상태 이동: Space·우클릭·휠클릭 드래그, 휠(상하) · Shift+휠(좌우), 우하단 미니맵&#10;터치: 두 손가락 핀치 확대·이동, 더블탭 원래 크기">ⓘ 확대·이동</span></div>
     <div class="cvctl">
-      <div class="cvgrp"><span class="sub">표시 방식</span><div class="seg" id="modeSeg" role="group" aria-label="표시 방식"></div><button class="tgl" id="gridTgl" aria-pressed="true">grid</button></div>
+      <div class="cvgrp"><span class="sub">표시 방식</span><div class="seg" id="modeSeg" role="group" aria-label="표시 방식"></div><button class="tgl" id="gridTgl" aria-pressed="true">grid</button><button class="tgl" id="ghostTgl" aria-pressed="true" title="제거된 막 보이기/숨기기 — 단면도 점선 띠(원래 있던 자리) · Layer 스택 취소선 행 · 툴팁 '제거됨'">제거된 막</button><button class="tgl" id="densTgl" aria-pressed="true" hidden title="CMP 패턴 밀도 ρ_eff 띠 (단면도 아래) 보이기/숨기기">ρ 밀도</button></div>
       <div class="cvgrp"><span class="sub">보기 폭<span class="um"> mm</span></span><div class="seg" id="spanSeg" role="group" aria-label="보기 폭 (mm)"></div></div>
+      <div class="cvgrp cmpgrp"><button class="tgl peek" id="peekBtn" aria-pressed="false">⇄ 전/후</button><button class="tgl" id="cmpTgl" aria-pressed="false" title="기준 단계 대비 변화 — 빨강 제거 · 초록 증착 · 점선 기준 표면 + 판정 줄 옆 Δ 칩">비교</button><span id="cmpBase" hidden></span></div>
     </div>
   </div>
-  <div class="canvas-wrap cvwrap"><canvas id="cv"></canvas><canvas id="ov" aria-hidden="true"></canvas><div id="scaleBadge"></div><div id="viewHint" role="status"></div><div id="tip"></div><div id="zbox"></div><div id="zbadge"></div><canvas id="mini" aria-hidden="true"></canvas><div id="gestHint" role="status"></div></div>
+  <div class="canvas-wrap cvwrap"><canvas id="cv"></canvas><canvas id="ov" aria-hidden="true"></canvas><div id="scaleBadge"></div><div id="viewHint" role="status"></div><div id="tip"></div><div id="zbox"></div><div id="zbadge"></div><canvas id="mini" aria-hidden="true"></canvas><button class="minitgl" id="miniTgl" hidden aria-expanded="true">▾</button><div id="cmpBadge" role="status" hidden></div><div id="gestHint" role="status"></div></div>
   <div class="legend" id="legend"></div>
   <div class="stepnav" id="stepNav"><button class="btn-s" id="navPrev" aria-label="이전 단계">◀ 이전</button><span class="pos" id="navPos" aria-live="polite"></span><button class="btn-s" id="navNext" aria-label="다음 단계">다음 ▶</button></div>
 </div>
@@ -335,7 +400,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
   </div>
   <div class="tlblk">
     <div class="title" style="margin-top:1rem"><span>공정 순서 <span class="sub">— 누르면 그 시점 (↑↓ 키)</span></span><span class="sub" id="stepCount"></span></div>
-    <div class="stbl-wrap" id="stWrap"><table class="stbl"><thead><tr><th class="n">#</th><th>공정</th><th>내용</th><th class="v">값</th><th class="a">영역</th><th title="단계 직후 Edge 영향 — ● 초록 양호 · 노랑 주의 · 빨강 위험 (영향도·Arcing 중 높은 쪽). 점에 마우스를 올리면 근거">영향</th><th><span class="sub" style="font-size:.6rem">삭제</span></th></tr></thead><tbody id="stBody"></tbody></table></div>
+    <div class="stbl-wrap" id="stWrap"><table class="stbl"><thead><tr><th class="n">#</th><th>공정</th><th>내용</th><th class="v">값</th><th class="a">영역</th><th title="단계 직후 Edge 영향 — ● 초록 양호 · 노랑 주의 · 빨강 위험 (영향도·Arcing 중 높은 쪽). 점에 마우스를 올리면 근거">영향</th><th title="◎ = 진행 전/후 비교 기준으로 고정 (행 Alt+클릭) · ✕ = 삭제"><span class="sub" style="font-size:.6rem">◎ ✕</span></th></tr></thead><tbody id="stBody"></tbody></table></div>
   </div>
 </div>
 </div>
@@ -354,8 +419,17 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
       <div class="fg"><label>막 수직배율 (px/µm)</label><input type="number" id="zScale" value="3" step="0.5" data-set="view"></div>
       <div class="fg"><label>Si 표시 두께 (% of 실제)</label><input type="number" id="siDisp" value="40" step="5" data-set="view"></div>
       <div class="fg"><label>EE · Edge Exclusion (mm, 0=없음)</label><input type="number" id="eeMm" value="0" step="0.5" data-set="ee"></div>
-      <div class="fg"><label>컷 경사폭 (µm)</label><input type="number" id="rampUm" value="20" step="2" data-set="engine"></div>
+      <div class="fg"><label>기타 경계 폭 (µm · Photo·CMP 패턴·Etch 보호)</label><input type="number" id="rampUm" value="20" step="2" data-set="engine"></div>
     </div>
+    <div class="row">
+      <div class="fg"><label>끝단 프로파일 모델</label><select id="edgeModel" data-set="engine"><option value="process">공정별 (Plasma 0.5mm · Wet 0.13mm 전이)</option><option value="legacy">legacy (이전 엔진 재현)</option></select></div>
+    </div>
+    <div class="sub">끝단 프로파일: PES·BVS 같은 Plasma bevel 공정은 막 끝이 약 0.5mm 폭의 완만한 경사로 남고(위 막부터 깎여 계단처럼 끝남), EEW·BEW 같은 Wet edge 공정은 약 0.13mm 폭입니다(문헌·추정값). Edge→거리는 Bare Si 경계입니다. 단계별로 다르면 해당 단계의 '끝단 전이 폭'에서 지정. 'legacy'는 이전 결과(40µm 컷, 전 막 비율 박막화) 비교용입니다.</div>
+    <div class="row">
+      <div class="fg"><label>PECVD Apex 감쇠 구간 (mm)</label><input type="number" id="apexTaper" value="0.1" step="0.05" data-set="depo"></div>
+      <div class="fg"><label>PECVD 후면 넘어감 (mm)</label><input type="number" id="wrapMm" value="0.25" step="0.05" data-set="depo"></div>
+    </div>
+    <div class="sub">PECVD 전면(후면) 증착: 평탄부~베벨 경사 ≈100%(막질 측벽 coverage만), Apex 부근에서 연속으로 얇아지고 편심으로 반대면 베벨에 '넘어감' 폭만큼만 넘어감(추정값). 단면은 편심이 가장 큰 쪽(worst side) 기준입니다. 단계별로 다르면 증착 단계 세부값에서 지정.</div>
     <input type="hidden" id="viewSpan" value="3">
     <div class="sub">'과장' 표시 방식: Si 두께는 막을 잘 보이게 하려고 축소 표시합니다(100% = 실축척). 막(film)과 Si 손실은 수직 과장 표시입니다. '실축척'은 막·Si 모두 가로세로 1:1, '단순'은 막 순서만 같은 두께 띠로 보여 줍니다.</div>
   </details>
@@ -406,6 +480,26 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
 
 </aside>
 <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button class="btn-s" id="toastUndo" hidden>되돌리기</button></div>
+
+<!-- 레시피 저장 / 불러오기 오류 (자체 모달) -->
+<dialog class="dlg" id="saveDlg" aria-labelledby="saveTitle">
+  <h2 id="saveTitle">💾 레시피 저장</h2>
+  <p class="secwarn" id="saveWarn">⚠ 파일 이름과 메모에 제품명·고객사·레시피 번호·설비 ID 등 사내 정보를 넣지 마세요. 파일은 이 PC에만 저장되며 외부로 전송되지 않습니다. 공용 PC·공유 폴더에는 저장하지 마세요.</p>
+  <div class="fg"><label for="saveName">이름</label><input type="text" id="saveName" maxlength="80" autocomplete="off" spellcheck="false" placeholder="예: mold PES 비교"></div>
+  <div class="fg"><label for="saveNote">메모 <span class="sub">(선택)</span></label><textarea id="saveNote" rows="3" maxlength="500" placeholder="예: PES 폭 2.5mm 기준"></textarea></div>
+  <div class="sub" id="saveFile"></div>
+  <div class="codechk" id="saveCode" hidden><b>사내 코드처럼 보이는 값이 있습니다</b><div id="saveCodeList"></div><div class="sub">제품명·레시피 번호·설비 ID라면 지우고 저장해 주세요.</div>
+    <div class="dlgfoot"><button class="btn-s" data-act="saveFix">이름·메모 고치기</button><button class="btn-s warnbtn" data-act="saveForce">사내 정보 아님 — 그대로 저장</button></div></div>
+  <div class="askmsg sub" id="saveMsg" role="alert"></div>
+  <div class="dlgfoot" id="saveFoot"><button class="btn-add" data-act="saveSubmit">저장</button><button class="btn-s" data-act="saveCancel">취소</button></div>
+</dialog>
+<dialog class="dlg" id="loadDlg" aria-labelledby="loadTitle">
+  <h2 id="loadTitle">📂 불러오지 못했습니다</h2>
+  <div class="sub" id="loadFile"></div>
+  <ul class="errlist" id="loadErrs"></ul>
+  <p class="sub">현재 레시피와 설정은 바뀌지 않았습니다.</p>
+  <div class="dlgfoot"><button class="btn-s" data-act="loadDlgClose">닫기</button></div>
+</dialog>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -537,6 +631,62 @@ const CLN_DB={
 // CLEAN[k]: 엔진용 상대 제거율 r(target 막=1, 문헌에 없는 막질은 undefined = 데이터 없음) + 시간 환산 식각률 rate(nm/s)
 const CLEAN=Object.fromEntries(Object.entries(CLN_DB).map(([k,d])=>{const t=d.er[d.tgt]||1;
   return[k,{...d,r:rt(Object.fromEntries(Object.entries(d.er).map(([m,v])=>[m,v/t])),`CLN_DB.${k}.er`),rate:+(t/60).toFixed(4)}];}));
+// ---- CMP 슬러리 DB (nm/min, 공개 문헌) — research/analysis/cmp.md §1·§8 (CONFIDENTIAL 표기 자료는 제외) ----
+// 막질 대응: SiO2·MTTEOS = PECVD TEOS/PETEOS(비어닐), HTTEOS = HDP·어닐 TEOS(SiO2×0.9 est), Poly = LPCVD poly(비어닐),
+//   Si = Poly 값(est), SiON = (SiO2+SiN)/2(est). PR·SOH·ESOH·ACL·barrier(TiN/Ta)는 공개값 없음 → er 미기재(데이터 없음 = 정지 + 경고)
+// stop = 기본 정지막, recessNm = W plug recess 지표(barrier clear 시점, 형상 반영 안 함)
+// legacy = v3 기존 CMP(비선택 평면 절단)의 하위 호환용 근사 — 문헌값 아님 (구 레시피 'ero' µm 형식이면 자동 선택)
+const AP521='Air Products, US 8,790,521 B2 (CMP of tungsten-containing substrate)';
+const SLURRY_DB={
+ oxide:{name:'Oxide (Silica, ILD/PMD)',ab:'SiO2-slurry',tgt:'SiO2',stop:'SiN',cond:'fumed silica (Cabot SS-25), 6 psi, 35 rpm, IC1000/Suba IV · IC1400',
+   src:'Ouma, Stine, Boning et al., SPIE Microelectronic Manufacturing 1997 (MIT/TI) — Process E 중심 die K=225.5 nm/min; Poly = US 7,196,010 SS25 무첨가 poly/oxide 1.48 환산',
+   er:{SiO2:225,MTTEOS:225,HTTEOS:200,SiN:56,SiON:140,Poly:334,Si:334,W:20},est:['HTTEOS','SiN','SiON','Si','W'],
+   note:'Preston K/(P·rpm) ≈ 1.0~1.26 (nm/min)/(psi·rpm) · edge die K +2~14% · SiN 4:1, W(산화제 없음) 값은 추정'},
+ ox_ps:{name:'Oxide, Poly stop (Silica + PVME)',ab:'Ox/Poly-stop',tgt:'SiO2',stop:'Poly',cond:'SS25 기반 silica + 1 wt% PVME, 2~5 psi, pH 7~11',
+   src:'Y.-R. Park et al. (Samsung), US 7,196,010 — 3번째 실시예 PETEOS 1250, poly 210 Å/min',
+   er:{SiO2:125,MTTEOS:125,HTTEOS:113,Poly:21,Si:21},est:['HTTEOS','Si'],
+   note:'oxide:poly ≈ 6 · annealed poly 48 nm/min · 표 행(1% PVME): oxide 193 / poly 25'},
+ w_hs:{name:'W 고선택 (H2O2/Fe·iodate 산화제)',ab:'W-HS',tgt:'W',stop:'SiO2',recessNm:80,cond:'산성 silica + 산화제, ~4 psi, IC1000',
+   src:'AMAT US 6,468,136 (W RR ≥3000, 청구항 ≥4000 Å/min) · W:TEOS ≈ 10 은 특허 검색 발췌(6 psi, 7860/801 Å/min, 번호 미확인)',
+   er:{W:400,SiO2:40,MTTEOS:40,HTTEOS:36,SiN:20},est:['SiO2','MTTEOS','HTTEOS','SiN'],
+   note:'recess: H2O2+촉매 80nm / iodic 10nm (Nitta 2014, 1µm plug 20% array, barrier clear 시점) · Ti/TiN 키 없음'},
+ w_ls:{name:'W 저선택 / Buff (Periodic acid)',ab:'W-LS',tgt:'W',stop:'SiO2',recessNm:10,cond:'colloidal silica 9 wt% + PIA 2 wt%, pH 3.07→1.63, 4.0 psi, 120 rpm, 150 cc/min',
+   src:AP521+' — 예 10: W 1861, TEOS 1718 Å/min',
+   er:{W:186,SiO2:172,MTTEOS:172,HTTEOS:155},est:['HTTEOS'],
+   note:'W:TEOS 0.5~1.3 (PIA 0.5~2 wt%) · recessNm은 iodic계 유사 가정(est)'},
+ sti:{name:'STI Ceria (고선택)',ab:'Ceria',tgt:'SiO2',stop:'SiN',cond:'ceria 5 wt% + 1% L-proline, pH 10, 5.6 psi, 30/30 rpm, 25℃, 240 cc/min',
+   src:'Srinivasan, Babu et al., US 7,091,164 B2 Table 1',
+   er:{SiO2:487,MTTEOS:487,HTTEOS:438,SiN:12},est:['HTTEOS'],
+   note:'선택비 41 · 무첨가 489/66(<8) · 4% L-proline 430/2(230) · HDP fill → HTTEOS'},
+ poly:{name:'Poly-Si 선택',ab:'Poly-slurry',tgt:'Poly',stop:'SiO2',cond:'poly 선택 slurry (조건 미확인)',
+   src:'US 7,723,234 청구 범위(검색 발췌, 원문 미확인): poly ≥100(150~200 바람직) nm/min, poly:SiO2 ≥30(50)',
+   er:{Poly:150,Si:150,SiO2:3,MTTEOS:3,HTTEOS:3},est:['*'],note:'원문 대조 전 — 전부 추정'},
+ cu:{name:'Cu Bulk (Alumina + Oxalic)',ab:'Cu',tgt:'Cu',stop:'SiO2',cond:'Al2O3 0.2~0.7 wt% + oxalic acid, 2 psi, 150 rpm',
+   src:'K. Yang et al. (AMD), US 6,332,989 B1',
+   er:{Cu:600},est:[],note:'Cu:Ta 최대 ~500 · 10µm line dishing ~40nm · oxide RR 미보고(데이터 없음 = 정지) · Rodel 2002 자료는 CONFIDENTIAL 표기로 제외'},
+ legacy:{name:'비선택 (v3 기존 CMP 근사)',ab:'Non-sel',tgt:'SiO2',stop:'SiN',cond:'모든 막 같은 속도 · Si 미연마',
+   src:'v3 기존 모델(기준 R145 평면 절단, 비선택)의 하위 호환 근사 — 문헌값 아님',
+   er:{...Object.fromEntries(Object.keys(MATERIALS).map(k=>[k,100])),Si:0},est:['*'],note:'구 레시피(ERO µm 형식) 전용 — 새 공정은 막질 슬러리 선택 권장'}};
+// 엔진용: 상대율 r (tgt=1) + 시간 환산 rate(nm/s). CLEAN과 같은 규칙 — er에 없는 막은 undefined(데이터 없음 → consume이 정지·경고)
+const SLURRY=Object.fromEntries(Object.entries(SLURRY_DB).map(([k,d])=>{const t=d.er[d.tgt]||1;
+  if(!hasOwn(d.er,d.tgt))throw new Error(`SLURRY_DB.${k}: target 막 ${d.tgt}의 제거율이 없습니다`);
+  return[k,{...d,r:rt(Object.fromEntries(Object.entries(d.er).map(([m,v])=>[m,v/t])),`SLURRY_DB.${k}.er`),rate:+(t/60).toFixed(4)}];}));
+// CMP 모델 기본값 (cmp.md §8) — est 표기는 공개 실측이 아닌 가정
+const CMP_DEF=Object.freeze({
+  Lp:3,           // mm, 평탄화 길이(정사각 창 폭) — Ouma 1997 2.66~3.30 (stacked), stiff 7~10, IC1000 solo 8.5
+  hc:.1,          // µm, 접촉 높이 — Lee 2001 (τ = hc/K)
+  dz:.02,         // µm, 서브스텝 블랭킷 budget (결정적)
+  RHO_MIN:.05,    // 유효 밀도 하한 (K/ρ 과대예측 방지, est)
+  F_MAX:5,        // 해상 지형 하중 집중 상한 (est)
+  eroW:4,eroPct:10,     // Ebara stacked 4mm · Ouma edge die +2~14% (est)
+  op:20,stopDens:80,    // 과연마 %, 패턴 영역 정지막 면적비 % (est)
+  patDens:50,patStep:.5,patFrom:5,// 수동 패턴 기본 (데모용 est — 사용자 입력 권장)
+  contact:[.3,.8],      // pad 접촉 가중 smooth(f) — 베벨(f<.3) 미연마
+  ref:[4.5,5.5],        // endpoint 기준 영역 Edge→mm (R145)
+  STEP_WARN_NM:50,RESID_NM:1,
+  TOPO_UM:.5,     // µm, 해상 지형 데드존 — 이보다 작은 mm 규모 높이차는 pad가 따라감(밀도 모델 담당), est
+  LEG_ERO_W:2});        // 구 레시피 ERO 폭 기본(mm)
+const slurryOpts=()=>Object.entries(SLURRY_DB).map(([k,s])=>[k,s.name]);
 // 제거량 반올림: 1nm 이상은 0.1nm, 그 아래는 유효숫자 3자리 (SC1 1s = 0.005nm도 0이 되지 않게)
 const roundAmt=v=>v>=1?+v.toFixed(1):+v.toPrecision(3);
 // 제거량 상한(nm): 기본 LIM.CLEAN_NM, 고속 약액(SPM 등)은 시간 상한(LIM.TIME_S)만큼 처리한 양까지 → 시간·제거량 입력이 서로 모순되지 않게
@@ -570,14 +720,20 @@ function putCmd(t){const c=$('cmd');if(!c)return;c.value=t;cmdPreview();c.focus(
 // 엔진(물리 좌표, µm): pts[i].x = R·1000, pts[i].y = y·1000 (실제 Si 두께 T0로 만든 형상), 막 오프셋 = h(µm) 그대로.
 //   pts/SX·SY(표면)/LV/법선/arc·ds(mm)/W1~W3/rampMm 은 화면(폭·보기 폭·zScale·siDisp)과 무관 → 엔진 결과는 화면 설정에 불변.
 // 화면(px): redraw()가 표시용 프로파일(같은 인덱스, Si 압축 두께)을 px로 바꾸고 막을 h×Z(px/µm)로 과장해 DISP에 쌓아 그림.
-// 엔진 상태: rec(Si 손실 µm) · layers · SX/SY(현재 표면 µm) · LV(막 합계 µm) · PHOTO. 모두 길이 NP의 Float64Array
+// 엔진 상태: rec(Si 손실 µm) · layers · SX/SY(현재 표면 µm) · LV(막 합계 µm) · PHOTO · PDENS/PSTEP(CMP 패턴 밀도·단차). 모두 길이 NP의 Float64Array
+//   PDENS[i] = up-area 면적비 ρ (1 = 떡판/blanket), PSTEP[i] = up/down 단차 H (µm). 막 두께 h·LV는 면적 평균 → up 표면 = LV + (1−ρ)·H
 // layer = {...meta, meta, h(현재 두께 µm, Float64 길이 NP)}. meta = 동결된 불변 객체 {mat, nlo, nx, ny, h0, thin, si}:
 //   nx·ny = 증착 시점 표면 법선 (Float64, 증착 직후 h가 0이 아닌 구간 [nlo, nlo+nx.length)만 — h는 이후 줄기만 하므로 그 밖은 늘 0)
 //   h0 = 증착 직후 두께 (표시용 Float32, 길이 NP) · thin = Mold 층 · si = 단계 인덱스
 //   h만 이후 단계에서 바뀜 → 체크포인트는 meta를 공유하고 h만 복사
 let CURSI=-1,sel=-1,steps=[],layers=[],pts=[],NP=0,SX=null,SY=null,LV=null,rec=null,rampMm=.02,W1,W2,W3,arc=[],ds=[],LB=.3;
-// STEP_RES[i] = {impact, arc} : 전체 레시피 시뮬레이션 결과 (레시피 객체에는 쓰지 않음). impact.noData = 데이터 없음 막에서 정지한 막질
-// ENG: geoDirty=형상·물성(siProf, waferThk, rampUm, 막질 표) 변경 → 전부 다시, dirtyFrom=결과가 무효인 첫 단계 인덱스(Infinity=유효),
+let ENG_EDGE_MODEL='process';   // ⚙ 끝단 프로파일 모델 (recompute가 geoDirty 때 읽음 — 격자도 바뀜)
+let PDENS=null,PSTEP=null;
+// Apex 경계(호 길이 mm, arc 기준): sF = 전면→apex 법선이 60°를 넘는 점(f=.5), sB = apex→후면 베벨(f=−.5). 형상에만 의존
+let APEX={sF:0,sB:0};
+// STEP_RES[i] = {impact, arc, chips, edge} : 전체 레시피 시뮬레이션 결과 (chips = 그 단계 전용 지표 칩 [{k,v,lvl,msg}] — PECVD 넘어감·CMP·잔막·끝단) (레시피 객체에는 쓰지 않음). impact.noData = 데이터 없음 막에서 정지한 막질
+//   edge = 끝단 지표 {wUm(10–90 %), slopeDeg, depthUm, stepMaxUm, undercutUm, nEnds} (Edge 제거·세정 edge 단계만 — edgeMetrics)
+// ENG: geoDirty=형상·물성(siProf, waferThk, rampUm, edgeModel, 막질 표) 변경 → 전부 다시, dirtyFrom=결과가 무효인 첫 단계 인덱스(Infinity=유효),
 //      simSteps=마지막으로 계산한 레시피(단계 객체), at=현재 엔진 상태가 몇 단계 직후인지(-1=무효), stamp=상태 변경 카운터,
 //      pending=재계산 중 선택 단계에서 떠 둔 상태(이중 시뮬 방지), geo=엔진 형상
 let STEP_RES=[],ENG={geoDirty:true,dirtyFrom:0,simSteps:[],at:-1,stamp:0,pending:null,geo:null},DISP=null;
@@ -590,11 +746,14 @@ const LIM={
   CAP_NM:5000,          // Mold cap 두께 상한 (nm)
   MOLD_UM:100,          // Mold 전체 두께 상한 (µm)
   DIST_MM:10,           // PES/EEW/BEW/베벨 세정 폭 (Edge→mm)
+  EDGE_W_UM:[10,1000],  // 끝단 전이 폭 (µm): 하한 = 세분 격자 10µm(Edge→3mm 안, 그 밖 20µm — EDGE_GRID), 상한 = US 8,562,750 비교예 ~1mm
   EE_MM:10,             // Edge Exclusion (0 = 해제)
   DEPTH_UM:20,          // Etch target 깊이 (µm)
   CLEAN_NM:20000,       // 세정 제거량 (nm, 20µm)
   TIME_S:3600,          // 세정 시간 (s)
-  SI_LOSS_UM:10,CMP_UM:20,ERO_UM:5,ERO_W_MM:10,ETCH_ZONE_MM:10,ETCH_EF:[.5,3],
+  SI_LOSS_UM:10,CMP_UM:20,ERO_W_MM:10,ETCH_ZONE_MM:10,ETCH_EF:[.5,3],
+  CMP_LP_MM:[.5,15],CMP_HC_UM:[.01,1],CMP_ERO_PCT:[-80,100],CMP_OP_PCT:100,CMP_DENS_PCT:[5,100],CMP_STEP_UM:5,   // CMP (research/analysis/cmp.md §8)
+  TAPER_MM:1,WRAP_MM:2, // PECVD apex 감쇠 구간 · worst-side 넘어감 폭 (호 길이 mm)
   PR_UM:20,PR_BAR_UM:50,SHOT_MM:[1,50],DFULL_MM:[.5,30],PHOTO_W_MM:20,PSES_LEN:12,
   SRC_LEN:200,          // 입력 원문 보관 길이
   TOTAL_LAYERS:3000     // 레시피 전체 누적 막(layer) 수 상한 (Mold 1쌍 = 2층) — 메모리·계산 시간 보호
@@ -611,7 +770,18 @@ const fmtNum=v=>!isFinite(v)?String(v):Math.abs(v)>=1e6?v.toExponential(2):Strin
 //       allowUndef = 미지정(undefined)은 허용(구 데이터 하위 호환), 빈 칸(null/'')은 필수 오류
 const fNum=(k,label,unit,min,max,o={})=>({k,label,unit,kind:'num',min,max,...o});
 const fSel=(k,label,options,o={})=>({k,label,kind:'sel',options,...o});
-const isPesLike=st=>['strip','eew','bew'].includes(st.action);
+const isPesLike=st=>['strip','bvs','eew','bew'].includes(st.action);
+// PECVD 전면/후면 증착 형상 단계별 override (비우면 ⚙ 전역값) — 숨으면(전체·베벨 증착) 버림
+const isPecvd=st=>st.region==='front'||st.region==='back';
+const pecvdFields=()=>[
+  fNum('apexTaper','Apex 감쇠 구간 (비우면 ⚙ 전역)','mm',0,LIM.TAPER_MM,{optional:true,visibleIf:isPecvd}),
+  fNum('wrapMm','반대면 넘어감 · worst side (비우면 ⚙ 전역)','mm',0,LIM.WRAP_MM,{optional:true,visibleIf:isPecvd})];
+// CMP 필드 (research/analysis/cmp.md §8). 구 레시피(ERO 깊이 µm 'ero')는 기본값 계산에서 변환: 슬러리 legacy(비선택), eroPct = ero/amt×100, 패턴 off
+const isCmp=st=>st.action==='cmp',isStop=st=>isCmp(st)&&st.mode==='stop',isManPat=st=>isCmp(st)&&st.patSrc==='manual';
+const isLegacyCmp=raw=>!!raw&&raw.ero!==undefined&&raw.ero!==null&&raw.eroPct===undefined;
+function legacyEroPct(raw){const e=strictNum(raw.ero),a=strictNum(raw.amt===undefined?1:raw.amt);
+  if(!isFinite(e)||!(a>0))return CMP_DEF.eroPct;return+Math.min(LIM.CMP_ERO_PCT[1],Math.max(LIM.CMP_ERO_PCT[0],e/a*100)).toFixed(6);}
+const cmpF=(f,vis=isCmp)=>({...f,allowUndef:true,visibleIf:vis});   // CMP 아닌 단계에는 저장하지 않음
 const STEP_SCHEMA={
  depo:[
   fSel('material','막질',()=>KEYS.map(k=>[k,MATERIALS[k].name]),{init:'SiO2'}),
@@ -619,7 +789,8 @@ const STEP_SCHEMA={
   fSel('unit','단위',()=>[['K','K (kÅ)'],['A','Å'],['nm','nm'],['um','µm']],{def:'um'}),
   fSel('region','증착 영역',()=>REG_OPTS,{def:'front'}),
   fNum('distMm','베벨 증착 범위 전면 Edge→','mm',0,LIM.DIST_MM,{minEx:true,init:2,allowUndef:true,visibleIf:st=>st.region==='edge'}),
-  fNum('backMm','후면 Edge→ (비우면 전면과 같음)','mm',0,LIM.DIST_MM,{minEx:true,optional:true,visibleIf:st=>st.region==='edge'})],
+  fNum('backMm','후면 Edge→ (비우면 전면과 같음)','mm',0,LIM.DIST_MM,{minEx:true,optional:true,visibleIf:st=>st.region==='edge'}),
+  ...pecvdFields()],
  mold:[
   fNum('pairs','O/N 쌍 수','',1,LIM.MOLD_PAIRS,{int:true,init:48}),
   fNum('ox','Oxide','nm',0,LIM.MOLD_LAYER_NM,{minEx:true,def:90}),
@@ -628,7 +799,8 @@ const STEP_SCHEMA={
   fNum('capNm','Cap 두께','nm',0,LIM.CAP_NM,{minEx:true,def:300,visibleIf:st=>!!st.cap}),
   fSel('region','증착 영역',()=>REG_OPTS,{def:'front'}),
   fNum('distMm','베벨 증착 범위 전면 Edge→','mm',0,LIM.DIST_MM,{minEx:true,init:2,allowUndef:true,visibleIf:st=>st.region==='edge'}),
-  fNum('backMm','후면 Edge→ (비우면 전면과 같음)','mm',0,LIM.DIST_MM,{minEx:true,optional:true,visibleIf:st=>st.region==='edge'})],
+  fNum('backMm','후면 Edge→ (비우면 전면과 같음)','mm',0,LIM.DIST_MM,{minEx:true,optional:true,visibleIf:st=>st.region==='edge'}),
+  ...pecvdFields()],
  photo:[
   fSel('mode','Edge 제어 방식',()=>[['ring','Ring Photo'],['pses','PSES (shot 기준)'],['ebr','일반 Photo (EBR)']],{def:'ring',
     onSet:(st,prev)=>{const w=m=>m==='ebr'?1.5:5,t=m=>m==='ebr'?'pos':'neg';if(!prev)return;if(st.w===w(prev))st.w=w(st.mode);if(st.tone===t(prev))st.tone=t(st.mode);}}),
@@ -658,16 +830,33 @@ const STEP_SCHEMA={
     onSet:(st,prev)=>{const c=CLEAN[st.key];if(!c)return;st.cat=c.cat;if(CLEAN[prev]&&st.amt===CLEAN[prev].amt)st.amt=c.amt;}}),
   fSel('mode','처리 영역',()=>[['imm','전체 (침지·양면)'],['front','전면 (Frontside)'],['back','후면 (Backside)'],['edge','베벨 (Bevel/Apex)']],{def:'imm'}),
   fNum('distMm','베벨 폭 Edge→ (0=베벨만)','mm',0,LIM.DIST_MM,{def:0,visibleIf:st=>st.mode==='edge'}),
+  fNum('edgeW','끝단 전이 폭 (비우면 구분별 기본: Plasma·Gas 500 · Wet 130)','µm',LIM.EDGE_W_UM[0],LIM.EDGE_W_UM[1],{optional:true,visibleIf:st=>st.mode==='edge'&&st.distMm>0}),
   fNum('amt','제거량 (target 막 기준)','nm',0,st=>cleanAmtMax(st.key),{minEx:true,def:st=>CLEAN[st.key]?.amt,
     skipIf:raw=>raw.time!=null&&raw.time!=='',missingMsg:'제거량 또는 시간을 입력해 주세요'}),
   fNum('time','또는 시간','s',0,LIM.TIME_S,{minEx:true,optional:true})],
  remove:[
-  fSel('action','방식',()=>[['strip','Plasma Edge Strip (전 막 → Bare Si)'],['eew','EEW (전면 Edge, 최상단 막)'],['bew','BEW (후면 Edge, 최상단 막)'],['backClean','Backside Clean (후면 전체)'],['edgeClean','Edge Clean (베벨 전체)'],['cmp','CMP (평탄화 + Edge roll-off)']],{def:'strip'}),
-  fNum('distMm','제거 범위 Edge→','mm',0,LIM.DIST_MM,{minEx:true,def:2.5,visibleIf:isPesLike}),
-  fNum('siLoss','Si 손실','µm',0,LIM.SI_LOSS_UM,{def:0,visibleIf:st=>st.action==='strip'}),
-  fNum('amt','CMP 제거량','µm',0,LIM.CMP_UM,{minEx:true,def:1,visibleIf:st=>st.action==='cmp'}),
-  fNum('ero','ERO 깊이','µm',0,LIM.ERO_UM,{def:.1,visibleIf:st=>st.action==='cmp'}),
-  fNum('eroW','ERO 폭','mm',0,LIM.ERO_W_MM,{minEx:true,def:2,visibleIf:st=>st.action==='cmp'})]};
+  fSel('action','방식',()=>[['strip','PES · Plasma Edge Strip (전 막 → Bare Si)'],['bvs','BVS · Bevel Strip (베벨 집중, 전/후면 범위)'],['eew','EEW (전면 Edge, 최상단 막)'],['bew','BEW (후면 Edge, 최상단 막)'],['backClean','Backside Clean (후면 전체)'],['edgeClean','Edge Clean (베벨 전체)'],['cmp','CMP (슬러리 선택비 · 패턴 밀도 · Edge roll-off)']],{def:'strip'}),
+  fNum('distMm','제거 범위 (전면) Edge→','mm',0,LIM.DIST_MM,{minEx:true,def:st=>st.action==='bvs'?.5:2.5,visibleIf:isPesLike}),
+  fNum('backMm','후면 Edge→ (비우면 전면과 같음)','mm',0,LIM.DIST_MM,{minEx:true,optional:true,visibleIf:st=>st.action==='bvs'}),
+  fNum('siLoss','Si 손실','µm',0,LIM.SI_LOSS_UM,{def:0,visibleIf:st=>st.action==='strip'||st.action==='bvs'}),
+  fNum('edgeW','끝단 전이 폭 (비우면 공정 기본: Plasma 500 · Wet 130)','µm',LIM.EDGE_W_UM[0],LIM.EDGE_W_UM[1],{optional:true,visibleIf:isPesLike}),
+  cmpF(fSel('slurry','슬러리',slurryOpts,{def:(st,raw)=>isLegacyCmp(raw)?'legacy':'oxide',
+    onSet:(st,prev)=>{const a=SLURRY_DB[prev],b=SLURRY_DB[st.slurry];if(a&&b&&st.stopMat===a.stop)st.stopMat=b.stop;}})),
+  cmpF(fSel('mode','종료 방식',()=>[['amt','제거량 지정'],['stop','정지막 Endpoint + 과연마']],{def:'amt'})),
+  cmpF(fNum('amt','CMP 제거량 (target 막 블랭킷 기준)','µm',0,LIM.CMP_UM,{minEx:true,def:1,
+    skipIf:raw=>raw.time!=null&&raw.time!=='',missingMsg:'제거량 또는 시간을 입력해 주세요'}),st=>isCmp(st)&&st.mode!=='stop'),
+  cmpF(fNum('time','또는 시간 (슬러리 문헌 속도로 환산)','s',0,LIM.TIME_S,{minEx:true,optional:true}),st=>isCmp(st)&&st.mode!=='stop'),
+  cmpF(fSel('stopMat','정지막',()=>KEYS.map(k=>[k,MATERIALS[k].name]),{def:st=>SLURRY_DB[st.slurry]?.stop||'SiN'}),isStop),
+  cmpF(fNum('op','과연마 (endpoint 대비)','%',0,LIM.CMP_OP_PCT,{def:CMP_DEF.op}),isStop),
+  cmpF(fNum('stopDens','패턴 영역 정지막 면적비 (과연마 erosion)','%',LIM.CMP_DENS_PCT[0],LIM.CMP_DENS_PCT[1],{def:CMP_DEF.stopDens}),isStop),
+  cmpF(fNum('Lp','평탄화 길이 Lp','mm',LIM.CMP_LP_MM[0],LIM.CMP_LP_MM[1],{def:CMP_DEF.Lp})),
+  cmpF(fNum('hc','접촉 높이 hc','µm',LIM.CMP_HC_UM[0],LIM.CMP_HC_UM[1],{def:CMP_DEF.hc})),
+  cmpF(fNum('eroPct','Edge 속도 변화 (+fast / −slow)','%',LIM.CMP_ERO_PCT[0],LIM.CMP_ERO_PCT[1],{def:(st,raw)=>isLegacyCmp(raw)?legacyEroPct(raw):CMP_DEF.eroPct})),
+  cmpF(fNum('eroW','Edge 영향 폭','mm',0,LIM.ERO_W_MM,{minEx:true,def:(st,raw)=>isLegacyCmp(raw)?CMP_DEF.LEG_ERO_W:CMP_DEF.eroW})),
+  cmpF(fSel('patSrc','패턴 밀도',()=>[['off','없음 (블랭킷)'],['auto','자동 (Photo zone + Etch open)'],['manual','수동 지정']],{def:(st,raw)=>isLegacyCmp(raw)?'off':'auto'})),
+  cmpF(fNum('patFrom','패턴 영역 시작 Edge→','mm',0,LIM.DIST_MM,{def:CMP_DEF.patFrom}),isManPat),
+  cmpF(fNum('patDens','패턴 up-area 밀도','%',LIM.CMP_DENS_PCT[0],LIM.CMP_DENS_PCT[1],{def:CMP_DEF.patDens}),isManPat),
+  cmpF(fNum('patStep','패턴 초기 단차','µm',0,LIM.CMP_STEP_UM,{def:CMP_DEF.patStep}),isManPat)]};
 // 파생값·교차 검사 (필드 검사를 모두 통과한 뒤)
 const STEP_POST={
  depo(st,add){st.thicknessUm=st.rawVal/UNIT_DIV[st.unit];
@@ -677,7 +866,13 @@ const STEP_POST={
  clean(st,add){const c=CLEAN[st.key];st.cat=c.cat;
    if(st.time!==undefined){const amt=roundAmt(st.time*c.rate);   // 시간 → 제거량 (문헌 식각률) — 반올림 전 값으로 판정
      if(amt>0&&amt<=cleanAmtMax(st.key))st.amt=amt;else add('time',`또는 시간: ${fmtNum(st.time)}s × ${c.rate}nm/s ≈ ${fmtNum(amt)}nm — 제거량은 0 초과 ${fmtNum(cleanAmtMax(st.key))}nm 이하여야 합니다`);}
-   delete st.time;if(st.mode!=='edge')st.distMm=0;}};
+   delete st.time;if(st.mode!=='edge')st.distMm=0;},
+ remove(st,add){if(st.action!=='cmp')return;
+   const S=SLURRY[st.slurry];
+   if(st.mode==='stop'){if(st.stopMat===S.tgt)add('stopMat',`정지막: 연마 대상 막(${shortMat(S.tgt)})과 같을 수 없습니다 — 다른 정지막이나 슬러리를 골라 주세요`);return;}
+   if(st.time!==undefined){const amt=+(st.time*S.rate/1000).toFixed(6);   // s × nm/s → µm (슬러리 target 막 문헌 속도)
+     if(amt>0&&amt<=LIM.CMP_UM)st.amt=amt;else add('time',`또는 시간: ${fmtNum(st.time)}s × ${S.rate}nm/s ≈ ${fmtNum(amt)}µm — 제거량은 0 초과 ${LIM.CMP_UM}µm 이하여야 합니다`);}
+   delete st.time;}};
 // 스키마 조회: 자기 속성만 ('constructor'·'toString' 같은 상속 이름은 알 수 없는 종류)
 const schemaOf=type=>typeof type==='string'&&hasOwn(STEP_SCHEMA,type)?STEP_SCHEMA[type]:null;
 const fieldOf=(type,k)=>(schemaOf(type)||[]).find(f=>f.k===k);
@@ -776,24 +971,33 @@ function removeStep(i){if(!Number.isInteger(i)||i<0||i>=steps.length)return fals
   remember(`${i+1}단계 삭제`);steps.splice(i,1);if(i<=sel)sel--;bumpRecipe();updateUI();offerUndo(`${i+1}단계를 삭제했습니다`);return true;}
 function resetRecipe(){steps=[];sel=-1;bumpRecipe();updateUI();}
 function go(i){if(typeof i!=='number'||!isFinite(i))return;i=Math.max(-1,Math.min(steps.length-1,Math.trunc(i)));if(i===sel)return;sel=i;render();}   // 레시피 불변 → 재시뮬 없이 선택 상태만 계산
+// 레시피 전체 검증 (부작용 없음): 모든 단계 validateStep + 누적 막 수 관문. 반환 {ok, steps(정규화), errors:[{i(단계 인덱스, −1 = 레시피 전체), k(필드), msg}]}
+function validateRecipe(raws){
+  if(!Array.isArray(raws))return{ok:false,steps:null,errors:[{i:-1,k:'steps',msg:'레시피는 단계 배열이어야 합니다'}]};
+  const out=[],errors=[];
+  raws.forEach((raw,i)=>{const r=validateStep(raw);if(r.ok)out.push(r.normalized);else r.errors.forEach(e=>errors.push({i,k:e.k,msg:e.msg}));});
+  if(!errors.length){const over=checkRecipeLayers(out);if(over)errors.push({i:-1,k:'pairs',msg:over});}
+  return errors.length?{ok:false,steps:null,errors}:{ok:true,steps:out,errors};}
+const recipeErrText=e=>e.i<0?e.msg:`${e.i+1}단계: ${e.msg}`;
 // 레시피 통째로 교체: 모든 단계가 검증을 통과해야만 적용 (하나라도 실패하면 기존 레시피 유지)
-function setRecipe(raws){if(!Array.isArray(raws))throw new Error('레시피는 단계 배열이어야 합니다');
-  const out=raws.map((raw,i)=>{const r=validateStep(raw);if(!r.ok)throw new Error(`${i+1}단계: ${r.errors.map(e=>e.msg).join(' · ')}`);return r.normalized;});
-  const over=checkRecipeLayers(out);if(over)throw new Error(over);
-  steps=out;sel=out.length-1;bumpRecipe();updateUI();}
+function setRecipe(raws){const r=validateRecipe(raws);
+  if(!r.ok)throw new Error(r.errors.filter((e,_,a)=>e.i===a[0].i).map(recipeErrText).join(' · '));
+  steps=r.steps;sel=r.steps.length-1;bumpRecipe();updateUI();}
 const PRESETS={mold:presetMold,ebr:()=>presetPhoto('ebr'),ring:()=>presetPhoto('ring'),pses:()=>presetPhoto('pses'),bond:presetBond,cell:presetCell};
 function loadPreset(k){if(!hasOwn(PRESETS,k))return false;setRecipe(PRESETS[k]());return true;}
 // 되돌리기: 직전 파괴적 동작(삭제·초기화·예시 불러오기) 1회분 스냅샷 — confirm() 대신 실수 복구
 //   remember(동작 전) → 동작 → offerUndo(동작 후 레시피 버전으로 봉인). 그 뒤 레시피가 다른 편집으로 바뀌거나
 //   되돌리기 토스트가 만료·교체되면 무효 (Ctrl+Z도 무시)
 let UNDO=null,RECIPE_VER=0,TOAST_T=0;
-function remember(label){UNDO={steps:steps.slice(),sel,label,ver:-1};}   // 단계 객체는 불변(동결) → 배열만 복사
+//   withConfig = 설정·보기까지 바꾸는 동작(파일 불러오기·자동 복구) — 되돌리면 그것도 원래대로
+function remember(label,withConfig=false){UNDO={steps:steps.slice(),sel,label,ver:-1,...(withConfig?{settings:captureSettings(),view:captureView()}:{})};}   // 단계 객체는 불변(동결) → 배열만 복사
 const undoReady=()=>!!UNDO&&UNDO.ver===RECIPE_VER;
 function dropUndo(){UNDO=null;const t=$('toast'),b=$('toastUndo');if(b&&!b.hidden&&t){t.classList.remove('on');b.hidden=true;}}
 // 레시피가 바뀔 때마다 호출: 봉인된 되돌리기는 무효 (봉인 전 = 진행 중인 파괴적 동작 자신의 변경)
-function bumpRecipe(){RECIPE_VER++;if(UNDO&&UNDO.ver>=0)dropUndo();}
+function bumpRecipe(){RECIPE_VER++;if(UNDO&&UNDO.ver>=0)dropUndo();noteChange();}
 function undo(){if(!undoReady()){if(UNDO&&UNDO.ver>=0)dropUndo();return false;}
-  const u=UNDO;UNDO=null;steps=u.steps;sel=u.sel;bumpRecipe();updateUI();toast(`되돌렸습니다 — ${u.label} 취소`);return true;}
+  const u=UNDO;UNDO=null;if(u.settings)applySettings(u.settings);if(u.view)applyView(u.view);
+  steps=u.steps;sel=u.sel;bumpRecipe();updateUI();toast(`되돌렸습니다 — ${u.label} 취소`);return true;}
 function toast(msg,{undo:canUndo=false,err=false}={}){const t=$('toast'),m=$('toastMsg'),b=$('toastUndo');if(!t||!m)return;
   if(!canUndo)UNDO=null;   // 되돌리기 토스트가 다른 알림으로 바뀌면 되돌리기도 끝
   m.textContent=msg;if(b)b.hidden=!canUndo;t.classList.toggle('err',err);t.classList.add('on');
@@ -818,12 +1022,16 @@ const SETTINGS={
   waferThk:{label:'Si 두께',unit:'µm',min:50,max:2000,def:775},
   zScale:{label:'막 수직배율',unit:'px/µm',min:.5,max:20,def:3},
   siDisp:{label:'Si 표시 두께',unit:'%',min:5,max:100,def:40},
-  rampUm:{label:'컷 경사폭',unit:'µm',min:2,max:300,def:20},
+  rampUm:{label:'기타 경계 폭 (Photo·CMP 패턴·Etch 보호)',unit:'µm',min:2,max:300,def:20},
+  apexTaper:{label:'PECVD Apex 감쇠 구간',unit:'mm',min:0,max:LIM.TAPER_MM,def:.1},   // est: 공개 실측 없음
+  wrapMm:{label:'PECVD 후면 넘어감 (worst side)',unit:'mm',min:0,max:LIM.WRAP_MM,def:.25},   // est: 편심 0.2~0.3mm 가정
   eeMm:{label:'EE',unit:'mm',min:0,max:LIM.EE_MM,def:0},
   bStep:{label:'허용 edge step',unit:'µm',min:.01,max:10,def:.3},
   bBow:{label:'허용 bow',unit:'µm',min:1,max:2000,def:300},
   bPeel:{label:'peel 지수 기준',unit:'N/m',min:1,max:1e5,def:1500},
   viewSpan:{label:'보기 폭',unit:'mm',min:Math.min(...SPANS),max:Math.max(...SPANS),def:3,snap:SPANS}};
+// ⚙ 끝단 프로파일 모델 (select). 목록 밖 값이면 기본(process)으로 되돌림
+function readEdgeModel(){const el=$('edgeModel'),v=el?el.value:EDGE_MODELS[0];if(EDGE_MODELS.includes(v))return v;if(el)el.value=EDGE_MODELS[0];return EDGE_MODELS[0];}
 function checkNum(raw,s){const v=strictNum(raw==null?'':String(raw));if(!isFinite(v))return s.def;const c=Math.min(s.max,Math.max(s.min,v));
   return s.snap?s.snap.reduce((b,x)=>Math.abs(x-c)<Math.abs(b-c)?x:b,s.snap[0]):c;}
 function readNum(id,spec=SETTINGS[id]){const el=$(id),v=checkNum(el?el.value:undefined,spec);if(el&&+el.value!==v)el.value=v;return v;}
@@ -831,7 +1039,8 @@ function onSetting(el){const act=el.dataset.set;
   if(act==='ee'){const r=setEE(el.value);if(!r.ok){toast(r.err,{err:true});el.value=getEE();}return;}
   if(el.tagName!=='SELECT'){const s=SETTINGS[el.id],raw=el.value,v=readNum(el.id);
     if(String(raw).trim()===''||+raw!==v)toast(`${s.label}: ${fmtNum(s.min)}~${fmtNum(s.max)}${s.unit} 범위 — ${v}${s.unit}(으)로 맞췄습니다`,{err:true});}
-  if(act==='engine'){markGeoDirty();render();}else if(act==='view')redraw();else updatePanels();}
+  if(act==='engine'){markGeoDirty();render();}else if(act==='depo'){markDepoDirty();render();}else if(act==='view')redraw();else updatePanels();
+  if(act!=='view')noteChange();}
 function settingsInit(){Object.entries(SETTINGS).forEach(([id,s])=>{const el=$(id);if(el&&el.type==='number'){el.min=s.min;el.max=s.max;}});
   const d=$('drawer');if(d)d.addEventListener('change',e=>{const el=e.target;if(el&&el.dataset&&el.dataset.set)onSetting(el);});}
 // EE (Edge Exclusion): 서술형 'EE 3mm' · Status Bar 칩 · ⚙ 입력이 모두 이 setter를 씀
@@ -840,9 +1049,11 @@ const getEE=()=>EE_MM;
 function checkEE(raw){const s=SETTINGS.eeMm,v=strictNum(raw==null?'':String(raw));
   if(!isFinite(v))return{ok:false,err:'EE 폭을 숫자(mm)로 입력해 주세요 (예: EE 3mm)'};
   if(v<s.min||v>s.max)return{ok:false,err:`EE 폭은 ${s.min}~${s.max}mm 범위여야 합니다 (0 = 해제)`};return{ok:true,v};}
-function setEE(raw){const r=checkEE(raw);if(!r.ok)return r;EE_MM=r.v;const el=$('eeMm');if(el)el.value=r.v;
-  if(r.v>0&&readNum('viewSpan')<=r.v+.3){$('viewSpan').value=SPANS.slice().reverse().find(x=>x>r.v+.3)||10;zoomReset(false);}   // EE 경계가 보이게 보기 폭 넓힘
-  renderEEChip();if(NP){updatePanels();redraw();}return r;}
+// EE 상태 반영 (검증된 값): 원본 · ⚙ 입력칸 · 보기 폭 · 칩 — 다시 그리기는 호출 측
+function eeApply(v){EE_MM=v;const el=$('eeMm');if(el)el.value=v;
+  if(v>0&&readNum('viewSpan')<=v+.3){$('viewSpan').value=SPANS.slice().reverse().find(x=>x>v+.3)||10;zoomReset(false);}   // EE 경계가 보이게 보기 폭 넓힘
+  renderEEChip();}
+function setEE(raw){const r=checkEE(raw);if(!r.ok)return r;eeApply(r.v);if(NP){updatePanels();redraw();}noteChange();return r;}
 let EE_EDIT=false;
 function renderEEChip(edit=false){const b=$('eeBox');if(!b)return;EE_EDIT=edit;b.classList.remove('bad');const ee=getEE();
   if(edit){b.innerHTML=`<input type="number" id="eeIn" step="0.5" min="0" max="${LIM.EE_MM}" value="${ee}" aria-label="EE 폭 (mm, 0 = 해제) — Enter 적용 · Esc 취소">`;const i=$('eeIn');i.focus();i.select();}
@@ -865,7 +1076,7 @@ function lowerX(D,v){let a=0,b=D.ord.length;while(a<b){const m=(a+b)>>1;if(D.P.x
 // 표시 단위의 i점 대표 막: 그 점에 남아 있는 첫 막 (없으면 첫 막)
 function unitLayerAt(u,i){for(const L of u.idx)if(layers[L].h[i]>BAND_EPS)return L;return u.idx[0];}
 // 화면 좌표 → 그 위치의 표시 단위(막/띠): 커서 x ± (기둥 최대 길이 + 허용 거리) 안의 점만 이분탐색으로 골라 검사
-//   반환 {u, L(대표 막), i} · Si 안이면 {u:-1, L:-1, i(가장 가까운 표면점)} · 없으면 null
+//   반환 {u, L(대표 막), i} · 제거된 막(점선 띠) 위면 {u:-1, L:-1, i, ghost} · Si 안이면 {u:-1, L:-1, i(가장 가까운 표면점)} · 없으면 null
 function hitAt(x,y){const D=DISP;if(!D||!NP||D.stamp!==ENG.stamp||D.BP.x.length!==NP)return null;
   const bx=x/ZM.k+ZM.ox,by=y/ZM.k+ZM.oy,C=D.cols,nU=D.units.length,C0=C[0],CN=C[nU],r=D.reach+Math.max(5/ZM.k,D.sp*.8)+1;let best=null,bd=1e9;
   const sd=(A,B,i)=>{const ax=A.x[i],ay=A.y[i],vx=B.x[i]-ax,vy=B.y[i]-ay,l=vx*vx+vy*vy,t=l?Math.max(0,Math.min(1,((bx-ax)*vx+(by-ay)*vy)/l)):0;return Math.hypot(ax+vx*t-bx,ay+vy*t-by);};
@@ -874,6 +1085,9 @@ function hitAt(x,y){const D=DISP;if(!D||!NP||D.stamp!==ENG.stamp||D.BP.x.length!
     for(let j=0;j<nU;j++){if(!D.on[j][i])continue;const d=sd(C[j],C[j+1],i);if(d<bd){bd=d;best={u:j,i};}}}
   if(best){const i=best.i,q=Math.min(NP-1,i+1),p=Math.max(0,i-1),sp=Math.hypot(C0.x[q]-C0.x[p],C0.y[q]-C0.y[p])/2;
     if(bd<=Math.max(5/ZM.k,sp*.8))return{u:best.u,L:unitLayerAt(D.units[best.u],i),i};}
+  let gb=null,gd=1e9;   // 제거된 막 띠: 원래 높이까지 떠 있어 기둥 범위(reach) 밖일 수 있음 → 그 띠가 있는 점 전부 검사
+  for(const gh of D.ghosts)for(let i=0;i<NP;i++)if(gh.on[i]){const d=sd(gh.lo,gh.hi,i);if(d<gd){gd=d;gb={gh,i};}}
+  if(gb&&gd<=Math.max(5/ZM.k,D.sp*.8))return{u:-1,L:-1,i:gb.i,ghost:gb.gh};
   const BP=D.BP;let inSi=false;for(let a=0,b=NP-1;a<NP;b=a++){const Ax=BP.x[a],Ay=BP.y[a],Bx=BP.x[b],By=BP.y[b];if((Ay>by)!==(By>by)&&bx<(Bx-Ax)*(by-Ay)/(By-Ay)+Ax)inSi=!inSi;}
   if(!inSi)return null;let ni=0,nd=1e9;for(let i=0;i<NP;i++){const d=Math.hypot(C0.x[i]-bx,C0.y[i]-by);if(d<nd){nd=d;ni=i;}}return{u:-1,L:-1,i:ni};}
 // ---- 막 묶음 값 (엔진 layers 그대로 — 표시 좌표와 무관) ----
@@ -896,9 +1110,17 @@ function tipStackHtml(i,hk){const{rows,total,total0}=stackAt(i);
     `<tr class="tot"><td colspan="3">Total ${total.toFixed(2)}µm (Si 위)${total0>BAND_EPS?` <span class="hint">· 증착 직후 합 대비 ${Math.round(total/total0*100)}%</span>`:''}</td></tr></tbody></table>`;}
 // 증착 직후(h0, 같은 위치) 대비 남은 비율
 const vsDepo=(v,v0,u)=>v0>BAND_EPS?` <span class="hint">/ 증착 직후 ${fmtT(v0,u)}${v<v0*.98?` (${Math.round(v/v0*100)}%)`:''}</span>`:'';
+// 그 위치에서 제거된 막 묶음 (증착 직후 1nm 초과 → 지금 없음): '제거됨: HT-ACL (증착 3.40µm → 0)' 줄들 ('제거된 막' 켬일 때)
+const TIP_RM_MAX=4;
+function removedAt(i){return layerGroups().filter(G=>groupH(G,i)<BAND_EPS&&groupH0(G,i)>RESID_MIN_UM);}
+const rmLine=(G,i)=>`제거됨: ${escHtml(groupName(G))} (증착 ${fmtT(groupH0(G,i),groupUnit(G))} → 0)`;
+function tipRemovedHtml(i,skip=null){if(!VIEW.ghost)return'';const R=removedAt(i).filter(G=>G!==skip).reverse();if(!R.length)return'';   // 위(나중 막)부터
+  return`<div class="tiprm">${R.slice(0,TIP_RM_MAX).map(G=>`<div><span class="sw" style="background:${groupColor(G)}"></span>${rmLine(G,i)}</div>`).join('')}${R.length>TIP_RM_MAX?`<div class="hint">… 외 ${R.length-TIP_RM_MAX}개</div>`:''}</div>`;}
 function tipHtml(h){const i=h.i,pos=posText(i),lay=LASTDRAW;
+  if(h.ghost){const D=DISP,G=D.units[h.ghost.u].G,st=steps[G.si]||{};
+    return`<b><span class="sw ghost" style="background:${groupColor(G)}"></span>${rmLine(G,i)}</b><br><span class="hint">${G.si+1}. ${stepPlain(st)}${st.region?' · '+regionText(st):''} — 점선 = 원래 있던 자리</span><br><span class="hint">${pos}</span>${tipRemovedHtml(i,G)}${tipStackHtml(i,-1)}`;}
   if(h.L<0){const note=lay?lay.mode.siNote(lay):'';
-    return`<b><span class="sw" style="background:${SI_COLOR}"></span>Si sub</b><br>실제 ${readNum('waferThk')}µm${note?` (${note})`:''}${rec[i]>1e-3?` · <span style="color:#fbbf24">Si 손실 ${rec[i].toFixed(2)}µm</span>`:''}<br><span class="hint">${pos}</span>${tipStackHtml(i,-1)}`;}
+    return`<b><span class="sw" style="background:${SI_COLOR}"></span>Si sub</b><br>실제 ${readNum('waferThk')}µm${note?` (${note})`:''}${rec[i]>1e-3?` · <span style="color:#fbbf24">Si 손실 ${rec[i].toFixed(2)}µm</span>`:''}<br><span class="hint">${pos}</span>${tipRemovedHtml(i)}${tipStackHtml(i,-1)}`;}
   const ly=layers[h.L],G=groupOfLayer(h.L),gk=G?layerGroups().indexOf(G):-1,st=steps[ly.si]||{},nm=MATERIALS[ly.mat].name;let head,body;
   if(ly.thin&&G){const m=groupH(G,i);   // Mold는 묶음(ON 적층 전체) 단위로만 표시
     head=`<b><span class="sw" style="background:${moldSw()}"></span>${escHtml(groupName(G))}</b> · 이 위치 <b>${m.toFixed(2)}µm</b>`;
@@ -906,9 +1128,10 @@ function tipHtml(h){const i=h.i,pos=posText(i),lay=LASTDRAW;
   else{const u=st.type==='depo'?st.unit:st.type==='photo'?'um':'nm';
     head=`<b><span class="sw" style="background:${MATERIALS[ly.mat].color}"></span>${st.tag?escHtml(st.tag)+' · ':''}${nm}</b>`;
     body=`이 위치 두께 <b>${fmtT(ly.h[i],u)}</b>${vsDepo(ly.h[i],ly.h0[i],u)}`;}
-  return`${head}<br>${body}<br><span class="hint">${ly.si+1}. ${stepPlain(st)}${st.region?' · '+regionText(st):''}</span><br><span class="hint">${pos}</span>${tipStackHtml(i,gk)}`;}
-function showTip(x,y){const t=$('tip');if(!t)return null;const h=hitAt(x,y);if(!h){t.style.display='none';return null;}
-  t.innerHTML=tipHtml(h);t.style.display='block';
+  return`${head}<br>${body}<br><span class="hint">${ly.si+1}. ${stepPlain(st)}${st.region?' · '+regionText(st):''}</span><br><span class="hint">${pos}</span>${tipRemovedHtml(i)}${tipStackHtml(i,gk)}`;}
+function showTip(x,y){const t=$('tip');if(!t)return null;const di=densHit(x,y),h=di>=0?null:hitAt(x,y);
+  if(!h&&di<0){t.style.display='none';return null;}
+  t.innerHTML=h?tipHtml(h)+densTipLine(h.i):`${densTipLine(di)}<span class="hint">${posText(di)}</span>`;t.style.display='block';
   const W=t.parentElement.clientWidth,H=t.parentElement.clientHeight,w=t.offsetWidth,hh=t.offsetHeight,above=y-hh-10;
   t.style.left=(x+16+w>W?Math.max(0,x-16-w):x+16)+'px';t.style.top=(above>=0?above:Math.max(0,Math.min(y+16,H-hh)))+'px';return h;}
 // ---- 커서 표시 (overlay canvas, 본 캔버스 위): 세로선 + 그 위치의 막 경계 tick · 누적 높이(µm, Si 위) ----
@@ -931,11 +1154,11 @@ function drawCursor(h,x){const c=overlayCtx(),D=DISP,L=LASTDRAW;if(!c||!h||!D||D
   return marks.length;}
 // hover: pointermove는 requestAnimationFrame으로 한 프레임에 한 번만 처리
 let HOVQ=null,HOVRAF=0;
-function hoverAt(x,y){const h=showTip(x,y);drawCursor(h,x);return h;}
+function hoverAt(x,y){return inView(()=>{const h=showTip(x,y);drawCursor(h,x);return h;});}
 function hoverQueue(x,y){HOVQ=[x,y];if(HOVRAF)return;
   HOVRAF=requestAnimationFrame(()=>{HOVRAF=0;const q=HOVQ;HOVQ=null;if(q)hoverAt(q[0],q[1]);});}
 function hoverClear(){HOVQ=null;if(HOVRAF){cancelAnimationFrame(HOVRAF);HOVRAF=0;}const t=$('tip');if(t)t.style.display='none';overlayCtx();}
-function repaint(){if(LASTDRAW)draw(LASTDRAW);}   // 확대/이동: 배치 그대로 다시 칠하기만
+function repaint(){if(LASTDRAW)inView(()=>draw(LASTDRAW));}   // 확대/이동: 배치 그대로 다시 칠하기만
 let PAINT_RAF=0;
 function repaintSoon(){if(PAINT_RAF)return;PAINT_RAF=requestAnimationFrame(()=>{PAINT_RAF=0;repaint();});}   // 연속 입력(이동·핀치)은 한 프레임에 한 번
 function zoomReset(rd=true){ZM={k:1,ox:0,oy:0};ZS=[];if(rd)repaint();}
@@ -1032,28 +1255,59 @@ function zoomInit(){const cv=$('cv'),zb=$('zbox');if(!cv||!zb)return;
   addEventListener('keyup',e=>{if(isSpaceKey(e)&&GEST.space){GEST.space=false;setCursor();}});
   addEventListener('blur',()=>{GEST.space=false;setCursor();});
   miniInit();}
-// ---- 확대 상태 미니맵 (우하단): Si 외곽 + 막 합 외곽 + 현재 보기 사각형. 클릭·드래그 = 그 위치를 가운데로 이동 ----
-const MINI={drag:-1};
-// 반환 = 캔버스 오른쪽 끝에서 미니맵 왼쪽 끝까지 폭(px), 숨겼으면 0
-function drawMini(L){const c=$('mini'),D=DISP;if(!c)return 0;
-  if(ZM.k<=1.001||!L||!D||D.stamp!==ENG.stamp){c.style.display='none';return 0;}
-  const x=c.getContext('2d');if(!x){c.style.display='none';return 0;}
-  const w=L.Wd<600?96:150,h=Math.max(30,Math.round(w*L.H/L.Wd)),s=w/L.Wd,dpr=window.devicePixelRatio||1;
+// ---- 확대 상태 미니맵: Si 외곽 + 막 합 외곽 + 현재 보기 사각형. 클릭·드래그 = 그 위치를 가운데로 이동 ----
+//   자리: 네 구석 중 화면에 보이는 막 외곽·Si 외곽과 가장 덜 겹치는 곳(같으면 지금 자리 유지 → 이동 중 깜빡임 방지) · 반투명(올리면 진하게) · ▾ 접기(기억)
+const MINI={drag:-1,corner:'br',fold:false,pref:'webc.miniFold'};
+const MINI_ORDER=['br','tr','bl','tl'];
+// 선분 (x1,y1)-(x2,y2)가 사각형 r과 만나는지 (Cohen–Sutherland 판정)
+function segHitsRect(x1,y1,x2,y2,r){const oc=(x,y)=>(x<r.x0?1:x>r.x1?2:0)|(y<r.y0?4:y>r.y1?8:0);let a=oc(x1,y1),b=oc(x2,y2);
+  for(let it=0;it<8;it++){if(!(a|b))return true;if(a&b)return false;const o=a||b;let x,y;
+    if(o&8){x=x1+(x2-x1)*(r.y1-y1)/(y2-y1);y=r.y1;}else if(o&4){x=x1+(x2-x1)*(r.y0-y1)/(y2-y1);y=r.y0;}
+    else if(o&2){y=y1+(y2-y1)*(r.x1-x1)/(x2-x1);x=r.x1;}else{y=y1+(y2-y1)*(r.x0-x1)/(x2-x1);x=r.x0;}
+    if(o===a){x1=x;y1=y;a=oc(x,y);}else{x2=x;y2=y;b=oc(x,y);}}
+  return false;}
+// 구석 사각형(화면 px)과 그림의 겹침 점수: 막 합 외곽 선분 ×1 + Si 외곽·제거된 막 바깥면 선분 ×0.5 (남은 막을 가리는 것이 가장 나쁨)
+function miniOverlap(D,r){const k=ZM.k,sx=v=>(v-ZM.ox)*k,sy=v=>(v-ZM.oy)*k,CN=D.cols[D.cols.length-1];let sc=0;
+  [[CN,1],[D.BP,.5],...D.ghosts.map(g=>[g.hi,.5])].forEach(([A,wt])=>{for(let i=1;i<A.x.length;i++)if(segHitsRect(sx(A.x[i-1]),sy(A.y[i-1]),sx(A.x[i]),sy(A.y[i]),r))sc+=wt;});
+  return sc;}
+// 후보 구석 위치 (wrap 기준 left/top px)
+function miniSpots(L,w,h,hint){const right=L.axis?L.axisW+4:8,bot=densShown(L)?46:22,sb=$('scaleBadge'),top=L.Wd<600?58:30,
+    tl=Math.max(top,(sb&&sb.offsetHeight?sb.offsetTop+sb.offsetHeight:0)+6);
+  const s={br:{left:L.Wd-right-w,top:L.H-bot-h},tr:{left:L.Wd-right-w,top},bl:{left:8,top:L.H-bot-h},tl:{left:8,top:tl}};
+  return MINI_ORDER.filter(c=>!(c==='bl'&&hint)&&s[c].top>=4&&s[c].top+h<=L.H).map(c=>({c,...s[c]}));}
+function pickMiniCorner(D,L,w,h,hint){const spots=miniSpots(L,w,h,hint);if(!spots.length)return null;
+  const pad=4,sc=spots.map(p=>({...p,v:miniOverlap(D,{x0:p.left-pad,y0:p.top-pad,x1:p.left+w+pad,y1:p.top+h+pad})}));
+  const cur=sc.find(p=>p.c===MINI.corner),best=sc.reduce((a,b)=>b.v<a.v?b:a);
+  return cur&&cur.v<=best.v?cur:best;}
+// 반환 = {corner, w(미니맵 폭 px)} | null(숨김). 접힘이면 ▣ 버튼만 그 구석에
+function drawMini(L,hint=false){const c=$('mini'),tg=$('miniTgl'),D=DISP,hide=()=>{if(c)c.style.display='none';if(tg)tg.hidden=true;return null;};if(!c)return hide();
+  if(ZM.k<=1.001||!L||!D||D.stamp!==ENG.stamp)return hide();
+  const x=c.getContext('2d');if(!x)return hide();
+  const w=L.Wd<600?96:132,h=Math.max(30,Math.round(w*L.H/L.Wd)),s=w/L.Wd,dpr=window.devicePixelRatio||1;
+  const spot=pickMiniCorner(D,L,w,h,hint);if(!spot)return hide();MINI.corner=spot.c;
+  if(tg){tg.hidden=false;tg.textContent=MINI.fold?'▣ 미니맵':'▾';tg.setAttribute('aria-expanded',String(!MINI.fold));tg.title=MINI.fold?'미니맵 펼치기':'미니맵 접기';
+    const tw=tg.offsetWidth||20;Object.assign(tg.style,{left:(MINI.fold?(spot.c[1]==='r'?spot.left+w-tw:spot.left):spot.left+w-tw-2)+'px',top:(MINI.fold&&spot.c[0]==='b'?spot.top+h-(tg.offsetHeight||18):spot.top+2)+'px'});}
+  if(MINI.fold){c.style.display='none';return{corner:spot.c,w:tg?tg.offsetWidth:0};}
   if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);}
-  const right=L.axis?L.axisW+4:8;Object.assign(c.style,{display:'block',width:w+'px',height:h+'px',right:right+'px'});
+  Object.assign(c.style,{display:'block',width:w+'px',height:h+'px',left:spot.left+'px',top:spot.top+'px',right:'auto',bottom:'auto'});
   x.setTransform(dpr*s,0,0,dpr*s,0,0);x.clearRect(0,0,L.Wd,L.H);
   const poly=P=>{x.beginPath();for(let i=0;i<P.x.length;i++)i?x.lineTo(P.x[i],P.y[i]):x.moveTo(P.x[i],P.y[i]);x.closePath();};
   poly(D.cols[D.cols.length-1]);x.fillStyle='rgba(203,213,225,.55)';x.fill();
   poly(D.BP);x.fillStyle=SI_COLOR;x.fill();
-  x.lineWidth=1.5/s;x.strokeStyle='#38bdf8';x.strokeRect(ZM.ox,ZM.oy,L.Wd/ZM.k,L.H/ZM.k);return right+w;}
-function miniInit(){const c=$('mini');if(!c)return;
+  x.lineWidth=1.5/s;x.strokeStyle='#38bdf8';x.strokeRect(ZM.ox,ZM.oy,L.Wd/ZM.k,L.H/ZM.k);return{corner:spot.c,w};}
+function setMiniFold(on){MINI.fold=!!on;prefSet(MINI.pref,MINI.fold?'1':'0');repaint();}
+function miniInit(){const c=$('mini'),tg=$('miniTgl');if(!c)return;
+  MINI.fold=prefGet(MINI.pref,v=>v==='0'||v==='1','0')==='1';
+  if(tg)tg.addEventListener('click',()=>setMiniFold(!MINI.fold));
   const goTo=e=>{const L=LASTDRAW,r=c.getBoundingClientRect();if(!L||!(r.width>0))return;const s=r.width/L.Wd;
     panTo((e.clientX-r.left)/s-L.Wd/ZM.k/2,(e.clientY-r.top)/s-L.H/ZM.k/2);};
   c.addEventListener('pointerdown',e=>{e.preventDefault();hoverClear();MINI.drag=e.pointerId;try{c.setPointerCapture(e.pointerId);}catch(err){/* 무시 */}goTo(e);});
   c.addEventListener('pointermove',e=>{if(MINI.drag===e.pointerId)goTo(e);});
   ['pointerup','pointercancel'].forEach(n=>c.addEventListener(n,e=>{if(MINI.drag===e.pointerId)MINI.drag=-1;}));
   c.addEventListener('contextmenu',e=>e.preventDefault());}
-addEventListener('keydown',e=>{if(e.key==='Escape')toggleAdv(false);
+addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;   // 모달 안 키는 모달이 처리 (Esc = 닫기)
+  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&(e.key==='s'||e.key==='S')){e.preventDefault();saveOpen();return;}
+  if(e.key==='Escape')toggleAdv(false);
   const typing=isTypingTarget(document.activeElement);
   if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&(e.key==='z'||e.key==='Z')&&!typing){if(undo())e.preventDefault();return;}
   if(typing||document.body.classList.contains('adv'))return;
@@ -1075,9 +1329,15 @@ function stepDetail(st){const t=stepText(st);return t?t.detail(st):'';}
 const thk=st=>`${st.rawVal}${st.unit==='um'?'µm':st.unit==='A'?'Å':st.unit}`;
 // 공정 분류 태그: 공정 순서·Status Bar·툴팁·미리보기 공통 기준
 const CLN_TAG={plasma:'PLASMA',gas:'GAS',wet:'WET'};
-const RM_TAG={strip:'PES',eew:'EEW',bew:'BEW',backClean:'BACK CLN',frontClean:'FRONT CLN',edgeClean:'EDGE CLN',cmp:'CMP'};
-const RM_DESC={strip:'전 막 제거',eew:'최상단 막 제거',bew:'최상단 막 제거',backClean:'후면 막 제거',frontClean:'전면 막 제거',edgeClean:'베벨 막 제거',cmp:'평탄화'};
-const RM_AREA={strip:'Edge',eew:'전면 Edge',bew:'후면 Edge',backClean:'후면',frontClean:'전면',edgeClean:'베벨',cmp:'전면'};
+const RM_TAG={strip:'PES',bvs:'BVS',eew:'EEW',bew:'BEW',backClean:'BACK CLN',frontClean:'FRONT CLN',edgeClean:'EDGE CLN',cmp:'CMP'};
+const RM_DESC={strip:'전 막 제거',bvs:'베벨 집중 strip',eew:'최상단 막 제거',bew:'최상단 막 제거',backClean:'후면 막 제거',frontClean:'전면 막 제거',edgeClean:'베벨 막 제거',cmp:'평탄화'};
+const RM_AREA={strip:'Edge',bvs:'베벨',eew:'전면 Edge',bew:'후면 Edge',backClean:'후면',frontClean:'전면',edgeClean:'베벨',cmp:'전면'};
+// CMP 표기: 슬러리 · 종료 방식 · 패턴 밀도 / BVS 범위 (후면이 다르면 '0.5/1mm')
+const PAT_KO={off:'블랭킷',auto:'패턴 자동',manual:'패턴'};
+const cmpShort=st=>`${SLURRY_DB[st.slurry].ab}${st.mode==='stop'?` · Stop ${shortMat(st.stopMat)} +OP${st.op}%`:''}${st.patSrc==='manual'?` · 패턴 ${st.patDens}%@${st.patFrom}mm`:st.patSrc==='auto'?' · 패턴 자동':''}`;
+const cmpDetail=st=>`${SLURRY_DB[st.slurry].name} ${st.mode==='stop'?`Stop ${shortMat(st.stopMat)} + OP ${st.op}%`:`−${st.amt}µm`} · Lp ${st.Lp}mm · hc ${st.hc}µm · Edge ${st.eroPct>=0?'+':''}${st.eroPct}%/${st.eroW}mm · ${PAT_KO[st.patSrc]}${st.patSrc==='manual'?` ${st.patDens}% Edge→${st.patFrom}mm 단차 ${st.patStep}µm`:''}`;
+const edgeWText=st=>st.edgeW!==undefined?` · 끝단 전이 ${st.edgeW}µm`:'';   // 단계별 끝단 전이 폭 override 표기
+const rmRange=st=>st.action==='bvs'&&st.backMm!==undefined&&st.backMm!==st.distMm?`${st.distMm}/${st.backMm}mm`:st.distMm+'mm';
 const PHOTO_KO={ring:'RING PHOTO',pses:'PSES',ebr:'일반 PHOTO(EBR)'};
 const PHOTO_SHORT={ring:'Ring',pses:'PSES',ebr:'EBR'};
 const ARC_KO=['낮음','중간','높음'];
@@ -1090,7 +1350,7 @@ const moldSw=()=>`repeating-linear-gradient(0deg,${PALETTE.mold.ox} 0 2px,${PALE
 function stepLabel(st){if(!st||!st.type)return'';try{const c=stepCells(st);return`${c[0]} ${c[1]}`;}catch(e){console.warn('stepLabel',e);return escHtml(st.type.toUpperCase());}}
 // title/툴팁용 평문 (사용자 입력 원문이 있으면 그것을 이스케이프해서)
 const stepPlain=st=>st&&st.src?escHtml(st.src):escHtml(stripTags(stepLabel(st)));
-const resOf=i=>STEP_RES[i]||{impact:null,arc:null};
+const resOf=i=>STEP_RES[i]||{impact:null,arc:null,chips:null};
 const lvlOf=i=>{const r=resOf(i);return Math.max(r.impact?r.impact.lvl:-1,r.arc?r.arc.lvl:-1);};
 const REG_KO={all:'전체',front:'전면',back:'후면',edge:'베벨'};
 // 증착 영역 표기: 베벨은 범위까지 ('베벨 2mm' / 후면이 다르면 '베벨 2/1mm' / 범위 없는 구 데이터 '베벨만')
@@ -1109,21 +1369,26 @@ const STEP_TEXT={
  etch:{cells:st=>['<span class="be">ETCH</span>',ETCH[st.key].name.split(' (')[0],st.depth+'µm','전면'],
    detail:st=>`${ETCH[st.key].name} ${st.depth}µm · edge×${st.ef} · iso ${st.iso}${st.prot?` · 보호 ${st.prot}mm`:''}`},
  clean:{cells:st=>[`<span class="bc">${CLN_TAG[CLEAN[st.key].cat]||'WET'}</span>`,CLEAN[st.key].ab,st.amt+'nm',CLN_MODE_KO[st.mode]+(st.mode==='edge'&&st.distMm?' '+st.distMm+'mm':'')],
-   detail:st=>`${CLEAN[st.key].name} ${st.amt}nm · ${CLN_MODE_KO[st.mode]}${st.mode==='edge'?(st.distMm?` ${st.distMm}mm`:'(베벨만)'):''}`},
+   detail:st=>`${CLEAN[st.key].name} ${st.amt}nm · ${CLN_MODE_KO[st.mode]}${st.mode==='edge'?(st.distMm?` ${st.distMm}mm`:'(베벨만)'):''}${edgeWText(st)}`},
  remove:{cells:st=>{const a=st.action;
-     return[`<span class="br">${RM_TAG[a]}</span>`,a==='strip'?RM_DESC.strip+(st.siLoss?` · Si −${st.siLoss}µm`:''):a==='cmp'?`${RM_DESC.cmp} · ERO ${st.ero}µm`:RM_DESC[a],
-       isPesLike(st)?st.distMm+'mm':a==='cmp'?'−'+st.amt+'µm':'',RM_AREA[a]];},
-   detail:st=>{const a=st.action;return RM_DESC[a]+(isPesLike(st)?` Edge→${st.distMm}mm`:'')+(a==='strip'?` · Si 손실 ${st.siLoss}µm`:'')+(a==='cmp'?` −${st.amt}µm · ERO ${st.ero}µm/${st.eroW}mm`:'');}}};
+     return[`<span class="br">${RM_TAG[a]}</span>`,a==='strip'||a==='bvs'?RM_DESC[a]+(st.siLoss?` · Si −${st.siLoss}µm`:''):a==='cmp'?`${RM_DESC.cmp} · ${escHtml(cmpShort(st))}`:RM_DESC[a],
+       isPesLike(st)?rmRange(st):a==='cmp'?(st.mode==='stop'?'Stop':'−'+st.amt+'µm'):'',RM_AREA[a]];},
+   detail:st=>{const a=st.action;if(a==='cmp')return`${RM_DESC.cmp} · ${cmpDetail(st)}`;
+     return RM_DESC[a]+(a==='bvs'?` 전면 Edge→${st.distMm}mm · 후면 Edge→${st.backMm??st.distMm}mm`:isPesLike(st)?` Edge→${st.distMm}mm`:'')+(a==='strip'||a==='bvs'?` · Si 손실 ${st.siLoss}µm`:'')+edgeWText(st);}}};
 const stepText=st=>st&&typeof st.type==='string'&&hasOwn(STEP_TEXT,st.type)?STEP_TEXT[st.type]:null;
 function stepCells(st){const t=stepText(st);if(!t)throw new Error(`알 수 없는 공정 종류: ${st&&st.type}`);return t.cells(st);}
 const stepTitle=st=>(st.src?`입력: ${st.src} — `:'')+stripTags(stepCells(st)[0])+' '+stepDetail(st);
 function impactTitle(i){const R=resOf(i),t=[];if(R.impact)t.push('⚑ '+R.impact.t);if(R.arc)t.push(`⚡ Arcing ${ARC_KO[R.arc.lvl]}(${R.arc.score})`);return t.join('\n');}
 function renderTimeline(){
   const el=$('stBody');if(!el)return;$('stepCount').textContent=`${steps.length}단계`;
-  const row=(i,c,lv,title,dt)=>`<tr data-i="${i}" class="${i===sel?'on':''}${i>sel?' after':''}" title="${escHtml(title)}"><td class="n">${i<0?0:i+1}</td><td>${c[0]}</td>`+
+  // 비교 기준 표시: 고정한 기준(◉ + '기준') · 비교 켬이면 기본 기준(직전 단계)도 옅게
+  const bi=baseIndex(),pinned=!!CMP.pin,baseCls=i=>i!==bi||bi===null?'':pinned?' base':CMP.on?' base dflt':'';
+  const pin=i=>{const on=pinned&&i===bi,lb=i<0?'START':`${i+1}단계`;
+    return`<button class="pin${on?' on':''}" data-pin="${i}" aria-pressed="${on}" title="${on?'비교 기준 고정 해제':`${lb}를 비교 기준으로 고정 (행 Alt+클릭)`}" aria-label="${lb} 비교 기준${on?' 해제':''}">${on?'◉':'◎'}</button>`;};
+  const row=(i,c,lv,title,dt)=>`<tr data-i="${i}" class="${i===sel?'on':''}${i>sel?' after':''}${baseCls(i)}" title="${escHtml(title)}"><td class="n">${i<0?0:i+1}</td><td>${c[0]}</td>`+
     `<td class="w">${c[1]}${c[3]?`<small class="am">${c[3]}</small>`:''}</td><td class="v">${c[2]}</td><td class="a">${c[3]}</td>`+
     `<td>${lv===null?'':`<span class="dot${lv>=0?' l'+lv:''}"${dt?` title="${escHtml(dt)}"`:''}></span>`}</td>`+
-    `<td>${i>=0?`<button class="x" data-del="${i}" title="이 단계 삭제 (되돌리기 가능)" aria-label="${i+1}단계 삭제">✕</button>`:''}</td></tr>`;
+    `<td class="ops">${pin(i)}${i>=0?`<button class="x" data-del="${i}" title="이 단계 삭제 (되돌리기 가능)" aria-label="${i+1}단계 삭제">✕</button>`:''}</td></tr>`;
   el.innerHTML=row(-1,['<b>START</b>',`<span class="sw" style="background:${SI_COLOR}"></span>Bare Si`,readNum('waferThk')+'µm',''],null,'공정 전','')+
     steps.map((st,i)=>row(i,stepCells(st),lvlOf(i),stepTitle(st),impactTitle(i))).join('');
   scrollToSel();
@@ -1153,13 +1418,17 @@ function renderLegend(){
   if(PHOTO)h+=Object.keys(PHOTO_ZONE).map(k=>`<div class="li"><div class="sw" style="${photoZoneCss(k)}"></div>${PHOTO_ZONE[k].label}</div>`).join('')+'<div class="li sub">주황 점선 = shot 경계</div>';
   b.innerHTML=h;}
 
-function buildMat(){const t=$('matTable');if(!t)return;
+// Step Coverage 기본값 (레시피 파일·자동 복구에서 '누락 = 기본' 기준)
+const COV_F=['side','bot','plan'];
+const MAT_DEF=Object.freeze(Object.fromEntries(KEYS.map(k=>[k,Object.freeze(Object.fromEntries(COV_F.map(f=>[f,MATERIALS[k][f]])))])));
+function renderMatTable(){const t=$('matTable');if(!t)return;
   t.innerHTML=KEYS.map(k=>{const m=MATERIALS[k];return`<tr><td><div class="sw" style="background:${m.color}"></div></td><td>${m.name}${m.est?`<span class="hint" title="문헌 실측이 아닌 대표값(추정): ${m.est.join(', ')}">*</span>`:''}</td>`+
-    ['side','bot','plan'].map(f=>`<td><input type="number" min="0" max="100" value="${Math.round(m[f]*100)}" data-mat="${k}" data-f="${f}" aria-label="${m.name} ${f}"></td>`).join('')+'</tr>';}).join('');
+    COV_F.map(f=>`<td><input type="number" min="0" max="100" value="${+(m[f]*100).toFixed(4)}" data-mat="${k}" data-f="${f}" aria-label="${m.name} ${f}"></td>`).join('')+'</tr>';}).join('');}
+function buildMat(){const t=$('matTable');if(!t)return;renderMatTable();
   t.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.mat)setMat(el.dataset.mat,el.dataset.f,el);});}
 // Step Coverage(%) 편집: 0~100 클램프, 입력칸 표시값도 같게
-function setMat(k,f,el){if(!MATERIALS[k]||!['side','bot','plan'].includes(f))return;
-  const v=checkNum(el.value,{min:0,max:100,def:Math.round(MATERIALS[k][f]*100)});el.value=v;MATERIALS[k][f]=v/100;markGeoDirty();render();}
+function setMat(k,f,el){if(!MATERIALS[k]||!COV_F.includes(f))return;
+  const v=checkNum(el.value,{min:0,max:100,def:Math.round(MATERIALS[k][f]*100)});el.value=v;MATERIALS[k][f]=v/100;markGeoDirty();render();noteChange();}
 
 // ---------- Si Edge 프로파일 (mm) ----------
 // Si 외곽 제어 폴리라인 (mm). 두께 T만 달라도 꼭짓점 개수·순서가 같아서
@@ -1174,21 +1443,52 @@ function siOutline(P,T){
   const mx=Math.max(...out.map(p=>p[0]));out.forEach(p=>p[0]+=150-mx);
   return out;}
 const waferT0=()=>readNum('waferThk')/1000;   // mm (SETTINGS 범위로 클램프)
-// 엔진 형상: 실제 두께 T0, 호 길이 기준 고정 간격 샘플(내측 40µm / R≥148mm 10µm) → 화면 폭과 무관한 점 밀도
+// 엔진 형상: 실제 두께 T0, 호 길이 기준 고정 간격 샘플 → 화면 폭과 무관한 점 밀도
+//   process: Edge→fineD(mm) 안 10µm · Edge→midD(mm, 제거 범위 상한+1) 안 20µm(Plasma 전이 0.5mm = 25점 · Wet 0.13mm = 6~7점) · 그 밖 40µm
+//     (전 구간 10µm는 점 +140 % → 체크포인트 수·재계산 시간이 크게 나빠져 절충 — 레시피와 무관한 고정 격자라 geo 캐시 유지)
+//   legacy: 내측(R<148) 40µm / R≥148 10µm (이전 격자)
+const EDGE_GRID={fine:.01,fineD:3,mid:.02,midD:LIM.DIST_MM+1,coarse:.04,legacyR:148};
+function gridStep(R){const G=EDGE_GRID,d=150-R;
+  if(ENG_EDGE_MODEL==='legacy')return R<G.legacyR?G.coarse:G.fine;
+  return d<=G.fineD?G.fine:d<=G.midD?G.mid:G.coarse;}
 function buildProfile(){
   const P=PROF[$('siProf').value]||PROF.semi,T0=waferT0(),out=siOutline(P,T0);
   const cum=[0];for(let i=1;i<out.length;i++)cum.push(cum[i-1]+Math.hypot(out[i][0]-out[i-1][0],out[i][1]-out[i-1][1]));
   const res=[];let s=0,i=1;
   while(s<cum[cum.length-1]){while(cum[i]<s)i++;const t=(s-cum[i-1])/((cum[i]-cum[i-1])||1);
-    const x=out[i-1][0]+(out[i][0]-out[i-1][0])*t;res.push({R:x,y:out[i-1][1]+(out[i][1]-out[i-1][1])*t,k:i,t});s+=x<148?.04:.01;}
+    const x=out[i-1][0]+(out[i][0]-out[i-1][0])*t;res.push({R:x,y:out[i-1][1]+(out[i][1]-out[i-1][1])*t,k:i,t});s+=gridStep(x);}
   const L=out.length-1;res.push({R:out[L][0],y:out[L][1],k:L,t:1});
   return{res,Lb:P.Lb,T0,P};}
 // 표시용 Si 두께: 비율만큼 축소하되 베벨+apex 형상이 유지되는 최소 두께는 남김 (그리기 전용)
 function siDispT(geo){const dv0=geo.P.Lb*Math.tan(geo.P.ang*Math.PI/180),K=readNum('siDisp')/100;
   return Math.min(geo.T0,Math.max(geo.T0*K,2*(dv0+.06)));}
 // 표시용 프로파일 (mm): 엔진 점과 같은 인덱스, Si 표시 두께 T(mm)로 만든 외곽. 결과는 T별로 캐시 (표시 방식마다 T가 다름)
+//   Si를 축소하면(T < T0) 외곽 구간마다 줄어드는 비율이 다름(apex 수직부 ×0.05, 베벨 직선부 ×1.8 …) → 구간 대응(k,t)을 그대로 쓰면
+//   엔진 점이 apex에 몰려 막 두께 변화가 한 점에서 꺾여 보임(notch). 그래서 엔진 호 길이 대비 표시 호 길이 비율을 ±DISP_MAP_MM로 평활해 다시 배치
+const DISP_MAP_MM=.2;
+function dispArcMap(geo,o){const R=geo.res,N=R.length,oc=[0];
+  for(let k=1;k<o.length;k++)oc.push(oc[k-1]+Math.hypot(o[k][0]-o[k-1][0],o[k][1]-o[k-1][1]));
+  const sR=R.map(p=>oc[p.k-1]+(oc[p.k]-oc[p.k-1])*p.t),se=new Float64Array(N);
+  for(let i=1;i<N;i++)se[i]=se[i-1]+Math.hypot(R[i].R-R[i-1].R,R[i].y-R[i-1].y);
+  // 구간 j(i→i+1)의 비율 r(표시/엔진)을 엔진 호 ±DISP_MAP_MM 상자 평균(구간 길이 가중) → 적분.
+  //   비율이 1이 아닌 구간(베벨~apex~후면 베벨)만 평활하고 그 구간 전체 길이는 보존 → 평탄부·코너는 엔진 R 그대로 (x축 눈금·컷 위치 일치)
+  const M=N-1,len=new Float64Array(M),P=new Float64Array(M+1),Q=new Float64Array(M+1),mid=new Float64Array(M),s=Float64Array.from(sR);
+  for(let j=0;j<M;j++){len[j]=Math.max(1e-12,se[j+1]-se[j]);mid[j]=(se[j]+se[j+1])/2;P[j+1]=P[j]+len[j];Q[j+1]=Q[j]+(sR[j+1]-sR[j]);}
+  const off=j=>Math.abs((sR[j+1]-sR[j])/len[j]-1)>1e-6;let ja=0,jb=M-1;while(ja<M&&!off(ja))ja++;while(jb>ja&&!off(jb))jb--;
+  if(ja>=jb)return{s,oc};
+  for(let j=ja,a=ja,b=ja;j<=jb;j++){while(mid[j]-mid[a]>DISP_MAP_MM)a++;if(b<j)b=j;while(b+1<=jb&&mid[b+1]-mid[j]<=DISP_MAP_MM)b++;
+    s[j+1]=s[j]+len[j]*(Q[b+1]-Q[a])/(P[b+1]-P[a]);}
+  const c=(sR[jb+1]-sR[ja])/((s[jb+1]-s[ja])||1);for(let i=ja+1;i<=jb+1;i++)s[i]=sR[ja]+(s[i]-sR[ja])*c;
+  return{s,oc};}
+// 외곽 폴리라인 o의 호 위치 s → 좌표 (s는 단조 증가)
+function outlineAt(o,oc,s){const out=[];let k=1;
+  for(const v of s){while(k<o.length-1&&oc[k]<v)k++;const t=Math.min(1,Math.max(0,(v-oc[k-1])/((oc[k]-oc[k-1])||1)));
+    out.push({R:o[k-1][0]+(o[k][0]-o[k-1][0])*t,y:o[k-1][1]+(o[k][1]-o[k-1][1])*t});}
+  return out;}
 function dispProfile(geo,T){if(!(geo.dsp instanceof Map))geo.dsp=new Map();const hit=geo.dsp.get(T);if(hit)return hit;
-  const o=siOutline(geo.P,T),res=geo.res.map(p=>{const a=o[p.k-1],b=o[p.k];return{R:a[0]+(b[0]-a[0])*p.t,y:a[1]+(b[1]-a[1])*p.t};});
+  const o=siOutline(geo.P,T);let res;
+  if(T>=geo.T0-1e-12)res=geo.res.map(p=>{const a=o[p.k-1],b=o[p.k];return{R:a[0]+(b[0]-a[0])*p.t,y:a[1]+(b[1]-a[1])*p.t};});   // 실축척: 엔진 외곽 그대로
+  else{const m=dispArcMap(geo,o);res=outlineAt(o,m.oc,m.s);}
   // 법선 이웃: 최소 ±2점이면서 표시 호 길이 ±0.02mm 이상 — 압축된 apex에 점이 몰려도 막 외곽선이 꼬이지 않게
   const N=res.length,ac=[0];for(let i=1;i<N;i++)ac.push(ac[i-1]+Math.hypot(res[i].R-res[i-1].R,res[i].y-res[i-1].y));
   const lo=new Int32Array(N),hi=new Int32Array(N);
@@ -1215,71 +1515,188 @@ function buildEngineGeo(){
   const nx=new Float64Array(NP),ny=new Float64Array(NP);normalsXY(Float64Array.from(pts,p=>p.x),Float64Array.from(pts,p=>p.y),NP,nx,ny);
   pts.forEach((p,i)=>{p.nx=nx[i];p.ny=ny[i];p.f=-p.ny;});
   SX=new Float64Array(NP);SY=new Float64Array(NP);LV=new Float64Array(NP);NRM={x:new Float64Array(NP),y:new Float64Array(NP)};
-  W1=win(.15);W2=win(.07);W3=win(.06);}
+  W1=win(.15);W2=win(.07);W3=win(.06);APEX=apexMarks();}
+// f가 v 아래로 처음 내려가는 호 위치 (선형 보간) — 전면(0)에서 후면 쪽으로 f는 1 → −1
+function arcAtF(v){for(let i=1;i<NP;i++){const a=pts[i-1].f,b=pts[i].f;if(a>=v&&b<v)return arc[i-1]+(arc[i]-arc[i-1])*(a-v)/((a-b)||1);}
+  throw new Error(`Si 외곽에서 법선 f=${v} 지점을 찾지 못했습니다`);}
+function apexMarks(){const sF=arcAtF(.5),sB=arcAtF(-.5);if(!(sB>sF))throw new Error('Apex 경계 계산 실패');return{sF,sB};}
 
 // ---------- 엔진 (물리 좌표, µm) ----------
 // 표면·막 합계를 rec와 layers로부터 다시 쌓음 (Si 외곽 → 막마다 증착 당시 법선 × h)
 function recalc(){
   for(let i=0;i<NP;i++){const p=pts[i];SX[i]=p.x-p.nx*rec[i];SY[i]=p.y-p.ny*rec[i];LV[i]=0;}
   layers.forEach(ly=>{const h=ly.h,nx=ly.nx,ny=ly.ny,lo=ly.nlo,n=nx.length;for(let j=0;j<n;j++){const v=h[lo+j];if(v){SX[lo+j]+=nx[j]*v;SY[lo+j]+=ny[j]*v;LV[lo+j]+=v;}}});}
-// rng(베벨 증착 범위, mm): 전면(f≥0)은 rng.f, 후면은 rng.b 까지 — 베벨/apex는 항상 포함. rng 없음 = 기존 '베벨만'
-function depoWeight(r,p,rng){if(r==='front')return smooth(-.25,.6,p.f);if(r==='back')return smooth(-.25,.6,-p.f);
-  if(r==='edge'){if(!rng)return 1-smooth(LB,LB+.6,p.d);const d=p.f>=0?rng.f:rng.b;return Math.max(1-smooth(d-rampMm,d+rampMm,p.d),1-smooth(LB-.05,LB+.05,p.d));}
+// 증착 영역 가중 (점 i). rng(베벨 증착 범위, mm): 전면(f≥0)은 rng.f, 후면은 rng.b 까지 — 베벨/apex는 항상 포함. rng 없음 = 기존 '베벨만'
+//   전면(PECVD, 후면 chucking): 평탄부~베벨 경사 = 1 (두께 차이는 막질 측벽 coverage만), Apex 경계(sF) 앞 taper(mm)부터 연속으로 얇아져
+//   후면 베벨 쪽 Apex 경계(sB)에서 wrap(mm) 넘어간 곳에서 0 (편심 worst side). 후면 평탄부 0. 후면 증착은 대칭
+//   wp = {taper, wrap} (호 길이 mm) — pecvdOf(st)
+function depoWeight(r,i,rng,wp){const p=pts[i];
+  if(r==='front')return 1-smooth(APEX.sF-wp.taper,APEX.sB+wp.wrap,arc[i]);
+  if(r==='back')return smooth(APEX.sF-wp.wrap,APEX.sB+wp.taper,arc[i]);
+  if(r==='edge'){if(!rng)return 1-smooth(LB,LB+.6,p.d);const d=p.f>=0?rng.f:rng.b;return Math.max(1-depoEdgeRemain(p.d,d),1-bevelOnlyRemain(p.d));}
   return 1;}
+// PR 코팅(spin) 가중: 기존 전면 가중 그대로 (PECVD 형상 변경과 분리)
+const coatWeight=p=>smooth(-.25,.6,p.f);
 const edgeRange=st=>st.region==='edge'&&st.distMm!==undefined?{f:st.distMm,b:st.backMm??st.distMm}:null;
+// PECVD 형상 파라미터: 단계 override → ⚙ 전역 (전체·베벨 증착은 쓰지 않음)
+const pecvdOf=st=>({taper:st.apexTaper??readNum('apexTaper'),wrap:st.wrapMm??readNum('wrapMm')});
+// ⚙ 전역 PECVD 값 변경: 전역값을 쓰는 첫 전면/후면 증착 단계부터 다시 계산 (형상은 그대로 → geoDirty 아님)
+function markDepoDirty(){const i=steps.findIndex(st=>(st.type==='depo'||st.type==='mold')&&isPecvd(st)&&(st.apexTaper===undefined||st.wrapMm===undefined));
+  if(i>=0)ENG.dirtyFrom=Math.min(ENG.dirtyFrom,i);}
 function shadow(i,ny,M){
   if(Math.abs(ny)<.8)return 1;let s=0;
   for(let j=W3.lo[i];j<=W3.hi[i];j++){if(j===i||pts[i].f*pts[j].f<0||Math.abs(pts[j].f)<.5)continue;
     const rise=LV[j]-LV[i];if(rise>.2){const dx=Math.abs(pts[j].R-pts[i].R)*1000;s=Math.max(s,rise/(rise+dx/3));}}
   return 1-(1-M.bot)*s;}
-function deposit(mat,t,region,thin,rng=null){
+function deposit(mat,t,region,thin,rng=null,wp=null){
+  if((region==='front'||region==='back')&&!wp)throw new Error('전면/후면 증착에는 PECVD 형상 값이 필요합니다');
   const M=MATERIALS[mat],nx=new Float64Array(NP),ny=new Float64Array(NP),h=new Float64Array(NP);let T=null;normalsXY(SX,SY,NP,nx,ny);
   if(M.plan>0){const mx=new Float64Array(NP);T=new Float64Array(NP);
     for(let i=0;i<NP;i++){let m=LV[i];for(let j=W1.lo[i];j<=W1.hi[i];j++)if(pts[i].f*pts[j].f>=0&&LV[j]>m)m=LV[j];mx[i]=m;}
     for(let i=0;i<NP;i++){let s=0,c=0;for(let j=W2.lo[i];j<=W2.hi[i];j++)if(pts[i].f*pts[j].f>=0){s+=mx[j];c++;}T[i]=s/c;}}
-  for(let i=0;i<NP;i++){const w=depoWeight(region,pts[i],rng);if(w<=.001)continue;let v;
+  for(let i=0;i<NP;i++){const w=depoWeight(region,i,rng,wp);if(w<=.001)continue;let v;
     if(T)v=t+M.plan*(T[i]-LV[i]);else if(region==='edge')v=t;
     else{const a=Math.abs(ny[i]);v=t*(M.side+(1-M.side)*a*a)*shadow(i,ny[i],M);}
-    h[i]=w*Math.max(0,v);}
+    h[i]=w*Math.max(0,v);
+    if(M.plan>0&&PSTEP[i]>0)PSTEP[i]*=1-M.plan*w;}   // 평탄화 막은 패턴 단차를 메움 (conformal은 유지 — est)
   pushLayer(mat,nx,ny,h,thin);}
 // h가 0이 아닌 구간 [lo, hi)
 function nzRange(h){let lo=0,hi=h.length;while(lo<hi&&!h[lo])lo++;while(hi>lo&&!h[hi-1])hi--;return[lo,hi];}
 // 새 막 얹기 (deposit·applyPhoto 공용): 불변 meta 한 번 생성(법선은 h≠0 구간만 보관) + 표면·막 합계 누적
+//   b0 = 증착 직전 막 합계 LV (h≠0 구간, µm) — 표시 전용(제거된 막을 원래 있던 높이에 그림), 계산에는 쓰지 않음.
+//   Mold 묶음(thin)은 묶음 첫 막만 보관 (표시는 묶음 단위 — unitBase) → 수천 층 레시피에서도 메모리 거의 그대로
+const NO_B0=new Float32Array(0);
 function pushLayer(mat,nx,ny,h,thin){
   if(!hasOwn(MATERIALS,mat))throw new Error(`알 수 없는 막질: ${mat}`);
   if(!(h instanceof Float64Array)||h.length!==NP)throw new Error('막 두께 배열 길이가 형상과 맞지 않습니다');
-  const[lo,hi]=nzRange(h);
-  const meta=Object.freeze({mat,nlo:lo,nx:nx.slice(lo,hi),ny:ny.slice(lo,hi),h0:Float32Array.from(h),thin,si:CURSI});
+  const[lo,hi]=nzRange(h),last=layers[layers.length-1],lead=!thin||!last||!sameGroup(last,{si:CURSI,thin,mat});
+  const meta=Object.freeze({mat,nlo:lo,nx:nx.slice(lo,hi),ny:ny.slice(lo,hi),h0:Float32Array.from(h),b0:lead?Float32Array.from(LV.subarray(lo,hi)):NO_B0,thin,si:CURSI});
   layers.push({...meta,meta,h});
   for(let i=lo;i<hi;i++){const v=h[i];if(v){SX[i]+=nx[i]*v;SY[i]+=ny[i]*v;LV[i]+=v;}}}
 function topLayerAt(i){for(let L=layers.length-1;L>=0;L--)if(layers[L].h[i]>1e-4)return L;return -1;}
 
+// ---- 끝단(film edge) 단면 프로파일 (research/analysis/edge-profile.md §2~5) ----
+// W(mm) = 막 두께 0 %(bare, Edge→dd) → 100 %(dd+W) 거리. F(u) = 잔막 비율, u = (d−dd)/W ∈ [0,1] (d = Edge로부터 반경 거리 mm)
+//   기준점 dd = bare 경계 (EE 판정·metrics().exD와 같은 의미). legacy = 이전 엔진(중심 기준 dd±rampMm smoothstep, 전이 40µm)
+const EDGE_SHAPE={
+  smooth:u=>u<=0?0:u>=1?1:u*u*(3-2*u),                         // 확산형(wet), erf 근사
+  exp:u=>u<=0?0:u>=1?1:(1-Math.exp(-3*u))/(1-Math.exp(-3))};    // 라디칼 거리 감쇠(plasma) 포화형, W = 3λ (95 % 지점)
+// kLat = 측면 차등 후퇴 계수(§3.2, est — 지표 undercut·계단에만 씀, 형상은 단조 컷)
+const EDGE_PROFILE={
+  plasmaBevel:{W:.5,shape:'exp',kLat:.3,range:[.05,1],est:['shape','kLat'],
+    src:'Chen & Kim (Lam), US 8,562,750 B2: 종래 confined plasma bevel clean transition "of the order of 0.5 mm" (마스크·고선택 <0.05~0.1mm, 비교예 ~1mm)'},
+  gasEdge:{W:.5,shape:'exp',kLat:.3,range:[.05,1],est:['*'],src:'plasmaBevel 준용 — 무플라즈마 gas 베벨 처리 단면 데이터 없음'},
+  wetEdge:{W:.13,shape:'smooth',kLat:1,range:[.05,.2],est:['shape','kLat','유전막 일반화'],
+    src:'Novellus, US 9,685,353 B2: wet EBR taper width <200µm, 실시예 "about 127 µm" (Cu, H2SO4/H2O2 spin)'}};
+// 공정 → 프로파일. 베벨만 처리(edgeClean · 세정 edge 0mm · 범위 없는 베벨 증착 안쪽 끝)는 bevelOnlyRemain(W 0.1mm, 이전 값 그대로 — est)
+//   Photo zone · CMP 수동 패턴 경계 · Etch 보호폭은 ⚙ '기타 경계 폭'(rampMm) 그대로 (근거 없음 — 변경 보류)
+const EDGE_PROC={strip:'plasmaBevel',bvs:'plasmaBevel',eew:'wetEdge',bew:'wetEdge',depoEdge:'plasmaBevel',
+  clean:{wet:'wetEdge',plasma:'plasmaBevel',gas:'gasEdge'}};
+// OE = 과식각 비율(측면 후퇴 길이 L_ov = OE·need) · kH = 두께 의존(W_eff = W·(1+kH·H_µm), 기본 0) — 모두 est (문헌 없음)
+const EDGE_DEF={OE:.2,kH:0,minDepthUm:.01};   // minDepthUm: 제거 깊이가 이보다 작으면 끝단 지표 없음 (10nm)
+const EDGE_MODELS=['process','legacy'];
+const edgeProc=()=>ENG_EDGE_MODEL!=='legacy';
+// 전이 폭 (mm): 단계 override Wum(µm) → 프로파일 기본
+function edgeWidthMm(prof,Wum,Hum=0){const P=EDGE_PROFILE[prof];if(!P)throw new Error(`알 수 없는 끝단 프로파일: ${prof}`);
+  const W=(Wum!=null?Wum/1000:P.W)*(1+EDGE_DEF.kH*Hum);if(!(W>0)||!isFinite(W))throw new Error('끝단 전이 폭은 0보다 커야 합니다');return W;}
+// 잔막 비율 F (0 = bare … 1 = 원래 두께). legacy: 이전 엔진 smooth(dd±rampMm)
+function edgeRemain(d,dd,prof,Wum){
+  if(!edgeProc())return smooth(dd-rampMm,dd+rampMm,d);
+  return EDGE_SHAPE[EDGE_PROFILE[prof].shape]((d-dd)/edgeWidthMm(prof,Wum));}
+// 베벨만 처리 경계 (W 0.1mm, LB 중심) — 두 모델 공통
+const bevelOnlyRemain=d=>smooth(LB-.05,LB+.05,d);
+// 베벨 증착 범위(Edge→rd) 안쪽 끝: process = 막 끝(bare)이 rd, 안쪽 [rd−W, rd]에서 0→100 % (est — 베벨 증착 단면 데이터 없음)
+function depoEdgeRemain(d,rd){const prof=EDGE_PROC.depoEdge;
+  return edgeProc()?edgeRemain(d,rd-edgeWidthMm(prof),prof):edgeRemain(d,rd,prof);}
+// PES·BVS·EEW·BEW 점 p의 잔막 비율 (BVS 후면은 backMm)
+function removalRemain(st,p){const d=st.action==='bvs'&&p.f<0?(st.backMm??st.distMm):st.distMm;return edgeRemain(p.d,d,EDGE_PROC[st.action],st.edgeW);}
+// PES/BVS(process) 상대 식각률: 비선택(전 막 1, 문헌 없음 — est). Si 0 = Si 손실은 siLoss 옵션 경로만
+let EDGE_STRIP_RATES=null;
+const edgeStripRates=()=>EDGE_STRIP_RATES||(EDGE_STRIP_RATES=Object.freeze({...Object.fromEntries(KEYS.map(k=>[k,1])),Si:0}));
+// 위에서부터 깎기 (§3.1): budget = need·w (w = 1−F), bare 영역(w=1)은 need·(1+OE) — need = Σh/r (점 i 전 막 제거 budget)
+function stripTopDown(i,w,rates,opts){let need=0;
+  for(const ly of layers){const h=ly.h[i];if(h>0){const r=rates[ly.mat];if(r>0)need+=h/r;}}
+  if(need>0)consume(i,w>=1?need*(1+EDGE_DEF.OE):need*w,rates,opts);}
+// Edge 제거 (PES·BVS·EEW·BEW·세정 계열). BVS(est): 전면 Edge→distMm · 후면 Edge→backMm(기본 distMm)를 전 막 제거,
+//   그 밖 평탄부는 영향 없음 · Si 손실 옵션(기본 0). PES는 양면 같은 폭(Edge→distMm) 전 막 제거 + Si recess 옵션
+//   process: PES·BVS는 위 막부터 깎음(전이 구간에서 막 계면이 유지되다 경사면에서 차례로 끝남) · legacy: 전 막에 같은 비율(1−w)을 곱함
+//   EEW·BEW는 두 모델 모두 최상단 1막 비율 곱(단일 막에서는 위에서 깎기와 같음) — 전이 폭만 모델별
 function removal(st){
-  const n=surfNormals(),r=rampMm,dd=st.distMm;
-  for(let i=0;i<NP;i++){const p=pts[i],cut=1-smooth(dd-r,dd+r,p.d);let w=0;
-    switch(st.action){case'strip':w=cut;break;case'eew':w=smooth(-.3,.3,p.f)*cut;break;case'bew':w=smooth(-.3,.3,-p.f)*cut;break;
-      case'frontClean':w=smooth(.15,.6,p.f);break;case'backClean':w=smooth(.15,.6,-p.f);break;case'edgeClean':w=1-smooth(LB-.05,LB+.05,p.d);break;}
+  const n=surfNormals(),a=st.action,topDown=edgeProc()&&(a==='strip'||a==='bvs'),rates=topDown?edgeStripRates():null,opts={tg:null,open:0,noData:new Set()};
+  for(let i=0;i<NP;i++){const p=pts[i];let w=0;
+    switch(a){case'strip':case'bvs':w=1-removalRemain(st,p);break;
+      case'eew':w=smooth(-.3,.3,p.f)*(1-removalRemain(st,p));break;case'bew':w=smooth(-.3,.3,-p.f)*(1-removalRemain(st,p));break;
+      case'frontClean':w=smooth(.15,.6,p.f);break;case'backClean':w=smooth(.15,.6,-p.f);break;case'edgeClean':w=1-bevelOnlyRemain(p.d);break;
+      default:throw new Error(`알 수 없는 Edge 제거 방식: ${a}`);}
     if(w<=0)continue;
-    if(st.action==='eew'||st.action==='bew'){const L=topLayerAt(i);if(L>=0)layers[L].h[i]*=(1-w);}
+    if(a==='eew'||a==='bew'){const L=topLayerAt(i);if(L>=0)layers[L].h[i]*=(1-w);}
+    else if(topDown)stripTopDown(i,w,rates,opts);
     else layers.forEach(ly=>{ly.h[i]*=(1-w);});
-    if(st.action==='strip'&&st.siLoss>0)rec[i]+=st.siLoss*w*(.5+.5*Math.abs(n.y[i]));}
+    if((a==='strip'||a==='bvs')&&st.siLoss>0)rec[i]+=st.siLoss*w*(.5+.5*Math.abs(n.y[i]));}
   recalc();}
+// 끝단 지표 대상 (Edge 제거·세정 edge 단계) → {side(1 전면 / −1 후면), dd, W(mm, 지표 기준 거리), rates, kLat} | null
+function edgeCutOf(st){const proc=edgeProc();
+  const mk=(side,dd,prof,rates)=>{const W=proc?edgeWidthMm(prof,st.edgeW):rampMm;return{side,dd,W,rates:proc?rates:null,kLat:proc?EDGE_PROFILE[prof].kLat:0};};
+  if(st.type==='remove'&&isPesLike(st)){const prof=EDGE_PROC[st.action];
+    return mk(st.action==='bew'?-1:1,st.distMm,prof,st.action==='strip'||st.action==='bvs'?edgeStripRates():null);}
+  if(st.type==='clean'&&st.mode==='edge'&&st.distMm>0){const c=CLEAN[st.key];return mk(1,st.distMm,EDGE_PROC.clean[c.cat],c.r);}
+  return null;}
+// 끝단 지표 (§3.2·§5.5). 한 면(side)의 평탄부(|f|>.9) 점을 안쪽(dRef = dd+W+0.2mm)→Edge 순으로 훑음. LV0 = 단계 직전 막 합계
+//   깊이 = 제거된 두께(LV0−LV)의 최대 → 그 10 %·90 % 지점 거리 = wUm, slopeDeg = atan(0.8·깊이/wUm) (실제 물리 각도 — 표시 과장 무관)
+//   막 끝 T_j = 막 j가 기준 두께의 50 %가 되는 지점(선형 보간), 측면 후퇴 ΔT_j = kLat·(r_j−r̄)·L_ov (est), L_ov = OE·need (target 막 환산 µm)
+//     (분석 §3.2 식 (r_j/r̄−1)·L_ov는 L_ov가 target 막 환산이라 r̄≪1인 고선택 wet에서 1/r̄배 과대 → 차원이 맞는 (r_j−r̄)·L_ov로 씀. r̄≈1이면 같음)
+//   형상 규칙 T_j,geom = min(T_j+ΔT_j, T_{j+1},geom) → stepMaxUm = 인접 막 끝 간 최대 거리, undercutUm = 아랫막이 윗막보다 더 들어간 깊이(1D 표시 불가)
+function edgeMetrics(cut,LV0){
+  const idx=[];for(let i=0;i<NP;i++)if(pts[i].f*cut.side>.9)idx.push(i);
+  idx.sort((a,b)=>pts[b].d-pts[a].d);
+  const dRef=cut.dd+cut.W+.2;let k0=idx.findIndex(i=>pts[i].d<=dRef);if(k0<0||idx.length-k0<3)return null;
+  const I=idx.slice(k0),D=I.map(i=>pts[i].d);
+  // v(k)가 처음으로 test를 만족하는 거리 (안쪽→Edge, 직전 점과 선형 보간)
+  const cross=(v,thr,up)=>{for(let k=1;k<I.length;k++){const a=v(k-1),b=v(k);if(up?b>=thr:b<thr){const t=(thr-a)/((b-a)||1);return D[k-1]+(D[k]-D[k-1])*Math.min(1,Math.max(0,t));}}return null;};
+  const rem=k=>LV0[I[k]]-LV[I[k]];let depth=0;for(let k=0;k<I.length;k++)depth=Math.max(depth,rem(k));
+  if(!(depth>EDGE_DEF.minDepthUm))return null;
+  const d10=cross(rem,.1*depth,true),d90=cross(rem,.9*depth,true);
+  const wUm=d10!=null&&d90!=null?Math.max(0,(d10-d90)*1000):null;
+  const slopeDeg=wUm!=null?Math.atan2(.8*depth,Math.max(wUm,1e-6))*180/Math.PI:null;
+  // 막 끝 (기준 두께 > 1nm이고 50 % 아래로 내려가는 막만, 아래→위 순)
+  const ends=[];
+  layers.forEach(ly=>{const h0=ly.h[I[0]];if(!(h0>1e-3))return;const T=cross(k=>ly.h[I[k]],.5*h0,false);if(T!=null)ends.push({T:T*1000,h:h0,r:cut.rates?cut.rates[ly.mat]:undefined});});
+  let stepMaxUm=null,undercutUm=0;
+  if(ends.length){let sh=0,sn=0;const ok=e=>e.r>RESIST_R;
+    ends.forEach(e=>{if(ok(e)){sh+=e.h;sn+=e.h/e.r;}});
+    const rBar=sn>0?sh/sn:0,Lov=EDGE_DEF.OE*sn,dT=e=>cut.kLat>0&&ok(e)?cut.kLat*(e.r-rBar)*Lov:0;
+    let g=ends[ends.length-1].T+dT(ends[ends.length-1]);stepMaxUm=0;
+    for(let j=ends.length-2;j>=0;j--){const t=ends[j].T+dT(ends[j]);undercutUm=Math.max(undercutUm,t-g);const gj=Math.min(t,g);stepMaxUm=Math.max(stepMaxUm,g-gj);g=gj;}}
+  return{wUm,slopeDeg,depthUm:depth,stepMaxUm,undercutUm,nEnds:ends.length};}
+// 끝단 지표 칩 (STEP_RES chips)
+function edgeChips(m){const ch=[],f1=v=>v>=100?v.toFixed(0):v.toFixed(1);
+  if(m.wUm!=null)ch.push({k:'끝단 전이',v:`${f1(m.wUm)}µm · 실제 ${m.slopeDeg.toFixed(m.slopeDeg<10?2:1)}°`,lvl:0,
+    msg:`막 끝단 10→90 % 전이 ${f1(m.wUm)}µm (제거 깊이 ${m.depthUm.toFixed(2)}µm) · 실제 경사 ${m.slopeDeg.toFixed(2)}° — 화면 과장과 무관`});
+  if(m.nEnds>1&&m.stepMaxUm!=null)ch.push({k:'계단 최대',v:`${f1(m.stepMaxUm)}µm`,lvl:0,msg:`인접 막 끝단 간 최대 거리 ${f1(m.stepMaxUm)}µm (막 ${m.nEnds}개)`});
+  if(m.undercutUm>.005)ch.push({k:'undercut (est)',v:`${m.undercutUm.toFixed(2)}µm`,lvl:1,msg:`undercut ${m.undercutUm.toFixed(2)}µm — 아랫막 측면 후퇴(est), 1D 단면 표시 불가`});
+  return ch;}
 
-// ---- 제거 커널 (etch·clean 공용, CMP도 이 커널로 옮길 예정) ----
+// ---- 제거 커널 (etch·clean·CMP 공용) ----
 // consume(i, bud, rates, opts): 점 i에서 위 막부터 budget(target 막 기준 µm)을 소모. 막이 다 없어지면 Si 침식.
 //   rates[m] = 상대 제거율 · undefined = 데이터 없음 → 그 막에서 정지(안 깎임 취급)하고 opts.noData에 기록
 //   r ≤ RESIST_R = 저항막 → 정지. opts.tg/open: 패턴 영역(isPat)의 target 막은 open 비율만큼만 깎고 정지
 //   남은 budget이 STOP_UM 미만이면(가장자리 가중치 꼬리) 데이터 없음으로 세지 않음
+//   패턴 영역 target 막 손실은 CMP 패턴 상태로도 기록: ρ = min(ρ, 1−open), H += 실제 hole 깊이 = 면적평균 손실/open (cmp.md §2.3 auto)
+//   opts.top(Int32Array, 선택) = 점별 최상단 막 시작 인덱스 캐시(CMP 서브스텝용). 반환 = 이 호출로 줄어든 막 두께 합(µm, Si 제외)
 const isPat=p=>!!PHOTO&&p.f>.3&&PHOTO.zones.some(q=>(q.k==='pattern'||q.k==='broken')&&p.d>=q.a&&p.d<q.b);
 const STOP_UM=1e-3,RESIST_R=.0005;
 function consume(i,bud,rates,opts){
-  const tg=opts.tg,pz=!!tg&&isPat(pts[i]);
-  for(let L=layers.length-1;L>=0&&bud>1e-9;L--){const ly=layers[L],h=ly.h[i];if(h<1e-5){ly.h[i]=0;continue;}
+  const tg=opts.tg,pz=!!tg&&isPat(pts[i]),top=opts.top;let L=top?Math.min(top[i],layers.length-1):layers.length-1,gone=0;
+  const done=()=>{if(top)top[i]=L;return gone;};
+  for(;L>=0&&bud>1e-9;L--){const ly=layers[L],h=ly.h[i];if(h<1e-5){gone+=h;ly.h[i]=0;continue;}
     const r=rates[ly.mat];
-    if(r===undefined||r<=RESIST_R){if(r===undefined&&bud>=STOP_UM)opts.noData.add(ly.mat);return;}
-    if(pz&&tg.includes(ly.mat)){ly.h[i]=h-Math.min(h,bud*opts.open*r);return;}
-    const need=h/r;if(bud>=need){ly.h[i]=0;bud-=need;}else{ly.h[i]=h-bud*r;bud=0;}}
-  if(bud>1e-9){const r=rates.Si;if(r===undefined){if(bud>=STOP_UM)opts.noData.add('Si');}else rec[i]+=bud*r;}}
+    if(r===undefined||r<=RESIST_R){if(r===undefined&&bud>=STOP_UM)opts.noData.add(ly.mat);return done();}
+    if(pz&&tg.includes(ly.mat)){const loss=Math.min(h,bud*opts.open*r);ly.h[i]=h-loss;gone+=loss;
+      if(loss>0&&opts.open>0){PDENS[i]=Math.min(PDENS[i],1-opts.open);PSTEP[i]+=loss/opts.open;}return done();}
+    const need=h/r;if(bud>=need){ly.h[i]=0;gone+=h;bud-=need;}else{ly.h[i]=h-bud*r;gone+=bud*r;bud=0;return done();}}
+  if(L<0)L=0;
+  if(bud>1e-9){const r=rates.Si;if(r===undefined){if(bud>=STOP_UM)opts.noData.add('Si');}else rec[i]+=bud*r;}
+  return done();}
 // Etch 단계: 깊이 D × 전면 가중 × edge 가속(ef, zone) × 이방성(iso) × edge 보호(prot). 반환 = 데이터 없음 막질 Set
 function etch(rates,D,iso,ef,zone,prot,wfn,tg,open){
   const n=surfNormals(),opts={tg,open,noData:new Set()};
@@ -1309,22 +1726,22 @@ function impactOf(a,b){
   return{t,lvl};}
 
 // ---------- 엔진 체크포인트 ----------
-// 상태 스냅샷 {n(적용한 단계 수), nl(막 수), rec, SX, SY, LV, PHOTO, layers:[{meta, lo, v}], bytes}.
+// 상태 스냅샷 {n(적용한 단계 수), nl(막 수), rec, SX, SY, LV, PHOTO, pd(PDENS), ps(PSTEP), layers:[{meta, lo, v}], bytes}.
 //   막은 h의 0 아닌 구간 [lo, lo+v.length)만 복사, meta(불변 nx·ny·h0·mat·thin·si)는 참조만 공유.
 // 저장: 직전 체크포인트 이후 CK.every 단계 또는 CK.layers 막. 점유(CK.bytes)가 CK.budget(바이트)을 넘으면
 //   (이웃 간격 ÷ 기준 단계 focus와의 거리 가중)이 가장 작은 것부터 버림 → 보고 있는 단계 근처는 촘촘히, 먼 곳·막이 많은 레시피는 성기게
-// 점유 = 스냅샷 고유 배열(rec·SX·SY·LV + 막별 h 구간) + 체크포인트가 참조하는 서로 다른 meta의 배열(참조 계수로 한 번만 셈)
+// 점유 = 스냅샷 고유 배열(rec·SX·SY·LV·PDENS·PSTEP + 막별 h 구간) + 체크포인트가 참조하는 서로 다른 meta의 배열(참조 계수로 한 번만 셈)
 const CK={every:8,layers:400,budget:96e6,list:[],bytes:0,refs:new Map()};   // budget: 바이트 (3000층 레시피에서 체크포인트 ~6개)
-const metaBytes=m=>m.nx.byteLength+m.ny.byteLength+m.h0.byteLength;
+const metaBytes=m=>m.nx.byteLength+m.ny.byteLength+m.h0.byteLength+m.b0.byteLength;
 const packH=h=>{const[lo,hi]=nzRange(h);return{lo,v:h.slice(lo,hi)};};
 function unpackH(p){const h=new Float64Array(NP);h.set(p.v,p.lo);return h;}
 function snapState(){const L=layers.map(l=>({meta:l.meta,...packH(l.h)}));
-  return{n:ENG.at,nl:layers.length,rec:rec.slice(),SX:SX.slice(),SY:SY.slice(),LV:LV.slice(),PHOTO,layers:L,bytes:8*(4*NP+L.reduce((a,p)=>a+p.v.length,0))};}
+  return{n:ENG.at,nl:layers.length,rec:rec.slice(),SX:SX.slice(),SY:SY.slice(),LV:LV.slice(),PHOTO,pd:PDENS.slice(),ps:PSTEP.slice(),layers:L,bytes:8*(6*NP+L.reduce((a,p)=>a+p.v.length,0))};}
 // own=true: 다른 곳에서 참조하지 않는 임시 스냅샷(ENG.pending)이라 배열을 그대로 씀, false: 체크포인트 보존(복사)
 function loadState(s,own=false){const cp=a=>own?a:a.slice();
-  rec=cp(s.rec);SX=cp(s.SX);SY=cp(s.SY);LV=cp(s.LV);PHOTO=s.PHOTO;
+  rec=cp(s.rec);SX=cp(s.SX);SY=cp(s.SY);LV=cp(s.LV);PHOTO=s.PHOTO;PDENS=cp(s.pd);PSTEP=cp(s.ps);
   layers=s.layers.map(p=>({...p.meta,meta:p.meta,h:unpackH(p)}));ENG.at=s.n;ENG.stamp++;}
-function resetState(){rec=new Float64Array(NP);layers=[];PHOTO=null;recalc();ENG.at=0;ENG.stamp++;}
+function resetState(){rec=new Float64Array(NP);layers=[];PHOTO=null;PDENS=new Float64Array(NP).fill(1);PSTEP=new Float64Array(NP);recalc();ENG.at=0;ENG.stamp++;}
 const ckBest=n=>{let b=null;for(const c of CK.list){if(c.n>n)break;b=c;}return b;};
 // 체크포인트 하나가 목록에 들어올 때/나갈 때 점유 갱신 (meta는 처음 참조될 때만 더하고 마지막 참조가 빠질 때 뺌)
 function ckAccount(s,sign){CK.bytes+=sign*s.bytes;
@@ -1348,8 +1765,15 @@ function resumeAt(n){const live=ENG.at>=0&&ENG.at<=n?ENG.at:-1,c=ckBest(n);
 //   체크포인트 기준 단계(focus) = stash(재계산 중 볼 단계) 또는 목표 n
 function advanceTo(n,out=null,stash=-1){const focus=stash>=0?stash:n;
   const keep=()=>{if(ENG.at===stash&&stash<n)ENG.pending=snapState();};keep();
-  while(ENG.at<n){const si=ENG.at;applyStep(steps[si],si,out);ENG.at=si+1;ckMaybeSave(focus);keep();}
+  while(ENG.at<n){const si=ENG.at;applyStep(steps[si],si,out);if(out)out[si].pres=groupPresence();ENG.at=si+1;ckMaybeSave(focus);keep();}
   ENG.stamp++;}
+// 단계 직후 막 묶음 존재 요약 (표시 전용 기록, 계산 불변): 묶음 g(layerGroups 순서)마다 비트 1 = 전면 기준점, 2 = 후면 기준점, 4 = Apex에 있음
+//   (묶음 두께 합 ≥ BAND_EPS — 스택 행과 같은 기준). 막은 뒤에만 붙고 묶음은 단계를 넘지 않으므로 이 배열은 이후 묶음 목록의 앞부분과 같은 순서
+const PRES_BIT={F:1,B:2,A:4};
+function groupPresence(){const{iF,iB,iA}=refPts(),out=[];let prev=null,sF=0,sB=0,sA=0;
+  const flush=()=>{if(prev)out.push((sF>=BAND_EPS?PRES_BIT.F:0)|(sB>=BAND_EPS?PRES_BIT.B:0)|(sA>=BAND_EPS?PRES_BIT.A:0));};
+  for(const ly of layers){if(!prev||!sameGroup(prev,ly)){flush();sF=sB=sA=0;}const h=ly.h;sF+=h[iF];sB+=h[iB];sA+=h[iA];prev=ly;}
+  flush();return Uint8Array.from(out);}
 
 // ---------- 갱신 파이프라인 ----------
 // recompute : 형상·물성 변경(geoDirty)이면 전부, 레시피 편집이면 바뀐 첫 단계(dirtyFrom)부터만 — 그 이하 체크포인트/현재 상태에서 재개 → STEP_RES
@@ -1360,6 +1784,7 @@ function markGeoDirty(){ENG.geoDirty=true;}
 function firstChanged(a,b){const n=Math.min(a.length,b.length),same=(x,y)=>x===y||JSON.stringify(x)===JSON.stringify(y);
   for(let i=0;i<n;i++)if(!same(a[i],b[i]))return i;return a.length===b.length?-1:n;}
 function render(){
+  if(CMP.peek){CMP.peek=false;renderCmpCtl();}   // 엔진을 돌리기 전에 전/후 보기 종료 (그림 전역이 현재 상태여야 함)
   try{const d=firstChanged(ENG.simSteps,steps);if(d>=0)ENG.dirtyFrom=Math.min(ENG.dirtyFrom,d);
     if(ENG.geoDirty||!ENG.geo||isFinite(ENG.dirtyFrom))recompute(sel+1);selectStep();redraw();}
   catch(e){ENG.at=-1;ENG.pending=null;   // 계산 도중 실패한 상태는 버림 (체크포인트는 복사본이라 유효)
@@ -1367,10 +1792,10 @@ function render(){
 // focus = 재계산 뒤 볼 상태의 단계 수 (지나가며 ENG.pending으로 떠 둠 · 체크포인트 기준)
 function recompute(focus){
   if(!Number.isInteger(focus)||focus<0)throw new Error(`recompute: 잘못된 기준 단계 ${focus}`);
-  if(ENG.geoDirty||!ENG.geo){rampMm=readNum('rampUm')/1000;buildEngineGeo();ckClear();ENG.at=-1;ENG.dirtyFrom=0;ENG.geoDirty=false;}
+  if(ENG.geoDirty||!ENG.geo){rampMm=readNum('rampUm')/1000;ENG_EDGE_MODEL=readEdgeModel();buildEngineGeo();ckClear();ENG.at=-1;ENG.dirtyFrom=0;ENG.geoDirty=false;}
   const N=steps.length,d=Math.min(ENG.dirtyFrom,N);
   ckDropAfter(d);if(ENG.at>d)ENG.at=-1;
-  STEP_RES=STEP_RES.slice(0,d);for(let i=d;i<N;i++)STEP_RES.push({impact:null,arc:null});
+  STEP_RES=STEP_RES.slice(0,d);for(let i=d;i<N;i++)STEP_RES.push({impact:null,arc:null,chips:null});
   ENG.pending=null;resumeAt(d);
   advanceTo(N,STEP_RES,focus);                     // 끝까지(타임라인 신호등) — 볼 단계 상태는 지나가며 떠 둠
   ENG.dirtyFrom=Infinity;ENG.simSteps=steps.slice();}
@@ -1380,8 +1805,9 @@ function selectStep(){const n=sel+1,p=ENG.pending;ENG.pending=null;
 // ---------- 표시 방식 (화면 전용 — 엔진 layers·rec·LV는 읽기만) ----------
 // 모드 인터페이스: label · title · siT(geo) 표시 Si 두께(mm) · filmZ(lay) 막·Si 손실 px/µm · band(lay) 띠 두께(px, 0=두께 비례)
 //   units() 그릴 단위 [{idx(layers 인덱스), g(묶음 번호), G, fill(색 | 'mold' = Oxide/Nitride 교번 띠), fo(Mold Oxide 비율), h}] · present(u,i) 그 점에 있음 · unitPx(u,i,lay) 그 점 두께(px)
-//   ghost(u,i) 깎여 없어진 부분(흐리게) | null · stackPx(lay) 세로 배치용 막 높이(px) · bandLabel(u,i) 띠 안 라벨 | null
-//   siNormals 단위를 Si 외곽 법선으로 쌓음(띠가 생기고 없어지는 곳이 계단으로 — 단순 표시) | 현재 표면 법선(실제 형상)
+//   ghost(u,i) 그 점에서 제거된 단위(흐리게·점선 — '제거된 막' 켬일 때) · ghostAt 'band'(맨 위에 같은 두께 띠) | 'depo'(증착 직후 두께로 원래 높이에)
+//   stackPx(lay) 세로 배치용 막 높이(px) · bandLabel(u,i) 띠 안 라벨 | null
+//   모든 모드는 단위를 Si 외곽 법선 방향으로 쌓는다 (현재 표면 법선은 ×Z 과장된 컷 단차에서 급회전 → 위 띠가 부채꼴로 말림)
 //   axis 높이 축/grid · badge(lay) {text, cls} · siNote(lay) Si 툴팁 문구 · hint(lay) 안내 문구 | ''
 // buildDisp·draw·hitAt·커서는 이 인터페이스만 쓰므로 모드를 추가해도 그 함수들은 고치지 않는다
 const BAND_EPS=1e-4;   // µm — 이보다 얇으면 '없음' (스택·범례·그리기 공통)
@@ -1393,15 +1819,19 @@ function groupSum(G,key){const out=new Float64Array(NP);for(const k of G.idx){co
 // Mold 표시 띠 비율: Oxide 두께 / 한 쌍 두께 (단계 값, 알 수 없으면 반반)
 function moldOxFrac(G){const st=steps[G.si];return st&&st.type==='mold'&&st.ox+st.nit>0?st.ox/(st.ox+st.nit):.5;}
 // 과장·실축척: 막 하나 = 단위 하나. 단, Mold 묶음(thin)은 묶음 전체가 단위 하나 — 교번 띠로 칠함 (엔진은 쌍 단위 그대로)
-//   unit = {idx, g(묶음 번호), G, fill(색 | 'mold'), fo(Mold Oxide 비율), h(현재 두께 µm 배열)}
+//   unit = {idx, g(묶음 번호), G, fill(색 | 'mold'), fo(Mold Oxide 비율), h(현재 두께 µm 배열), h0(증착 직후 두께 µm 배열), tauOf()(Mold 띠 경계 — moldBandTau, 지연 계산)}
 let LAYER_U={stamp:-1,src:null,units:[]};
 function layerUnits(){if(LAYER_U.stamp===ENG.stamp&&LAYER_U.src===layers)return LAYER_U.units;
   const units=[];
   layerGroups().forEach((G,g)=>{
-    if(G.thin)units.push({idx:G.idx,g,G,fill:'mold',fo:moldOxFrac(G),h:groupSum(G,'h')});
-    else G.idx.forEach(L=>units.push({idx:[L],g,G,fill:MATERIALS[layers[L].mat].color,h:layers[L].h}));});
+    if(G.thin){const fo=moldOxFrac(G),h=groupSum(G,'h');let tau=null;units.push({idx:G.idx,g,G,fill:'mold',fo,h,h0:moldH0(G),tauOf:()=>tau||(tau=moldBandTau(G,h,fo))});}
+    else G.idx.forEach(L=>units.push({idx:[L],g,G,fill:MATERIALS[layers[L].mat].color,h:layers[L].h,h0:layers[L].h0}));});
   LAYER_U={stamp:ENG.stamp,src:layers,units};return units;}
 const layerOn=(u,i)=>u.h[i]>BAND_EPS,layerPx=(u,i,lay)=>u.h[i]*lay.Z;
+// 과장·실축척 '제거된 막': 증착 직후엔 있었고(1nm 초과) 지금은 없는 점
+const layerGone=(u,i)=>u.h[i]<=BAND_EPS&&u.h0[i]>RESID_MIN_UM;
+// 단위가 증착되던 때의 바닥 높이(그 아래 막 합계, µm) — b0를 가진 첫 막(Mold는 묶음 첫 막)의 값 (h≠0 구간 밖이면 0)
+function unitBase(u,i){for(const L of u.idx){const ly=layers[L],j=i-ly.nlo;if(j>=0&&j<ly.b0.length)return ly.b0[j];}return 0;}
 // 막 묶음 하나 = 띠 하나 (단순). h/h0 = 묶음 두께 합(µm). maxCnt = 한 위치에 쌓이는 띠 최대 수 (있는 띠 + 제거 표시)
 //   thr = '있음' 기준: 1nm 또는 그 막 증착 최대 두께의 2% 중 큰 값 — 증착 가장자리의 얇은 꼬리·nm 미만 잔류가 띠 하나를 통째로 차지하지 않게
 let SIMPLE_U={stamp:-1,src:null,units:[],maxCnt:0};
@@ -1417,40 +1847,47 @@ function groupUnits(){if(SIMPLE_U.stamp===ENG.stamp&&SIMPLE_U.src===layers)retur
   SIMPLE_U={stamp:ENG.stamp,src:layers,units,maxCnt};return units;}
 const VIEW_MODES={
  exag:{label:'과장',title:'막 두께를 수직 과장(⚙ 막 수직배율)하고 Si는 축소해서 표시',
-   siT:geo=>siDispT(geo),filmZ:()=>readNum('zScale'),band:()=>0,units:layerUnits,present:layerOn,unitPx:layerPx,ghost:null,bandLabel:null,
+   siT:geo=>siDispT(geo),filmZ:()=>readNum('zScale'),band:()=>0,units:layerUnits,present:layerOn,unitPx:layerPx,ghost:layerGone,ghostAt:'depo',bandLabel:null,
    stackPx:lay=>recipeEstUm()*lay.Z,axis:true,
-   badge:lay=>{const pct=Math.round(lay.T/lay.T0*100);return{text:`막 두께 ×${Math.round(lay.Z*1000/lay.ppm)} 과장${pct<100?` · Si ${pct}% 축소`:''}`,cls:''};},
+   badge:lay=>{const pct=Math.round(lay.T/lay.T0*100);return{text:`막 두께 ×${Math.round(lay.Z*1000/lay.ppm)} 과장${pct<100?` · Si ${pct}% 축소`:''}${ghostNote()}`,cls:''};},
    siNote:lay=>lay.T<lay.T0-1e-9?`표시는 ${Math.round(lay.T/lay.T0*100)}%로 축소`:'표시 실축척',hint:()=>''},
  true:{label:'실축척',title:'막과 Si를 같은 축척(가로세로 1:1)으로 표시',
-   siT:geo=>geo.T0,filmZ:lay=>lay.ppm/1000,band:()=>0,units:layerUnits,present:layerOn,unitPx:layerPx,ghost:null,bandLabel:null,
+   siT:geo=>geo.T0,filmZ:lay=>lay.ppm/1000,band:()=>0,units:layerUnits,present:layerOn,unitPx:layerPx,ghost:layerGone,ghostAt:'depo',bandLabel:null,
    stackPx:lay=>recipeEstUm()*lay.Z,axis:true,
-   badge:lay=>({text:`실축척 1:1${lay.clipped?' · 아래쪽 Si는 화면 밖':''}`,cls:'true'}),
+   badge:lay=>({text:`실축척 1:1${lay.clipped?' · 아래쪽 Si는 화면 밖':''}${ghostNote()}`,cls:'true'}),
    siNote:()=>'표시 실축척',
    hint:lay=>{let mx=0;for(let i=0;i<NP;i++)if(LV[i]>mx)mx=LV[i];
      return mx>BAND_EPS&&mx*lay.Z*ZM.k<3?'막이 너무 얇아 보이지 않습니다 — 0.1mm 보기나 확대(↘ 드래그 · 두 손가락)':'';}},
  simple:{label:'단순',title:'막 묶음을 같은 두께의 띠로 쌓아 순서만 표시 (두께 비례 아님 — 값은 라벨·툴팁)',
    siT:geo=>siDispT(geo),filmZ:()=>readNum('zScale'),
    band:lay=>{groupUnits();const b0=lay.Wd>=700?12:11;return Math.max(6,Math.min(b0,Math.floor((760*.45-34)/Math.max(1,SIMPLE_U.maxCnt))));},
-   units:groupUnits,present:(u,i)=>u.h[i]>=u.thr,unitPx:(u,i,lay)=>u.h[i]>=u.thr?lay.band:0,ghost:isGhost,
+   units:groupUnits,present:(u,i)=>u.h[i]>=u.thr,unitPx:(u,i,lay)=>u.h[i]>=u.thr?lay.band:0,ghost:isGhost,ghostAt:'band',
    bandLabel:(u,i)=>`${groupName(u.G)} ${fmtT(u.h[i],groupUnit(u.G))}`,
-   stackPx:lay=>(groupUnits(),SIMPLE_U.maxCnt)*lay.band,axis:false,siNormals:true,
-   badge:()=>({text:`단순 표시 · 두께 비례 아님${DISP&&DISP.stamp===ENG.stamp&&DISP.ghosts.length?' · 점선 = 제거된 막':''}`,cls:'simple'}),siNote:()=>'두께 비례 아님',hint:()=>''}};
+   stackPx:lay=>(groupUnits(),SIMPLE_U.maxCnt)*lay.band,axis:false,
+   badge:()=>({text:`단순 표시 · 두께 비례 아님${ghostNote()}`,cls:'simple'}),siNote:()=>'두께 비례 아님',hint:()=>''}};
 Object.entries(VIEW_MODES).forEach(([id,m])=>{m.id=id;});
 // 표시 설정 (localStorage에 기억 — 읽기·쓰기 실패해도 기본값으로 동작)
-const VIEW={mode:'exag',grid:true},PREF={mode:'webc.viewMode',grid:'webc.grid'};
+const VIEW={mode:'exag',grid:true,ghost:true},PREF={mode:'webc.viewMode',grid:'webc.grid',ghost:'webc.ghost'};
 function prefGet(key,isValid,def){try{const s=window.localStorage,v=s?s.getItem(key):null;return v!==null&&isValid(v)?v:def;}catch(e){return def;}}
 function prefSet(key,v){try{const s=window.localStorage;if(!s)return false;s.setItem(key,String(v));return true;}catch(e){return false;}}
 const viewMode=()=>VIEW_MODES[VIEW.mode]||VIEW_MODES.exag;
 function setViewMode(id){if(typeof id!=='string'||!hasOwn(VIEW_MODES,id))return false;
   if(VIEW.mode!==id){VIEW.mode=id;prefSet(PREF.mode,id);zoomReset(false);redraw();}return true;}
 function setGrid(on){VIEW.grid=!!on;prefSet(PREF.grid,VIEW.grid?'1':'0');zoomReset(false);redraw();}
+// '제거된 막' (단면도 점선 띠 · Layer 스택 취소선 행) 보이기 — 확대 상태는 유지
+function setGhost(on){VIEW.ghost=!!on;prefSet(PREF.ghost,VIEW.ghost?'1':'0');renderModeSeg();if(STACK_VIEW.args)renderStack(...STACK_VIEW.args);redraw();}
 function renderModeSeg(){const el=$('modeSeg'),g=$('gridTgl'),m=viewMode();
   if(el){if(el.children.length!==Object.keys(VIEW_MODES).length)el.innerHTML=Object.entries(VIEW_MODES).map(([id,v])=>`<button data-mode="${id}" title="${escHtml(v.title)}">${v.label}</button>`).join('');
     [...el.children].forEach(b=>{const on=b.dataset.mode===m.id;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});}
-  if(g){g.setAttribute('aria-pressed',String(VIEW.grid));g.disabled=!m.axis;g.title=m.axis?'막 높이 축·가로 grid 보이기/숨기기':'단순 표시에는 높이 축이 없습니다';}}
+  if(g){g.setAttribute('aria-pressed',String(VIEW.grid));g.disabled=!m.axis;g.title=m.axis?'막 높이 축·가로 grid 보이기/숨기기':'단순 표시에는 높이 축이 없습니다';}
+  const gh=$('ghostTgl');if(gh)gh.setAttribute('aria-pressed',String(VIEW.ghost));}
 function viewInit(){VIEW.mode=prefGet(PREF.mode,v=>hasOwn(VIEW_MODES,v),'exag');VIEW.grid=prefGet(PREF.grid,v=>v==='0'||v==='1','1')==='1';
   const s=$('modeSeg');if(s)s.addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)setViewMode(b.dataset.mode);});
   const g=$('gridTgl');if(g)g.addEventListener('click',()=>setGrid(!VIEW.grid));
+  VIEW.ghost=prefGet(PREF.ghost,v=>v==='0'||v==='1','1')==='1';
+  const gh=$('ghostTgl');if(gh)gh.addEventListener('click',()=>setGhost(!VIEW.ghost));
+  DENS.on=prefGet(DENS.pref,v=>v==='0'||v==='1','1')==='1';
+  const dt=$('densTgl');if(dt)dt.addEventListener('click',()=>setDens(!DENS.on));
   renderModeSeg();}
 
 // 화면 배치: 폭·보기 폭·모드 → lay {mode, span, Wd, H, cy, padL, padR, ppm, T, T0, Z, band, axis, axisW, clipped} → 표시 기하 → 그리기
@@ -1471,44 +1908,177 @@ function redraw(){
     lay.H=H;lay.cy=cy;
     if(cv.width!==Math.round(Wd*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(Wd*dpr);cv.height=Math.round(H*dpr);}
     cv.style.height=H+'px';sizeOverlay(H,dpr);
-    buildDisp(dp,lay);
     if(!LASTDRAW||LASTDRAW.Wd!==Wd||LASTDRAW.H!==H)zoomClamp(Wd,H);
-    LASTDRAW=lay;renderSpanSeg();renderModeSeg();draw(lay);}
+    LASTDRAW=lay;renderSpanSeg();renderModeSeg();renderCmpCtl();
+    inView(()=>{buildDisp(dp,lay);draw(lay);});}   // 배치는 현재 상태 기준 고정 → ⇄ 전/후 전환 때 그림이 흔들리지 않음
   catch(e){console.error('그리기 실패',e);}}
 function sizeOverlay(H,dpr){const ov=$('ov'),cv=$('cv');if(!ov||!cv)return;const w=cv.width,h=Math.round(H*dpr);
   if(ov.width!==w||ov.height!==h){ov.width=w;ov.height=h;}ov.style.height=H+'px';}
-// 표시 기하(px): 표시 프로파일 → Si 외곽(손실 rec×Z) → 모드 단위마다 현재 표시 표면의 법선으로 unitPx만큼 누적 (+ 단순 표시의 제거된 띠)
-//   반환 {key, stamp, P(Si 원래 외곽), BP(손실 반영 Si), cols:[BP, 단위0 바깥면, …], units, on[](Uint8 그 점에 있음), ghosts[{u,lo,hi,on}],
+// 표시 기하(px): 표시 프로파일 → Si 외곽(손실 rec×Z) → 모드 단위의 누적 높이(unitPx 합)를 Si 외곽 법선 방향으로 (+ 단순 표시의 제거된 띠)
+//   Si 외곽은 볼록 → 법선 방향 누적은 컷 폭(수 µm~수백 µm)과 무관하게 접히거나 말리지 않음 (컷 경사는 엔진 두께 그대로 경사면으로)
+//   반환 {key, stamp, P(Si 원래 외곽), BP(손실 반영 Si), nS(적층 방향 단위 법선), cols:[BP, 단위0 바깥면, …], units, on[](Uint8 그 점에 있음), ghosts[{u,lo,hi,on}],
 //         gcol(묶음 → 바깥면 cols 인덱스), ord(P.x 정렬 인덱스), reach(점별 기둥 길이 최대 px), sp(점 간격 최대 px), yRef(전면 평탄부 Si 표면 y)}
-function buildDisp(dp,lay){const mode=lay.mode,Z=lay.Z;
-  const key=[mode.id,ENG.stamp,lay.Wd,lay.H,lay.span,Z,dp.T,lay.band,lay.cy,lay.padL].join('|');
+function buildDisp(dp,lay){const mode=lay.mode,Z=lay.Z,gp=ghostPred(mode);
+  const key=[mode.id,ENG.stamp,lay.Wd,lay.H,lay.span,Z,dp.T,lay.band,lay.cy,lay.padL,gp?gp.key:'-'].join('|');
   if(DISP&&DISP.key===key)return DISP;
-  const N=dp.res.length,P=xyArr(N),nw=xyArr(N),BP=xyArr(N),len=new Float64Array(N);
+  const N=dp.res.length,P=xyArr(N),BP=xyArr(N),len=new Float64Array(N);
   dp.res.forEach((p,i)=>{P.x[i]=lay.padL+(p.R-(150-lay.span))*lay.ppm;P.y[i]=lay.cy+p.y*lay.ppm;});
-  {const n=normalsW(P,dp.lo,dp.hi,nw);for(let i=0;i<N;i++){BP.x[i]=P.x[i]-n.x[i]*rec[i]*Z;BP.y[i]=P.y[i]-n.y[i]*rec[i]*Z;len[i]=Math.abs(rec[i]*Z);}}
-  const units=mode.units(),on=[],cols=[BP],px=new Float64Array(N),fixedN=mode.siNormals?normalsW(P,dp.lo,dp.hi,xyArr(N)):null;let cur=BP;
+  const nS=normalsW(P,dp.lo,dp.hi,xyArr(N));   // 적층 방향 = Si 외곽 법선
+  for(let i=0;i<N;i++){BP.x[i]=P.x[i]-nS.x[i]*rec[i]*Z;BP.y[i]=P.y[i]-nS.y[i]*rec[i]*Z;len[i]=Math.abs(rec[i]*Z);}
+  const units=mode.units(),on=[],cols=[BP],cum=new Float64Array(N);let cur=BP;
   units.forEach(u=>{const o8=new Uint8Array(N);let any=false;
-    for(let i=0;i<N;i++){const v=mode.unitPx(u,i,lay);px[i]=v;if(v){any=true;len[i]+=Math.abs(v);}if(mode.present(u,i))o8[i]=1;}
+    for(let i=0;i<N;i++){const v=mode.unitPx(u,i,lay);if(v){any=true;cum[i]+=v;len[i]+=Math.abs(v);}if(mode.present(u,i))o8[i]=1;}
     on.push(o8);if(!any){cols.push(cur);return;}
-    const n=fixedN||normalsW(cur,dp.lo,dp.hi,nw),o=xyArr(N);
-    for(let i=0;i<N;i++){const v=px[i];if(v){o.x[i]=cur.x[i]+n.x[i]*v;o.y[i]=cur.y[i]+n.y[i]*v;}else{o.x[i]=cur.x[i];o.y[i]=cur.y[i];}}
+    const o=xyArr(N);
+    for(let i=0;i<N;i++){o.x[i]=BP.x[i]+nS.x[i]*cum[i];o.y[i]=BP.y[i]+nS.y[i]*cum[i];}
     cols.push(o);cur=o;});
-  const ghosts=mode.ghost?buildGhosts(mode,units,on,cur,dp,lay.band,fixedN):[];
+  const ghosts=!gp?[]:mode.ghostAt==='depo'?buildDepoGhosts(gp.fn,units,on,cum,BP,nS,Z):buildGhosts(gp.fn,units,on,cur,lay.band,nS);
   const gcol=new Int32Array(layerGroups().length);units.forEach((u,k)=>{gcol[u.g]=k+1;});
   const ord=Int32Array.from({length:N},(_,i)=>i).sort((a,b)=>P.x[a]-P.x[b]);
   let reach=0,sp=0;for(let i=0;i<N;i++){if(len[i]>reach)reach=len[i];if(i){const s=Math.hypot(P.x[i]-P.x[i-1],P.y[i]-P.y[i-1]);if(s>sp)sp=s;}}
-  return(DISP={key,stamp:ENG.stamp,P,BP,cols,units,on,ghosts,gcol,ord,reach,sp,yRef:P.y[0]});}
-// 제거된 띠(증착 직후엔 있었고 지금은 없음): 그 위치에 위로 남은 띠가 없을 때만 맨 위에 흐리게 쌓음 (위치당 GHOST_MAX개까지)
-function buildGhosts(mode,units,on,surf,dp,band,fixedN){const N=surf.x.length,top=new Int32Array(N).fill(-1),cnt=new Uint8Array(N),nw=xyArr(N),out=[];
-  on.forEach((o8,k)=>{for(let i=0;i<N;i++)if(o8[i])top[i]=k;});
+  return(DISP={key,stamp:ENG.stamp,P,BP,nS,cols,units,on,ghosts,gcol,ord,reach,sp,yRef:P.y[0]});}
+// 점별 맨 위에 있는 단위 번호 (없으면 −1) — 제거된 막은 그 위(남은 막이 덮지 않은 곳)에만 그림
+function topUnits(on,N){const top=new Int32Array(N).fill(-1);on.forEach((o8,k)=>{for(let i=0;i<N;i++)if(o8[i])top[i]=k;});return top;}
+// 제거된 띠 (단순, ghostAt 'band'): 그 위치에 위로 남은 띠가 없을 때만 맨 위에 흐리게 쌓음 (위치당 GHOST_MAX개까지). pred(u,i) = 그 점에 그릴지
+function buildGhosts(pred,units,on,surf,band,nS){const N=surf.x.length,top=topUnits(on,N),cnt=new Uint8Array(N),out=[];
   let cur=surf;
   units.forEach((u,k)=>{const o8=new Uint8Array(N);let any=false;
-    for(let i=0;i<N;i++)if(k>top[i]&&cnt[i]<GHOST_MAX&&mode.ghost(u,i)){o8[i]=1;cnt[i]++;any=true;}
+    for(let i=0;i<N;i++)if(k>top[i]&&cnt[i]<GHOST_MAX&&pred(u,i)){o8[i]=1;cnt[i]++;any=true;}
     if(!any)return;
-    const n=fixedN||normalsW(cur,dp.lo,dp.hi,nw),o=xyArr(N);
-    for(let i=0;i<N;i++){const v=o8[i]?band:0;o.x[i]=cur.x[i]+n.x[i]*v;o.y[i]=cur.y[i]+n.y[i]*v;}
+    const o=xyArr(N);
+    for(let i=0;i<N;i++){const v=o8[i]?band:0;o.x[i]=cur.x[i]+nS.x[i]*v;o.y[i]=cur.y[i]+nS.y[i]*v;}
     out.push({u:k,lo:cur,hi:o,on:o8});cur=o;});
   return out;}
+// 제거된 막 (과장·실축척, ghostAt 'depo'): 증착 직후 두께(h0)로, 증착되던 때의 높이(unitBase)에 — 지금 남은 막·앞서 그린 제거 막과 겹치지 않게 그 위로 밀어 올림
+//   위에서부터 깎인 막(PES·ash 등)은 원래 있던 자리에 보이고, 그 사이 틈은 아래 막이 깎인 두께. cum = 점별 현재 막 높이(px, Si 외곽 법선 방향)
+function buildDepoGhosts(pred,units,on,cum,BP,nS,Z){const N=cum.length,top=topUnits(on,N),floor=Float64Array.from(cum),out=[];
+  units.forEach((u,k)=>{let o8=null;const a=new Float64Array(N),b=new Float64Array(N);
+    for(let i=0;i<N;i++){a[i]=b[i]=floor[i];
+      if(k>top[i]&&pred(u,i)){a[i]=Math.max(floor[i],unitBase(u,i)*Z);b[i]=a[i]+u.h0[i]*Z;floor[i]=b[i];(o8||(o8=new Uint8Array(N)))[i]=1;}}
+    if(!o8)return;
+    const lo=xyArr(N),hi=xyArr(N);
+    for(let i=0;i<N;i++){lo.x[i]=BP.x[i]+nS.x[i]*a[i];lo.y[i]=BP.y[i]+nS.y[i]*a[i];hi.x[i]=BP.x[i]+nS.x[i]*b[i];hi.y[i]=BP.y[i]+nS.y[i]*b[i];}
+    out.push({u:k,lo,hi,on:o8});});
+  return out;}
+// 제거 표시 판정 (buildDisp용): '제거된 막' 켬 → 모드의 ghost · 단순 표시에서 비교 켬 → 기준 단계에 있던 띠도. 반환 {fn(u,i), key(캐시 구분)} | null
+function ghostPred(mode){const g=VIEW.ghost&&mode.ghost?mode.ghost:null,c=mode.ghostAt==='band'?cmpGonePred():null;
+  if(!g&&!c)return null;
+  return{fn:g&&c?(u,i)=>g(u,i)||c.fn(u,i):g||c.fn,key:(g?'g':'')+(c?'c'+c.key:'')};}
+const ghostNote=()=>DISP&&DISP.stamp===ENG.stamp&&DISP.ghosts.length?' · 점선 = 제거된 막':'';
+
+// ---------- 진행 전/후 비교 (표시 전용 — 엔진 계산·체크포인트 결과 불변) ----------
+// 기준 단계 = 공정 순서 표에서 ◎(또는 Alt+클릭)으로 고정한 단계, 없으면 선택 단계의 직전 단계(START 포함). 선택이 START면 기준 없음
+// 기준 상태는 체크포인트 → 앞으로 적용(selectStep과 같은 경로)으로 따로 계산해 BASE에 캐시 — 현재 상태 배열은 건드리지 않음(viewNow/viewSet)
+//   ⇄ 전/후(누르는 동안·B 키) = 그림만 기준 상태로 (withView: 그리기·hover가 읽는 전역을 잠시 바꿈) · 비교 켬 = 기준 표면 점선 + 변화 영역 색칠 + Δ 칩
+const CMP={on:false,peek:false,pin:null};   // pin: {start:true} | {st:단계 객체(불변 — 삽입·삭제 뒤에도 같은 단계를 따라감)} | null
+let BASE={n:-1,steps:null,geo:null,S:null},BASE_SERIAL=0,LIVE_MET=null;
+const CMP_EPS=1e-3;   // µm — 변화로 칠하는 하한 (1nm)
+const CMP_FILL={cut:'rgba(239,68,68,.4)',add:'rgba(16,185,129,.4)'};
+// 기준 단계 인덱스 (−1 = START) | null(기준 없음). 고정한 단계가 레시피에서 사라졌으면 고정 해제
+function baseIndex(){const p=CMP.pin;
+  if(p){if(p.start)return -1;const i=steps.indexOf(p.st);if(i>=0)return i;CMP.pin=null;}
+  return sel>=0?sel-1:null;}
+const baseLabel=b=>b<0?'START':`${b+1}단계`;
+// 그리기·hover가 읽는 엔진 전역 + 그 상태의 표시 캐시 묶음
+function viewNow(){return{layers,rec,SX,SY,LV,PHOTO,PDENS,PSTEP,sel,at:ENG.at,stamp:ENG.stamp,cursi:CURSI,disp:DISP,lu:LAYER_U,su:SIMPLE_U,gr:GROUPS};}
+function viewSet(v){layers=v.layers;rec=v.rec;SX=v.SX;SY=v.SY;LV=v.LV;PHOTO=v.PHOTO;PDENS=v.PDENS;PSTEP=v.PSTEP;sel=v.sel;
+  ENG.at=v.at;ENG.stamp=v.stamp;CURSI=v.cursi;DISP=v.disp;LAYER_U=v.lu;SIMPLE_U=v.su;GROUPS=v.gr;}
+// S 상태로 fn 실행 후 원래대로 (S의 표시 캐시는 S에 남김 → 다음 전환 때 재사용)
+function withView(S,fn){const live=viewNow();viewSet(S);
+  try{return fn();}finally{S.disp=DISP;S.lu=LAYER_U;S.su=SIMPLE_U;S.gr=GROUPS;viewSet(live);}}
+const peekState=()=>CMP.peek&&BASE.S?BASE.S:null;
+const inView=fn=>{const S=peekState();return S?withView(S,fn):fn();};
+// n단계 직후 엔진 상태 (현재 상태는 그대로): 현재 배열을 출발점으로 쓰지 않게(ENG.at=−1) 체크포인트 사본/Bare Si에서 앞으로 적용
+//   resetState의 recalc는 SX·SY·LV에 덮어쓰므로 새 배열로 떼어 놓고 시작. stamp는 음수(엔진 stamp와 겹치지 않음)
+function engineStateAt(n){
+  if(!Number.isInteger(n)||n<0||n>steps.length)throw new Error(`기준 단계 범위 밖: ${n}`);
+  const live=viewNow(),pend=ENG.pending;
+  try{SX=new Float64Array(NP);SY=new Float64Array(NP);LV=new Float64Array(NP);ENG.at=-1;
+    resumeAt(n);advanceTo(n);
+    const S={...viewNow(),sel:n-1,stamp:-2-(BASE_SERIAL++),disp:null,lu:{stamp:NaN,src:null,units:[]},su:{stamp:NaN,src:null,units:[],maxCnt:0},gr:{src:null,n:-1,g:[]},uh:new Map()};
+    S.m=metrics();S.dE=edgeStepDE(refPts().iF);return S;}
+  finally{viewSet(live);ENG.pending=pend;}}
+// 기준 상태 (캐시: 같은 레시피 계산·형상·단계면 재사용). 현재 상태가 선택 단계와 맞지 않으면(계산 실패·전환 중) null
+function getBase(){const b=baseIndex();if(b===null||!ENG.geo||!NP||ENG.at!==sel+1||ENG.stamp<0)return null;
+  const n=b+1;if(BASE.S&&BASE.n===n&&BASE.steps===ENG.simSteps&&BASE.geo===ENG.geo)return BASE.S;
+  try{const S=engineStateAt(n);BASE={n,steps:ENG.simSteps,geo:ENG.geo,S};return S;}
+  catch(e){console.error('기준 단계 계산 실패',e);BASE={n:-1,steps:null,geo:null,S:null};toast('기준 단계를 계산하지 못했습니다',{err:true});return null;}}
+const cmpBase=()=>CMP.on&&!CMP.peek?getBase():null;
+// 기준 상태에서 표시 단위의 막 합 (단순 표시 비교용, 기준 상태별 캐시)
+function baseUnitH(S,u){const k=u.idx[0]+':'+u.idx.length;let a=S.uh.get(k);if(a)return a;a=new Float64Array(NP);
+  for(const L of u.idx){const ly=S.layers[L];if(!ly)continue;const h=ly.h;for(let i=0;i<NP;i++)a[i]+=h[i];}
+  S.uh.set(k,a);return a;}
+// 단순 표시 + 비교: 기준 단계엔 있었고 지금은 없는 띠 → 제거 띠로 쌓음 (빨강으로 덧칠)
+function cmpGonePred(){const S=cmpBase();if(!S)return null;return{fn:(u,i)=>u.h[i]<u.thr&&baseUnitH(S,u)[i]>=u.thr,key:S.stamp};}
+// 과장·실축척 비교 기하: 점별 Si 원래 외곽에서의 표면 높이 (막 합 − Si 손실) — 기준 B · 현재 C, sg = 변화 부호 (+1 증착 / −1 제거 / 0)
+let CMP_G={key:''};
+function cmpSurface(D,lay,S){const key=D.key+'|'+S.stamp;if(CMP_G.key===key)return CMP_G;
+  const N=NP,Z=lay.Z,B=xyArr(N),C=xyArr(N),sg=new Int8Array(N),{P,nS}=D;
+  for(let i=0;i<N;i++){const hb=S.LV[i]-S.rec[i],hc=LV[i]-rec[i],d=hc-hb;sg[i]=d>CMP_EPS?1:d<-CMP_EPS?-1:0;
+    B.x[i]=P.x[i]+nS.x[i]*hb*Z;B.y[i]=P.y[i]+nS.y[i]*hb*Z;C.x[i]=P.x[i]+nS.x[i]*hc*Z;C.y[i]=P.y[i]+nS.y[i]*hc*Z;}
+  return(CMP_G={key,B,C,sg});}
+// mask(i)가 참인 연속 구간마다 lo~hi 사이를 칠함 (양끝 한 점씩 넓혀 이웃과 이어지게)
+function tintRuns(ctx,lo,hi,N,mask,color){let i=0,n=0;ctx.fillStyle=color;
+  while(i<N){if(!mask(i)){i++;continue;}let j=i;while(j+1<N&&mask(j+1))j++;
+    runPath(ctx,lo,hi,Math.max(0,i-1),Math.min(N-1,j+1),0,1);ctx.fill();n++;i=j+1;}
+  return n;}
+// 비교 덧그림 (확대 변환 안에서). 반환 {cut, add} 칠한 구간 수 | null(비교 아님)
+function drawCompare(ctx,lay,lw){const S=cmpBase(),D=DISP;if(!S||!D||D.stamp!==ENG.stamp)return null;const N=NP;
+  if(lay.mode.ghostAt==='band'){let add=0,cut=0;   // 단순: 새로 생긴 띠 초록 · 기준에 있던 띠(제거 띠) 빨강
+    D.units.forEach((u,j)=>{const bh=baseUnitH(S,u),on=D.on[j];add+=tintRuns(ctx,D.cols[j],D.cols[j+1],N,i=>on[i]&&bh[i]<u.thr,CMP_FILL.add);});
+    D.ghosts.forEach(gh=>{const u=D.units[gh.u],bh=baseUnitH(S,u);cut+=tintRuns(ctx,gh.lo,gh.hi,N,i=>gh.on[i]&&bh[i]>=u.thr,CMP_FILL.cut);});
+    return{cut,add};}
+  const G=cmpSurface(D,lay,S),sg=G.sg;
+  const cut=tintRuns(ctx,G.C,G.B,N,i=>sg[i]<0,CMP_FILL.cut),add=tintRuns(ctx,G.C,G.B,N,i=>sg[i]>0,CMP_FILL.add);
+  // 기준 표면 점선: 바뀐 구간(± 두 점)만 — 같은 곳은 현재 외곽과 겹쳐 잡음만 됨
+  ctx.save();ctx.setLineDash([4*lw,3*lw]);ctx.lineWidth=1.3*lw;ctx.strokeStyle='rgba(248,250,252,.9)';ctx.beginPath();let pen=false;
+  for(let i=0;i<N;i++){const near=sg[i]||(i>0&&sg[i-1])||(i+1<N&&sg[i+1])||(i>1&&sg[i-2])||(i+2<N&&sg[i+2]);
+    if(near){pen?ctx.lineTo(G.B.x[i],G.B.y[i]):ctx.moveTo(G.B.x[i],G.B.y[i]);pen=true;}else pen=false;}
+  ctx.stroke();ctx.restore();return{cut,add};}
+// Δ 칩 (판정 줄 옆): 현재 − 기준 metrics
+const fmtDelta=(v,u)=>Math.abs(v)<.005?`±0${u}`:`${v>0?'+':'−'}${Math.abs(v).toFixed(2)}${u}`;
+function cmpDeltas(S,L){return[['Edge 막',L.m.e-S.m.e,'µm','Edge(0~2mm) 평균 막 두께 변화'],['Si 노출',L.m.ex-S.m.ex,'mm','Bare Si 노출 폭 변화'],
+  ['Si 손실',L.m.si-S.m.si,'µm','최대 Si 손실 변화'],['단차',L.dE-S.dE,'µm','Edge 단차(R0.3~1.5mm vs 내측) 변화']];}
+function renderCmpSum(){const el=$('cmpSum');if(!el)return;const S=CMP.on?getBase():null,L=LIVE_MET,b=baseIndex();
+  if(!S||!L||b===null){el.hidden=true;el.textContent='';return;}
+  const D=cmpDeltas(S,L);el.hidden=false;
+  el.title=`기준 ${baseLabel(b)} 직후 → 현재 ${sel+1}단계 직후 변화\n`+D.map(([k,v,u,t])=>`${t}: ${fmtDelta(v,u)}`).join('\n');
+  el.innerHTML=`<span class="k">Δ vs ${baseLabel(b)}</span>`+D.map(([k,v,u])=>`<span class="it" data-k="${k}" data-v="${v}"><span class="k">${k}</span> <b>${fmtDelta(v,u)}</b></span>`).join('');}
+// 단면도 머리 컨트롤·안내 배지 상태
+function renderCmpCtl(){const b=baseIndex(),pb=$('peekBtn'),ct=$('cmpTgl'),lb=$('cmpBase'),bg=$('cmpBadge');
+  if(pb){pb.disabled=b===null;pb.setAttribute('aria-pressed',String(CMP.peek));
+    pb.title=b===null?'기준 단계가 없습니다 — 단계를 선택하거나 공정 순서 표에서 ◎로 기준을 고정하세요':`누르고 있는 동안(또는 B 키) 기준 ${baseLabel(b)} 직후 그림 · 놓으면 현재`;}
+  if(ct)ct.setAttribute('aria-pressed',String(CMP.on));
+  if(lb){lb.hidden=b===null;lb.innerHTML=b===null?'':CMP.pin?`<button class="tgl" aria-pressed="true" data-unpin title="기준 고정 해제 (선택 단계의 직전으로)">기준 ${baseLabel(b)} ✕</button>`:`<span class="sub" title="선택 단계의 직전 — 공정 순서 표 ◎로 고정">기준 ${baseLabel(b)}</span>`;}
+  if(bg){const S=CMP.peek?BASE.S:null;let t='';
+    if(S&&b!==null)t=`◀ 기준 ${baseLabel(b)} 직후 표시 중 · 놓으면 현재(${sel+1}단계)`;
+    else if(CMP.on&&b!==null&&sel>=0)t=`비교 vs ${baseLabel(b)} · <i class="cut"></i>제거 <i class="add"></i>증착${viewMode().ghostAt==='depo'?' · <i class="ln"></i>기준 표면':''}`;
+    bg.innerHTML=t;bg.hidden=!t;}}
+function peekSet(on){on=!!on;if(on===CMP.peek)return true;
+  if(on&&!getBase())return false;
+  CMP.peek=on;hoverClear();renderCmpCtl();redraw();return true;}
+function setCompare(on){CMP.on=!!on;afterCmpChange();}
+// 기준 고정/해제 (같은 단계를 다시 누르면 해제). i = −1(START) … steps.length−1
+function togglePin(i){if(!Number.isInteger(i)||i<-1||i>=steps.length)return false;
+  CMP.pin=CMP.pin&&baseIndex()===i?null:i<0?{start:true}:{st:steps[i]};afterCmpChange();return true;}
+function afterCmpChange(){if(CMP.peek)peekSet(false);renderTimeline();renderCmpCtl();renderCmpSum();redraw();}
+// ⇄ 버튼: 마우스·펜·터치 누르는 동안 (포인터 캡처 — 손가락이 버튼 밖으로 나가도 유지) · 키보드 Space/Enter 누르는 동안 · 전역 B 키
+const isPeekKey=e=>e.code==='KeyB'||e.key==='b'||e.key==='B';
+function cmpInit(){const b=$('peekBtn'),ct=$('cmpTgl'),lb=$('cmpBase');
+  if(b){const end=()=>peekSet(false);
+    b.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(err){/* 이미 끝난 포인터 */}if(!peekSet(true))toast(b.title);});
+    ['pointerup','pointercancel','lostpointercapture'].forEach(n=>b.addEventListener(n,end));
+    b.addEventListener('contextmenu',e=>e.preventDefault());   // 터치 길게 누름 메뉴 억제
+    b.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')){e.preventDefault();if(!e.repeat)peekSet(true);}});
+    b.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();end();}});
+    b.addEventListener('blur',end);
+    addEventListener('keydown',e=>{if(!isPeekKey(e)||e.ctrlKey||e.metaKey||e.altKey||isTypingTarget(document.activeElement)||isTypingTarget(e.target)||document.querySelector('dialog[open]')||document.body.classList.contains('adv'))return;
+      e.preventDefault();if(!e.repeat)peekSet(true);});
+    addEventListener('keyup',e=>{if(isPeekKey(e))end();});
+    addEventListener('blur',end);document.addEventListener('visibilitychange',()=>{if(document.hidden)end();});}
+  if(ct)ct.addEventListener('click',()=>setCompare(!CMP.on));
+  if(lb)lb.addEventListener('click',e=>{if(e.target.closest('[data-unpin]')){CMP.pin=null;afterCmpChange();}});
+  renderCmpCtl();}
 
 // Edge 상태 패널: 신호등 지표 + 한 줄 판정
 // 판정은 단계를 선택했을 때만 (공정 전/공정 없음은 renderStatusBar가 중립 표시)
@@ -1527,9 +2097,12 @@ function edgeStatus(m,bc,ph,am,apex,front){if(sel<0||!steps[sel]){renderStatusBa
   add('Peeling 지수 (bevel)',`${pl.toFixed(0)} N/m`,!has?null:pl<=p?0:pl<=2*p?1:2,'Bevel 막 peeling 위험');
   if(ph)add('Photo edge pattern',ph.br>.2?`끊김 ${ph.br.toFixed(1)}mm`:'정상',ph.br>.2?2:0,`끊긴 pattern ${ph.br.toFixed(1)}mm`);
   if(am)add('Arcing (이 단계)',`${ARC_KO[am.lvl]} (${am.score})`,am.lvl,`Arcing ${ARC_KO[am.lvl]}`);
+  (resOf(sel).chips||[]).forEach(c=>add(c.k,escHtml(c.v),c.lvl,c.msg));
+  if(edgeNoticeOn())add('끝단 모델','공정별 (구버전 파일)',0,EDGE_NOTICE.msg);
   renderStatusBar(I);}
 // Status Bar 렌더 (표시 전용): 현재 시점 · 판정 1줄 · 위험 칩 (N/A 숨김, 위험한 것부터)
-const CHIP_K={'Edge 막 상태':'막','Si 손실':'Si 손실','Edge 단차 (vs 내측)':'단차','Peeling 지수 (bevel)':'Peeling','Photo edge pattern':'Photo','Arcing (이 단계)':'Arcing'};
+const CHIP_K={'Edge 막 상태':'막','Si 손실':'Si 손실','Edge 단차 (vs 내측)':'단차','Peeling 지수 (bevel)':'Peeling','Photo edge pattern':'Photo','Arcing (이 단계)':'Arcing',
+  '끝단 전이':'끝단','계단 최대':'계단','undercut (est)':'undercut*','끝단 모델':'끝단 모델','패턴↔떡판 단차':'떡판 단차','잔여 패턴 단차':'잔여 단차','Edge roll-off':'Roll-off','Edge 잔막 링':'잔막 링','베벨 W 잔막':'베벨 W','W recess (est)':'W recess*','후면 베벨 잔막':'후면 베벨'};
 const CHIP_IC=['●','⚠','✖'];
 function renderStatusBar(I){const v=$('verdict'),ch=$('inds'),at=$('stAt');if(!v||!ch||!at)return;
   const st=steps[sel];
@@ -1545,23 +2118,49 @@ function renderStatusBar(I){const v=$('verdict'),ch=$('inds'),at=$('stAt');if(!v
   at.innerHTML=`${sel+1} / ${steps.length}단계 직후 · ${stepLabel(st)}`;}
 
 // 단계 하나 적용. out: STEP_RES(영향도·Arcing 기록) 또는 null(상태만 계산)
+// 반대면 넘어감 (전면 증착 → 후면 베벨, 후면 증착 → 전면 베벨): Apex 경계 너머 이 단계 증착이 1nm 넘는 호 길이·최대 두께
+function wrapInfo(L0,region){const toBack=region==='front';let len=0,mx=0;
+  for(let i=0;i<NP;i++){const s=toBack?arc[i]-APEX.sB:APEX.sF-arc[i];if(s<=0)continue;const dh=LV[i]-L0[i];if(dh>1e-3){if(s>len)len=s;if(dh>mx)mx=dh;}}
+  return{len,mx};}
+function wrapChip(L0,region){const w=wrapInfo(L0,region),side=region==='front'?'후면':'전면';
+  return{k:`${side} 넘어감`,v:w.len>0?`${w.len.toFixed(2)}mm · 최대 ${fmtT(w.mx,'um')} @ ${side} 베벨`:'없음',lvl:0,
+    msg:`편심 최대 쪽(worst side) 기준 ${side} 베벨 넘어감 — PES/BVS로 제거`};}
+// 후면 베벨 잔막 (Apex 경계 너머 후면 베벨, 후면 평탄부 제외) 최대 막 두께
+function backBevelFilm(){let mx=0;for(let i=0;i<NP;i++)if(arc[i]>APEX.sB&&pts[i].f>-.99&&LV[i]>mx)mx=LV[i];return mx;}
+// 막이 모두 없어진 점은 패턴 상태 초기화 (제거·식각·세정 뒤)
+function clearBarePattern(){for(let i=0;i<NP;i++)if(LV[i]<STOP_UM){PDENS[i]=1;PSTEP[i]=0;}}
 function applyStep(st,si,out){CURSI=si;const R=out?out[si]:null;
-  if(st.type==='depo'){deposit(st.material,st.thicknessUm,st.region,false,edgeRange(st));return;}
-  if(st.type==='mold'){const rg=edgeRange(st);for(let k=0;k<st.pairs;k++){deposit('SiO2',st.ox/1e3,st.region,true,rg);deposit('SiN',st.nit/1e3,st.region,true,rg);}if(st.cap&&st.capNm)deposit(st.cap,st.capNm/1e3,st.region,false,rg);return;}
+  if(st.type==='depo'||st.type==='mold'){const pec=isPecvd(st),wp=pec?pecvdOf(st):null,rg=edgeRange(st),L0=R&&pec?LV.slice():null;
+    if(st.type==='depo')deposit(st.material,st.thicknessUm,st.region,false,rg,wp);
+    else{for(let k=0;k<st.pairs;k++){deposit('SiO2',st.ox/1e3,st.region,true,rg,wp);deposit('SiN',st.nit/1e3,st.region,true,rg,wp);}if(st.cap&&st.capNm)deposit(st.cap,st.capNm/1e3,st.region,false,rg,wp);}
+    if(L0)R.chips=[wrapChip(L0,st.region)];return;}
   if(st.type==='photo'){applyPhoto(st);if(R)R.impact=photoImpact(st,PHOTO.r);return;}
-  const bias=st.type==='etch'?({harc:1,slit:1,teos:.6,acl:.5,poly:.5,nit:.5}[st.key]||.5):st.type==='clean'?(CLEAN[st.key].cat==='plasma'?.3:0):(st.type==='remove'&&st.action==='strip')?.6:0;
+  const bias=st.type==='etch'?({harc:1,slit:1,teos:.6,acl:.5,poly:.5,nit:.5}[st.key]||.5):st.type==='clean'?(CLEAN[st.key].cat==='plasma'?.3:0):(st.type==='remove'&&(st.action==='strip'||st.action==='bvs'))?.6:0;
   if(R)R.arc=bias>0?arcRisk(bias):null;
-  const a=R?metrics():null;
+  const a=R?metrics():null,cut=R?edgeCutOf(st):null,LV0=cut?LV.slice():null;   // cut·LV0: 끝단 지표 (단계 직전 막 합계)
   let noData=null;   // etch·clean: 제거율 데이터가 없어 정지한 막질 Set
   if(st.type==='etch'){const e=ETCH[st.key];if(!e)throw new Error(`알 수 없는 Etch 종류: ${st.key}`);
     noData=etch(e.r,st.depth,st.iso,st.ef,st.zone,st.prot,p=>(1+p.f)/2,e.tg,(st.open===undefined?3:st.open)/100);}
   else if(st.type==='clean'){const c=CLEAN[st.key];if(!c)throw new Error(`알 수 없는 약액: ${st.key}`);
-    const dd=st.distMm||0,wf={imm:()=>1,front:p=>(1+p.f)/2,back:p=>(1-p.f)/2,edge:dd>0?p=>1-smooth(dd-rampMm,dd+rampMm,p.d):p=>1-smooth(LB-.05,LB+.05,p.d)}[st.mode];
+    const dd=st.distMm||0,prof=EDGE_PROC.clean[c.cat];if(!prof)throw new Error(`알 수 없는 세정 구분: ${c.cat}`);
+    const wf={imm:()=>1,front:p=>(1+p.f)/2,back:p=>(1-p.f)/2,edge:dd>0?p=>1-edgeRemain(p.d,dd,prof,st.edgeW):p=>1-bevelOnlyRemain(p.d)}[st.mode];
     if(!wf)throw new Error(`알 수 없는 처리 영역: ${st.mode}`);
     noData=clean(c.r,st.amt/1000,wf);}
-  else if(st.action==='cmp')cmp(st);else removal(st);
+  let cmpRes=null;const bb0=R&&st.type==='remove'?backBevelFilm():0;
+  if(st.type==='remove'){if(st.action==='cmp'){cmpRes=cmpRun(st);noData=cmpRes.noData;}else removal(st);}
+  clearBarePattern();
   if(R){R.impact=impactOf(a,metrics());const nd=noData?[...noData]:[];
-    if(nd.length)Object.assign(R.impact,{noData:nd,t:`${R.impact.t} · ⚠ 데이터 없음 막(${nd.map(shortMat).join(', ')})에서 정지 — 결과 불확실`});}}
+    if(nd.length)Object.assign(R.impact,{noData:nd,t:`${R.impact.t} · ⚠ 데이터 없음 막(${nd.map(shortMat).join(', ')})에서 정지 — 결과 불확실`});
+    if(cmpRes){cmpReport(st,cmpRes,R);R.dens=cmpDensMap(st,cmpRes);}
+    else{const ch=[];
+      if(st.type==='remove'&&bb0>1e-3){const bb=backBevelFilm();
+        ch.push(bb>1e-3?{k:'후면 베벨 잔막',v:fmtT(bb,'um'),lvl:1,msg:`후면 베벨 잔막 ${fmtT(bb,'um')} — PES/BVS로 제거 검토`}:{k:'후면 베벨 잔막',v:'없음',lvl:0,msg:'후면 베벨 막 제거됨'});}
+      if(cut){const m=edgeMetrics(cut,LV0);if(m){R.edge=m;ch.push(...edgeChips(m));}}
+      if(ch.length)R.chips=ch;}}}
+// 밀도 띠(표시 전용): 패턴 밀도를 쓴 CMP 단계의 ρ_eff = CMP 시작 시점 밀도의 Lp 창 평균 (cmpRun의 유효 밀도와 같은 정의, 하한 RHO_MIN). 패턴이 없으면 null
+function cmpDensMap(st,c){const d0=c.d0;if(st.patSrc==='off'||!d0||!d0.some(v=>v<.999))return null;
+  const nC=d0.length,re=cmpWindow(nC,st.Lp/2).mean(d0,new Float64Array(nC)),rho=new Float32Array(nC);
+  for(let i=0;i<nC;i++)rho[i]=Math.min(1,Math.max(CMP_DEF.RHO_MIN,re[i]));return{rho,nC};}
 
 function draw(lay){
   // ---- 그리기 ---- (기본 좌표 → 화면: (v-o)*k)
@@ -1589,31 +2188,70 @@ function draw(lay){
   const hh=lay.T/2*ppm,g=ctx.createLinearGradient(0,cy-hh,0,cy+hh);SI_GRAD.forEach(([at,f])=>g.addColorStop(at,shadeHex(SI_COLOR,f)));
   const D=DISP;if(!D||D.stamp!==ENG.stamp||D.cols.length!==D.units.length+1||D.BP.x.length!==NP){console.warn('표시 기하가 엔진 상태와 맞지 않음 — 그리기 생략');return;}
   ctx.beginPath();for(let i=0;i<NP;i++)i?ctx.lineTo(D.BP.x[i],D.BP.y[i]):ctx.moveTo(D.BP.x[i],D.BP.y[i]);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.strokeStyle=SI_COLOR;ctx.lineWidth=lw;ctx.stroke();
-  if(lay.T<lay.T0-1e-6){   // 축소 표시 기호 (≈ 끊김선)
-    const xb=padL+Math.min(90,Wd*.12),zz=(dx)=>{ctx.beginPath();for(let y=cy-hh+1,t=0;y<=cy+hh-1;y+=6,t++)t?ctx.lineTo(xb+dx+(t%2?5:-5),y):ctx.moveTo(xb+dx,y);};
-    ctx.fillStyle='#090d16';ctx.beginPath();for(let y=cy-hh+1,t=0;y<=cy+hh-1;y+=6,t++)ctx.lineTo(xb+(t%2?5:-5),y);for(let y=cy+hh-1,t=Math.floor((2*hh-2)/6);y>=cy-hh+1;y-=6,t--)ctx.lineTo(xb+9+(t%2?5:-5),y);ctx.fill();
-    ctx.strokeStyle=SI_COLOR;ctx.lineWidth=lw;zz(0);ctx.stroke();zz(9);ctx.stroke();}
+  if(lay.T<lay.T0-1e-6)drawSiBreak(ctx,lay,sx,sy,dpr);   // 축소 표시 기호 (≈ 끊김선, 화면 좌표)
   D.units.forEach((u,j)=>fillRuns(ctx,D.cols[j],D.cols[j+1],D.on[j],u,lw,false));
   D.ghosts.forEach(gh=>fillRuns(ctx,gh.lo,gh.hi,gh.on,D.units[gh.u],lw,true));
+  drawCompare(ctx,lay,lw);
   // 라벨 (화면 좌표)
   ctx.setTransform(dpr,0,0,dpr,0,0);
   const T0um=readNum('waferThk');
-  ctx.fillStyle='#cbd5e1';ctx.font='bold 11px sans-serif';ctx.fillText(`Si (${T0um}µm)`,Math.max(8,sx(padL+8)+(lay.T<lay.T0?(Math.min(90,Wd*.12)+20)*k:0)),Math.min(H-24,Math.max(30,sy(cy+4))));
+  ctx.fillStyle='#cbd5e1';ctx.font='bold 11px sans-serif';ctx.fillText(`Si (${T0um}µm)`,Math.max(8,sx(padL+8)+(lay.T<lay.T0?Math.min(SI_BREAK.x,Wd*SI_BREAK.rel)*k+20:0)),Math.min(H-24,Math.max(30,sy(cy+4))));
   if(mode.bandLabel){const bl=drawBandLabels(ctx,lay);   // 띠가 얇거나 좁아 라벨을 하나도 못 그림 (보기 안에 띠가 없어서는 제외)
     if(bl.n===0&&(bl.thin?D.on.some(o8=>o8.some(Boolean)):bl.runs>0))hints.push('띠가 얇아 라벨을 생략했습니다 — 확대하면 라벨이 보입니다');}
   drawPhoto(ctx,span,padL,ppm,H,sx,sbW,Wd);
+  const densOn=drawDensBand(ctx,lay,sx);renderDensTgl(lay);
+  if(lay.cv.parentElement)lay.cv.parentElement.classList.toggle('densOn',densOn);   // 안내 문구·미니맵을 밀도 띠 위로
   if(axisT)drawAxis(ctx,lay,axisT);
   // 축 방향 (단위 R(mm)은 #cvName)
   ctx.fillStyle='#94a3b8';ctx.font='10px sans-serif';ctx.textAlign='left';ctx.fillText('← 내측',4,H-6);
   ctx.textAlign='right';ctx.fillText('Edge →',Wd-4,H-6);ctx.textAlign='left';
   const kt=k<10?k.toFixed(1):Math.round(k),zb=$('zbadge');
   if(zb){zb.style.display=k>1.001?'block':'none';zb.textContent=Wd<600?`×${kt} ✕`:`확대 ×${kt} · 원래대로 ✕`;zb.title='원래 크기로 (더블클릭 · 더블탭)';}
-  const miniW=drawMini(lay);   // 미니맵이 차지한 오른쪽 폭 → 안내 문구가 그 밑으로 들어가지 않게
-  if(vh){vh.textContent=hints.filter(Boolean).join(' · ');vh.style.maxWidth=miniW?`calc(100% - ${miniW+24}px)`:'';}}
+  if(vh)vh.textContent=hints.filter(Boolean).join(' · ');
+  const mini=drawMini(lay,!!(vh&&vh.textContent));   // 미니맵이 오른쪽 아래면 안내 문구가 그 밑으로 들어가지 않게
+  if(vh)vh.style.maxWidth=mini&&mini.corner==='br'?`calc(100% - ${mini.w+24}px)`:'';}
+// Si 축소 표시 기호 (≈ 끊김선): 화면 좌표에서 6px 간격 지그재그 두 줄 + 사이 틈(배경색). 확대 배율과 무관한 크기,
+//   지그재그 위상은 Si 위쪽 끝 기준(이동해도 기어가지 않음), 보기 안(위 16px ~ 아래 18px)에 들어오는 부분만. 반환 = 그렸는지
+const SI_BREAK={x:90,rel:.12,step:6,amp:5,gap:9};
+function drawSiBreak(ctx,lay,sx,sy,dpr){const B=SI_BREAK,hh=lay.T/2*lay.ppm,xb=sx(lay.padL+Math.min(B.x,lay.Wd*B.rel));
+  const yS=sy(lay.cy-hh)+1,yE=sy(lay.cy+hh)-1,tA=Math.max(0,Math.ceil((16-yS)/B.step)),tB=Math.floor((Math.min(yE,lay.H-18)-yS)/B.step);
+  if(!isFinite(xb)||tB-tA<1||xb<-B.amp-B.gap||xb>lay.Wd+B.amp)return false;
+  const zx=(t,dx)=>xb+dx+(t%2?B.amp:-B.amp),zig=dx=>{for(let t=tA;t<=tB;t++){const y=yS+t*B.step;t===tA?ctx.moveTo(zx(t,dx),y):ctx.lineTo(zx(t,dx),y);}};
+  ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.beginPath();zig(0);for(let t=tB;t>=tA;t--)ctx.lineTo(zx(t,B.gap),yS+t*B.step);ctx.closePath();ctx.fillStyle='#090d16';ctx.fill();
+  ctx.strokeStyle=SI_COLOR;ctx.lineWidth=1;[0,B.gap].forEach(dx=>{ctx.beginPath();zig(dx);ctx.stroke();});
+  ctx.restore();return true;}
+// ---- CMP 패턴 밀도 띠 (표시 전용, 과장·실축척): 선택 단계가 패턴 밀도를 쓴 CMP이면 단면도 아래쪽에 ρ_eff 띠 (밝을수록 밀도 낮음) ----
+const DENS={on:true,pref:'webc.densBand',H:9};
+function densOfSel(){const st=steps[sel];if(!st||!isCmp(st)||st.patSrc==='off')return null;const d=resOf(sel).dens;return d&&d.nC<=NP?d:null;}
+const densShown=lay=>DENS.on&&!!lay&&lay.mode.id!=='simple'&&!!densOfSel();
+const densY=lay=>lay.H-20-DENS.H;   // 축 방향 라벨(H−6) 바로 위 (화면 좌표, 확대와 무관)
+const densAlpha=rho=>.04+.76*(1-rho)/(1-CMP_DEF.RHO_MIN);
+function drawDensBand(ctx,lay,sx){if(!densShown(lay))return false;const d=densOfSel(),y=densY(lay),X=R=>sx(lay.padL+(R-(150-lay.span))*lay.ppm);
+  const x0=X(pts[0].R),x1=X(pts[d.nC-1].R),xa=Math.max(0,x0),xb=Math.min(lay.Wd,x1);if(!(x1>x0)||xb<=xa)return false;
+  ctx.save();   // 점마다 색 정지점을 둔 가로 그라데이션 한 장 (사각형을 이어 붙이면 이음새 줄무늬가 생김)
+  const g=ctx.createLinearGradient(x0,0,x1,0);let last=-1;
+  for(let i=0;i<d.nC;i++){const t=(X(pts[i].R)-x0)/(x1-x0);if(t<=last)continue;last=t;g.addColorStop(Math.min(1,Math.max(0,t)),`rgba(226,232,240,${densAlpha(d.rho[i]).toFixed(3)})`);}
+  ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,DENS.H);
+  {ctx.strokeStyle='rgba(148,163,184,.45)';ctx.lineWidth=1;ctx.strokeRect(xa+.5,y+.5,xb-xa-1,DENS.H-1);
+    const t=lay.Wd<600?'ρ_eff':'ρ_eff 패턴 밀도 (밝을수록 낮음)';ctx.font='10px sans-serif';const w=ctx.measureText(t).width,lx=Math.max(4,Math.min(xa+6,xb-w-10));
+    if(xb-xa>w+12){ctx.fillStyle='rgba(9,13,22,.8)';pillPath(ctx,lx-4,y-13,w+8,12);ctx.fill();ctx.fillStyle='#cbd5e1';ctx.fillText(t,lx,y-4);}}
+  ctx.restore();return true;}
+function renderDensTgl(lay){const b=$('densTgl');if(!b)return;const can=!!lay&&lay.mode.id!=='simple'&&!!densOfSel();
+  b.hidden=!can;b.setAttribute('aria-pressed',String(DENS.on));}
+function setDens(on){DENS.on=!!on;prefSet(DENS.pref,DENS.on?'1':'0');repaint();}
+// 화면 좌표가 밀도 띠 위면 그 위치의 접촉점 인덱스, 아니면 −1
+function densHit(x,y){const L=LASTDRAW;if(!densShown(L))return -1;const y0=densY(L);if(y<y0-2||y>y0+DENS.H+2)return -1;
+  const d=densOfSel(),R=(x/ZM.k+ZM.ox-L.padL)/L.ppm+150-L.span;if(R<pts[0].R-1e-9||R>pts[d.nC-1].R+1e-9)return -1;
+  let b=0;for(let i=1;i<d.nC;i++)if(Math.abs(pts[i].R-R)<Math.abs(pts[b].R-R))b=i;return b;}
+// 툴팁 한 줄: 그 위치 ρ_eff · 남은 패턴 단차 (패턴 밀도 CMP 단계에서 띠가 보일 때만)
+function densTipLine(i){const d=densOfSel();if(!densShown(LASTDRAW)||!d||i<0||i>=d.nC)return'';
+  return`<div><span class="hint">CMP 패턴 밀도</span> ρ_eff <b>${Math.round(d.rho[i]*100)}%</b> · 남은 패턴 단차 <b>${PSTEP[i]>1e-4?fmtT(PSTEP[i],'nm'):'없음'}</b></div>`;}
 // 표시 단위의 한 구간 경로: 안쪽면(lo)~바깥면(hi)을 t로 보간한 두 곡선 (t1 정방향 → t0 역방향) 사이의 다각형
-function runPath(ctx,lo,hi,s,e,t0,t1){ctx.beginPath();
-  for(let q=s;q<=e;q++){const x=lo.x[q]+(hi.x[q]-lo.x[q])*t1,y=lo.y[q]+(hi.y[q]-lo.y[q])*t1;q===s?ctx.moveTo(x,y):ctx.lineTo(x,y);}
-  for(let q=e;q>=s;q--)ctx.lineTo(lo.x[q]+(hi.x[q]-lo.x[q])*t0,lo.y[q]+(hi.y[q]-lo.y[q])*t0);
+//   t0·t1 = 수 (전 구간 같은 비율) 또는 점별 비율 배열 (Mold 띠 경계 — moldBandTau)
+function runPath(ctx,lo,hi,s,e,t0,t1){ctx.beginPath();const T=(t,q)=>typeof t==='number'?t:t[q];
+  for(let q=s;q<=e;q++){const a=T(t1,q),x=lo.x[q]+(hi.x[q]-lo.x[q])*a,y=lo.y[q]+(hi.y[q]-lo.y[q])*a;q===s?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+  for(let q=e;q>=s;q--){const a=T(t0,q);ctx.lineTo(lo.x[q]+(hi.x[q]-lo.x[q])*a,lo.y[q]+(hi.y[q]-lo.y[q])*a);}
   ctx.closePath();}
 // ---- Mold 교번 띠 (업계 통용 표기: Oxide 푸른색 / Nitride 녹색 5~6겹이면 ONO mold로 읽힘) ----
 // 안쪽면(t=0, 첫 쌍 Oxide)~바깥면(t=1)을 n겹으로 나눠 번갈아 칠함 — 겹 두께 비 = ox:nit, 곡면을 그대로 따라감
@@ -1623,7 +2261,25 @@ function moldBandCount(lo,hi,s,e,k){let m=0;for(let q=s;q<=e;q++){const d=Math.h
 // n겹 경계 t (0…1): 짝수 겹 = Oxide(비율 fo), 홀수 겹 = Nitride(1-fo)
 function moldBandEdges(n,fo){const w=b=>b%2?1-fo:fo,out=[0];let tot=0;for(let b=0;b<n;b++)tot+=w(b);
   let c=0;for(let b=0;b<n;b++){c+=w(b);out.push(tot>0?c/tot:(b+1)/n);}return out;}
-function fillMoldBands(ctx,lo,hi,s,e,fo,lw){const n=moldBandCount(lo,hi,s,e,1/lw),t=moldBandEdges(n,fo);
+// 띠 경계 (과장·실축척 — 두께 비례 표시): 증착 직후 높이 비율 t에 있던 계면이 지금 묶음 두께의 어느 비율에 있는지 (점별, 엔진 막 두께 그대로).
+//   위에서 깎으면(PES·CMP) 위 띠부터 경사면에서 잘리고, 전 막을 같은 비율로 얇게 하면(legacy PES) 띠도 같은 비율로 얇아짐.
+//   반환 Map(t → Float32Array(NP)). 엔진 상태별 단위 캐시(layerUnits)에 처음 그릴 때 한 번 계산
+//   증착 직후 그대로인 점(현재 합 ≈ 증착 직후 합)은 고정 비율 — 묶음별 증착 직후 합은 불변 meta 기준으로 캐시
+const MOLD_H0=new WeakMap();
+function moldH0(G){const m=layers[G.idx[0]].meta,c=MOLD_H0.get(m);if(c&&c.n===G.idx.length&&c.H0.length===NP)return c.H0;
+  const H0=groupSum(G,'h0');MOLD_H0.set(m,{n:G.idx.length,H0});return H0;}
+function moldBandTau(G,h,fo){const ts=[...new Set(MOLD_BANDS.flatMap(b=>moldBandEdges(b[1],fo).slice(1,-1)))].sort((a,b)=>a-b);
+  const L=G.idx.map(k=>layers[k]),out=ts.map(()=>new Float32Array(NP)),HH0=moldH0(G);
+  for(let i=0;i<NP;i++){const H=h[i],H0=HH0[i];
+    if(!(H>BAND_EPS)||!(H0>0)||Math.abs(H-H0)<=1e-5*H0){ts.forEach((t,b)=>{out[b][i]=t;});continue;}
+    let c0=0,c=0,k=0;
+    for(let b=0;b<ts.length;b++){const z=ts[b]*H0;
+      while(k<L.length&&c0+L[k].h0[i]<z){c0+=L[k].h0[i];c+=L[k].h[i];k++;}
+      const part=k<L.length&&L[k].h0[i]>0?L[k].h[i]*Math.min(1,(z-c0)/L[k].h0[i]):0;
+      out[b][i]=Math.min(1,(c+part)/H);}}
+  return new Map(ts.map((t,b)=>[t,out[b]]));}
+//   u.tauOf() 있으면(과장·실축척) 띠 경계를 점별 비율로, 없으면(단순 — 같은 두께 띠) 고정 비율로
+function fillMoldBands(ctx,lo,hi,s,e,u,lw){const n=moldBandCount(lo,hi,s,e,1/lw),tau=u.tauOf?u.tauOf():null,t=moldBandEdges(n,u.fo).map(v=>tau&&tau.has(v)?tau.get(v):v);
   for(let b=0;b<n;b++){const col=b%2?PALETTE.mold.nit:PALETTE.mold.ox;runPath(ctx,lo,hi,s,e,t[b],t[b+1]);
     ctx.fillStyle=col;ctx.fill();ctx.lineWidth=.5*lw;ctx.strokeStyle=col;ctx.stroke();}}   // 같은 색 얇은 외곽 = 겹 사이 안티앨리어싱 틈 메움
 // 단위 하나 칠하기: on[i]인 연속 구간마다 바깥면(hi) → 안쪽면(lo) 다각형. ghost = 깎여 없어진 띠 (낮은 투명도 + 점선 외곽)
@@ -1632,7 +2288,7 @@ function fillRuns(ctx,lo,hi,on,u,lw,ghost){const N=on.length,mold=u.fill==='mold
   while(i<N){if(!on[i]){i++;continue;}let j=i;while(j+1<N&&on[j+1])j++;
     const s=Math.max(0,i-1),e=Math.min(N-1,j+1);
     if(ghost)ctx.globalAlpha=.18;
-    if(mold)fillMoldBands(ctx,lo,hi,s,e,u.fo,lw);
+    if(mold)fillMoldBands(ctx,lo,hi,s,e,u,lw);
     runPath(ctx,lo,hi,s,e,0,1);
     if(!mold){ctx.fillStyle=u.fill;ctx.fill();}
     if(ghost){ctx.globalAlpha=.8;ctx.setLineDash([3*lw,2.5*lw]);ctx.lineWidth=lw;ctx.strokeStyle=edge;ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
@@ -1685,10 +2341,15 @@ function drawBandLabels(ctx,lay){const D=DISP,k=ZM.k,fs=Math.min(11,Math.floor(l
   ctx.restore();return{n,runs,thin:false};}
 
 // ---------- 패널 (측정값·판정·스택·타임라인): 엔진 상태만 사용, 화면 설정 무관 ----------
+// 패널 기준점 (형상에만 의존 → pts별 캐시): iF·iB = 전면·후면 평탄부에서 Edge 5mm(R145)에 가장 가까운 점, iA = Apex(R 최대)
+let REF_PTS={src:null,v:null};
+function refPts(){if(REF_PTS.src===pts)return REF_PTS.v;
+  const near=pred=>{let b=-1;pts.forEach((p,i)=>{if(pred(p)&&(b<0||Math.abs(p.d-5)<Math.abs(pts[b].d-5)))b=i;});return b;};
+  const v={iF:near(p=>p.f>.99),iB:near(p=>p.f<-.99),iA:pts.reduce((b,p,i)=>p.R>pts[b].R?i:b,0)};
+  REF_PTS={src:pts,v};return v;}
 function updatePanels(){
   if(!NP)return;
-  const near=pred=>{let b=-1;pts.forEach((p,i)=>{if(pred(p)&&(b<0||Math.abs(p.d-5)<Math.abs(pts[b].d-5)))b=i;});return b;};
-  const iF=near(p=>p.f>.99),iB=near(p=>p.f<-.99),iA=pts.reduce((b,p,i)=>p.R>pts[b].R?i:b,0);
+  const{iF,iB,iA}=refPts();
   const sa=(i,fn)=>layers.reduce((a,ly)=>a+ly.h[i]*fn(ly),0);
   let mx=-1e9,mn=1e9;pts.forEach((p,i)=>{if(p.f>.99){mx=Math.max(mx,LV[i]);mn=Math.min(mn,LV[i]);}});
   const m=metrics();
@@ -1703,7 +2364,8 @@ function updatePanels(){
   if(Math.abs(net)<50){el.innerText='Flat / Balanced';el.style.color='#10b981';sb.innerText='전/후면 응력 균형';}
   else if(net>0){el.innerText='Concave (스마일)';el.style.color='#38bdf8';sb.innerText='전면 인장 우세';}
   else{el.innerText='Convex (울상)';el.style.color='#f43f5e';sb.innerText='후면 인장 우세';}
-  const bc=bondCheck(iF,iA,sa);edgeStatus(m,bc,ph,am,sa(iA,()=>1),sa(iF,()=>1));renderStack(iF,iB,iA);renderLegend();renderTimeline();if(warpOpen)draw2D();}
+  const bc=bondCheck(iF,iA,sa);LIVE_MET={m,dE:bc.dE};edgeStatus(m,bc,ph,am,sa(iA,()=>1),sa(iF,()=>1));renderStack(iF,iB,iA);renderLegend();renderTimeline();
+  renderCmpCtl();renderCmpSum();if(warpOpen)draw2D();}
 
 // ---------- Layer 스택 (엑셀처럼: 전면은 최신이 위, Si sub, 후면은 Si에 가까운 것부터) ----------
 function fmtT(um,unit){const r=v=>+v.toFixed(v<10?2:1);
@@ -1712,9 +2374,10 @@ function fmtT(um,unit){const r=v=>+v.toFixed(v<10?2:1);
 const STACK_VIEW={apexOnly:false,open:new Set(),args:null};
 // 막 묶음 (스택 행 · 툴팁 Mold 범위 · 범례 공용): 같은 단계의 연속 Mold 층(thin)은 하나로, 그 밖은 같은 단계·같은 막질의 연속 층을 하나로.
 // Mold cap(thin=false)은 Mold 묶음과 분리. 반환 [{si, mat, thin, idx:[layers 인덱스…]}]
+const sameGroup=(a,b)=>a.si===b.si&&a.thin===b.thin&&(b.thin||a.mat===b.mat);   // b가 a의 묶음에 이어지는가 (groupPresence와 공용)
 function groupLayers(L){const g=[];
   L.forEach((ly,k)=>{const last=g[g.length-1];
-    if(last&&last.si===ly.si&&ly.thin===last.thin&&(ly.thin||ly.mat===last.mat))last.idx.push(k);else g.push({si:ly.si,mat:ly.mat,thin:ly.thin,idx:[k]});});
+    if(last&&sameGroup(last,ly))last.idx.push(k);else g.push({si:ly.si,mat:ly.mat,thin:ly.thin,idx:[k]});});
   return g;}
 // 현재 layers의 묶음 (캐시: 묶음은 막 구성(si·mat·thin)에만 의존 → layers 배열·길이가 같으면 그대로)
 let GROUPS={src:null,n:-1,g:[]};
@@ -1723,7 +2386,7 @@ function groupOfLayer(L){return layerGroups().find(G=>G.idx[0]<=L&&L<=G.idx[G.id
 const RESID_MIN_UM=1e-3;   // 베벨·Apex 잔류막 표시 하한 (1nm 미만 생략)
 function renderStack(iF,iB,iA){STACK_VIEW.args=[iF,iB,iA];
   const g=layerGroups();
-  const rowOf=(G,i,resid=false)=>{const st=steps[G.si]||{},t=groupH(G,i);if(t<1e-4)return null;const a=groupH(G,iA),gone=a<1e-3;
+  const rowOf=(G,i,resid=false,bit=0)=>{const st=steps[G.si]||{},t=groupH(G,i);if(t<1e-4)return bit&&VIEW.ghost?removedRow(G,i,bit):null;const a=groupH(G,iA),gone=a<1e-3;
     const nm=G.thin?`MOLD<small>ON×${st.pairs||'?'}</small>`:st.type==='photo'?'PR<small>photo</small>':
       escHtml(st.tag||MATERIALS[G.mat].name.split(' ')[0])+(st.tag?`<small>${MATERIALS[G.mat].name.split(' ')[0]}</small>`:'');
     const col=G.thin?moldSw():MATERIALS[G.mat].color;
@@ -1737,12 +2400,25 @@ function renderStack(iF,iB,iA){STACK_VIEW.args=[iF,iB,iA];
   const peakOf=G=>{let b=RESID_MIN_UM,bi=-1;for(let i=0;i<NP;i++){const t=groupH(G,i);if(t>=b){b=t;bi=i;}}return bi;};
   const residual=G=>{if(groupH(G,iF)>=1e-4||groupH(G,iB)>=1e-4)return null;const i=peakOf(G);return i<0?null:rowOf(G,i,true);};
   const side=(rows,key)=>{rows=rows.filter(Boolean);if(STACK_VIEW.apexOnly)rows=rows.filter(r=>!r.gone);return rows.length?foldDecks(rows,key):'';};
-  const fr=side(g.map(G=>rowOf(G,iF)).reverse(),'F'),bk=side(g.map(G=>rowOf(G,iB)),'B'),rs=side(g.map(residual).reverse(),'E');
+  const fr=side(g.map(G=>rowOf(G,iF,false,PRES_BIT.F)).reverse(),'F'),bk=side(g.map(G=>rowOf(G,iB,false,PRES_BIT.B)),'B'),rs=side(g.map(residual).reverse(),'E');
   const none=`<div class="none">${STACK_VIEW.apexOnly?'Apex에 남은 막 없음':'막 없음'}</div>`;
   $('stack').innerHTML=`<div class="sec">FRONT ↑</div>${fr||none}`+
     `<div class="ly si"><span class="bar" style="background:${SI_COLOR}"></span><span class="nm">Si sub</span><span class="t">${readNum('waferThk')}µm</span><span class="e"></span></div>`+
     `${bk||none}<div class="sec">BACK ↓</div>`+
     (rs?`<div class="sec" title="전면·후면 기준점(R145)에는 없고 베벨/Apex에만 남은 막 — 가장 두꺼운 위치의 두께 (1nm 미만 생략)">BEVEL·APEX 잔류</div>${rs}`:'');}
+// 제거된 막 행: 그 기준점(i)에 증착됐다가(1nm 초과) 지금은 없는 묶음 — 취소선·흐림 + 마지막으로 없어진 단계 (STEP_RES[].pres 기록)
+function removedRow(G,i,bit){const h0=groupH0(G,i);if(h0<=RESID_MIN_UM)return null;
+  const st=steps[G.si]||{},s=removedStep(G,bit),rs=s>=0?steps[s]:null,col=groupColor(G),unit=groupUnit(G);
+  const nm=escHtml(groupName(G)),when=rs?`${s+1}단계 ${escHtml(stepShort(rs))}에서 제거`:'제거 단계 미상';
+  return{t:0,a:0,gone:true,col,grp:st.group,sig:`${G.thin?'MOLD':G.mat}|${st.type}|${st.tag||''}|rm`,removed:true,
+    html:`<div class="ly gone rm" data-rm="${s}" title="${G.si+1}. ${stepPlain(st)} — 증착 ${fmtT(h0,unit)} → ${rs?`${s+1}. ${stepPlain(rs)}에서 제거`:'제거됨'} (${posText(i)})"><span class="bar" style="background:${col}"></span><span class="nm"><s>${nm}</s><small>${when}</small></span><span class="t"><s>${fmtT(h0,unit)}</s></span><span class="e">—</span></div>`};}
+// 묶음이 기준점(bit)에서 마지막으로 없어진 단계 인덱스: 선택 단계부터 거꾸로, 직전 단계 직후엔 있던 첫 단계 (없으면 −1)
+function removedStep(G,bit){const g=layerGroups().indexOf(G);if(g<0)return -1;
+  for(let s=sel;s>G.si;s--){const p=resOf(s-1).pres;if(p&&g<p.length&&(p[g]&bit))return s;}
+  return -1;}
+// 단계 짧은 이름 (스택 '…에서 제거'): 제거·Photo는 태그(PES·PHOTO), 그 밖은 내용(O2 Ash·HARC·막질)
+function stepShort(st){try{const c=stepCells(st),t=stripTags(st.type==='remove'||st.type==='photo'?c[0]:c[1]).trim();return t||stripTags(c[0]);}
+  catch(e){return st&&st.type?String(st.type).toUpperCase():'?';}}
 // 반복 deck 접기 (표시 전용): 같은 group(deck 번호) 행을 묶고, 구성(막질·공정 순서)이 같은 deck이 연속되면 "×n" 한 줄로
 function foldDecks(rows,side){
   const runs=[];rows.forEach(r=>{const last=runs[runs.length-1];if(r.grp!=null&&last&&last.grp===r.grp)last.rows.push(r);else runs.push({grp:r.grp,rows:[r]});});
@@ -1853,7 +2529,7 @@ function photoImpact(st,r){
 function applyPhoto(st){
   const r=photoZones(st),rp=rampMm,nx=new Float64Array(NP),ny=new Float64Array(NP),h=new Float64Array(NP),win=(d,q)=>smooth(q[0]-rp,q[0]+rp,d)*(1-smooth(q[1]-rp,q[1]+rp,d));
   normalsXY(SX,SY,NP,nx,ny);
-  for(let i=0;i<NP;i++){const p=pts[i],wf=depoWeight('front',p);if(wf<=.001)continue;let wb=0,wz=0;
+  for(let i=0;i<NP;i++){const p=pts[i],wf=coatWeight(p);if(wf<=.001)continue;let wb=0,wz=0;
     r.bar.forEach(q=>wb=Math.max(wb,win(p.d,q)));r.bare.forEach(q=>wz=Math.max(wz,win(p.d,q)));
     h[i]=wf*(1-wz)*(st.prPat*(1-wb)+st.prBar*wb);}
   pushLayer('PR',nx,ny,h,false);
@@ -1885,13 +2561,148 @@ function presetPhoto(mode){return[
  {type:'etch',key:'harc',depth:7.2,ef:1.15,zone:3,iso:.1,prot:0},
  {type:'clean',key:'ash',amt:6000,mode:'imm'}];}
 
-// ---------- CMP / Arcing / Bonding ----------
-function cmp(st){
-  let ref=0,c=0;for(let i=0;i<NP;i++)if(pts[i].f>.99&&pts[i].d>4.5&&pts[i].d<5.5){ref+=LV[i];c++;}
-  const T0=ref/c-st.amt;
-  for(let i=0;i<NP;i++){const p=pts[i];if(p.f<.3)continue;const w=smooth(.3,.8,p.f),T=Math.max(0,T0-st.ero*(1-smooth(0,st.eroW,p.d)));
+// ---------- CMP (research/analysis/cmp.md §2~§4) ----------
+// 블랭킷 환산 budget을 dz 서브스텝으로 결정적 적분 (난수 없음, 고정 순서). 점별 budget = dz × E(d)(edge roll-off) × wc(f)(pad 접촉)
+//   × g(해상 지형 접촉, §3.2) × 패턴 밀도 계수(Ouma/Stine Phase 1: up 속도 K/ρeff · Lee Phase 2: H ≤ hc 선형 전이) → consume(슬러리 선택비)
+// 접촉점 = 전면 f ≥ contact[0] (index 0..nC−1, Edge→ 거리 d 내림차순으로 연속). 베벨·apex·후면은 pad 미접촉 → CMP 영향 0
+function cmpContactCount(){let n=0;while(n<NP&&pts[n].f>=CMP_DEF.contact[0])n++;return n;}
+// Lp 정사각 창 (접촉점, |d_j − d_i| ≤ half). 창이 형상 안쪽 끝(index 0, d 최대)을 넘으면 index 0 값으로 연장 · 웨이퍼 밖·베벨은 제외
+function cmpWindow(nC,half){
+  const lo=new Int32Array(nC),hi=new Int32Array(nC),ext=new Float64Array(nC),PW=new Float64Array(nC+1),P=new Float64Array(nC+1),q=new Int32Array(nC),d0=pts[0].d;
+  for(let i=0,a=0,b=0;i<nC;i++){const d=pts[i].d;
+    while(a<i&&pts[a].d>d+half)a++;if(b<i)b=i;while(b+1<nC&&pts[b+1].d>=d-half)b++;
+    lo[i]=a;hi[i]=b;ext[i]=Math.max(0,d+half-d0);PW[i+1]=PW[i]+ds[i];}
+  return{
+    mean(v,out){for(let i=0;i<nC;i++)P[i+1]=P[i]+v[i]*ds[i];
+      for(let i=0;i<nC;i++){const e=ext[i],W=PW[hi[i]+1]-PW[lo[i]]+e;out[i]=W>0?(P[hi[i]+1]-P[lo[i]]+e*v[0])/W:v[i];}return out;},
+    max(v,out){let qh=0,qt=0,r=-1;   // 단조 deque (lo·hi 모두 비감소)
+      for(let i=0;i<nC;i++){while(r<hi[i]){r++;while(qt>qh&&v[q[qt-1]]<=v[r])qt--;q[qt++]=r;}while(q[qh]<lo[i])qh++;out[i]=v[q[qh]];}return out;}};}
+// 해상 지형(mm 규모) 접촉 계수 g (§3.2 변형, est): pad는 Lp 안에서 강체 → 점 i의 up 표면이 창(±Lp/2) 최고점보다
+//   TOPO_UM(데드존) + hc 넘게 낮으면 미접촉(0), 데드존 안(서브 µm 높이차)은 밀도 모델이 담당하므로 g=1. 하중은 창 안 접촉점에 재분배(≤ F_MAX)
+//   (cmp.md §3.2의 '창 평균 잔차' 식은 단차 높은 쪽 근처 잔차 때문에 Lp 밖 평탄부까지 g가 줄어 → 창 최고점 포락선으로 바꿈)
+//   베벨 경사(평탄부 f ≤ .99 밖, pad 접촉은 wc가 담당)는 지형 계산에서 마지막 평탄점 높이로 둠 (경사면 막 두께 차이를 단차로 오인하지 않게)
+function cmpTopo(Wn,nC,nF,z,hc,B){const zt=B.zt;for(let i=0;i<nC;i++)zt[i]=i<nF?z[i]:z[nF-1];
+  const env=Wn.max(zt,B.U),g=B.g;z=zt;
+  for(let i=0;i<nC;i++)g[i]=Math.min(1,Math.max(0,1-(env[i]-z[i]-CMP_DEF.TOPO_UM)/hc));
+  const gm=Wn.mean(g,B.gm);
+  for(let i=0;i<nC;i++)g[i]=gm[i]>1e-9?Math.min(CMP_DEF.F_MAX,g[i]/gm[i]):0;
+  return g;}
+// 구 레시피(슬러리 legacy, 제거량 모드): v3 기존 CMP 그대로 — 기준(R145) 평균 막 높이 − amt 평면으로 비선택 절단 + ERO 깊이(= eroPct × amt)
+function cmpLegacyCut(st){
+  let ref=0,c=0;for(let i=0;i<NP;i++)if(pts[i].f>.99&&pts[i].d>CMP_DEF.ref[0]&&pts[i].d<CMP_DEF.ref[1]){ref+=LV[i];c++;}
+  if(!c)throw new Error('CMP 기준 위치(R145)를 찾지 못했습니다');
+  const T0=ref/c-st.amt,ero=st.eroPct/100*st.amt;
+  for(let i=0;i<NP;i++){const p=pts[i];if(p.f<CMP_DEF.contact[0])continue;const w=smooth(CMP_DEF.contact[0],CMP_DEF.contact[1],p.f),T=Math.max(0,T0-ero*(1-smooth(0,st.eroW,p.d)));
     let ex=(LV[i]-T)*w;for(let L=layers.length-1;L>=0&&ex>1e-6;L--){const h=layers[L].h[i];if(!h)continue;const r=Math.min(h,ex);layers[L].h[i]=h-r;ex-=r;}}
   recalc();}
+// 점 i의 실제 최상단 막 (top 캐시 위는 모두 0) — 없으면 −1
+function topFrom(i,L){for(L=Math.min(L,layers.length-1);L>=0;L--)if(layers[L].h[i]>1e-5)return L;return -1;}
+// 수동 패턴 (§2.3 b): Edge→patFrom 안쪽을 밀도 patDens·단차 patStep 패턴으로 지정. 막은 면적 평균이므로
+//   hole 부피 (1−ρ)·H 중 기존 패턴 상태에 없던 만큼을 위 막에서 비선택으로 뺌 → up 표면(= 지정 전 표면) 유지
+function cmpManualPattern(st,nC){const rho=st.patDens/100,opts={tg:null,open:0,noData:new Set()};
+  for(let i=0;i<nC;i++){const w=smooth(st.patFrom-rampMm,st.patFrom+rampMm,pts[i].d),old=(1-PDENS[i])*PSTEP[i];
+    PDENS[i]=1-w*(1-rho);PSTEP[i]=w*st.patStep;const extra=(1-PDENS[i])*PSTEP[i]-old;
+    if(extra>1e-9)consume(i,extra,SLURRY.legacy.r,opts);}
+  recalc();}
+// 접촉점 중 평탄부(f>.99)에서 d에 가장 가까운 점
+function cmpIdxAt(nC,d){let b=-1;for(let i=0;i<nC;i++)if(pts[i].f>.99&&(b<0||Math.abs(pts[i].d-d)<Math.abs(pts[b].d-d)))b=i;return b;}
+// 실행: 반환 {S, used(µm), opUm, noData:Set, warn[], err, m(지표)} — err면 막은 그대로 (입력·스택 불일치)
+function cmpRun(st){
+  const S=SLURRY[st.slurry];if(!S)throw new Error(`알 수 없는 슬러리: ${st.slurry}`);
+  const K=CMP_DEF,hc=st.hc,nC=cmpContactCount(),out={S,used:0,opUm:0,noData:new Set(),warn:[],err:null,m:null};
+  if(nC<3){out.err='pad 접촉 영역(전면)이 없습니다';return out;}
+  if(!(st.Lp>0&&hc>0))throw new Error('CMP Lp·hc는 0보다 커야 합니다');
+  if(st.patSrc==='off'){PDENS.fill(1);PSTEP.fill(0);}else if(st.patSrc==='manual')cmpManualPattern(st,nC);
+  const Wn=cmpWindow(nC,st.Lp/2),E=new Float64Array(nC),wc=new Float64Array(nC),D0=PDENS.slice(0,nC),Lf0=LV.slice(),rec0=rec.slice();
+  out.d0=D0;   // 표시용(밀도 띠): CMP 시작 시점 패턴 밀도 — 계산에는 쓰지 않음
+  for(let i=0;i<nC;i++){const p=pts[i];E[i]=1+st.eroPct/100*(1-smooth(0,st.eroW,p.d));wc[i]=smooth(K.contact[0],K.contact[1],p.f);}
+  const Lf=LV.slice(0,nC),z=new Float64Array(nC),zUp=i=>Lf[i]-rec[i]+(1-PDENS[i])*PSTEP[i];
+  for(let i=0;i<nC;i++)z[i]=zUp(i);
+  const opts={tg:null,open:0,noData:out.noData,top:new Int32Array(NP).fill(layers.length-1)},rhoStop=Math.max(K.RHO_MIN,(st.stopDens??K.stopDens)/100);
+  const B={U:new Float64Array(nC),g:new Float64Array(nC),gm:new Float64Array(nC),re:new Float64Array(nC),zt:new Float64Array(nC)};
+  let nF=0;while(nF<nC&&pts[nF].f>.99)nF++;nF=Math.max(1,nF);   // 평탄 접촉점 0..nF−1 (베벨 경사 전)
+  const stepOnce=(dz,kOP)=>{const g=cmpTopo(Wn,nC,nF,z,hc,B),re=Wn.mean(PDENS,B.re);
+    for(let i=0;i<nC;i++){const b=dz*E[i]*wc[i]*g[i];if(b<=1e-12)continue;
+      const rho=PDENS[i],H=PSTEP[i],pe=Math.max(K.RHO_MIN,re[i]);let up,dn;
+      if(H>hc){up=b/pe;dn=0;}else if(H>0){up=b*((1/pe-1)*H/hc+1);dn=b*(1-H/hc);}else up=dn=b;
+      if(kOP&&H<=0&&D0[i]<.999)up=dn=b/rhoStop;   // 과연마: 패턴 영역 정지막 erosion K/ρstop (est)
+      Lf[i]-=consume(i,rho*up+(1-rho)*dn,S.r,opts);
+      if(H>0){const L=topFrom(i,opts.top[i]),rt=L>=0?(S.r[layers[L].mat]??0):(S.r.Si??0),Hn=H-(up-dn)*rt;
+        if(Hn>0)PSTEP[i]=Hn;else{PSTEP[i]=0;PDENS[i]=1;}}
+      z[i]=zUp(i);}};
+  const MAXN=Math.ceil(LIM.CMP_UM/K.dz);
+  if(st.slurry==='legacy'&&st.mode!=='stop'){cmpLegacyCut(st);out.used=st.amt;out.m=cmpMetrics(st,nC,D0,Lf0,rec0);return out;}
+  if(st.mode==='stop'){
+    const refs=[];for(let i=0;i<nC;i++){const p=pts[i];if(p.f>.99&&p.d>K.ref[0]&&p.d<K.ref[1])refs.push(i);}
+    // stopMat 최상단 층 위 막 합 (stopMat 없으면 NaN) · 기준 영역 stopMat 평균 두께 · 기준 영역 남은 막 합
+    const above=i=>{let a=0;for(let L=Math.min(opts.top[i],layers.length-1);L>=0;L--){const h=layers[L].h[i];if(h<=1e-4)continue;if(layers[L].mat===st.stopMat)return a;a+=h;}return NaN;};
+    const stopThk=()=>refs.reduce((a,i)=>a+layers.reduce((s,ly)=>s+(ly.mat===st.stopMat?ly.h[i]:0),0),0)/refs.length;
+    const left=()=>refs.reduce((a,i)=>{const v=above(i);return a+(v>0?v:0);},0);
+    if(!refs.length||!refs.some(i=>!isNaN(above(i)))){out.err=`정지막 ${shortMat(st.stopMat)}이(가) 기준 위치(R145)에 없습니다 — CMP를 실행하지 않았습니다`;recalc();out.m=cmpMetrics(st,nC,D0,Lf0,rec0);return out;}
+    const t0=stopThk();let n=0,prev=left();
+    while(n<MAXN&&refs.some(i=>above(i)>K.RESID_NM/1000)){stepOnce(K.dz,false);n++;const cur=left();
+      if(prev-cur<1e-9){out.warn.push(`Endpoint 미도달 — 기준 위치 연마가 멈춤(${[...out.noData].map(shortMat).join(', ')||'선택비 0'} 막)`);break;}prev=cur;}
+    if(n>=MAXN)out.warn.push(`Endpoint 미도달 — 제거량 상한 ${LIM.CMP_UM}µm`);
+    out.endpoint=!out.warn.length;out.used=n*K.dz;
+    if(out.endpoint){const nOP=Math.round(out.used*st.op/100/K.dz);for(let k=0;k<nOP;k++)stepOnce(K.dz,true);out.opUm=nOP*K.dz;}
+    out.stop={mat:st.stopMat,t0Nm:t0*1e3,lossNm:(t0-stopThk())*1e3};
+    out.ring=cmpEdgeRing(st,nC,above);}
+  else{const n=Math.max(1,Math.ceil(st.amt/K.dz-1e-9)),dz=st.amt/n;for(let k=0;k<n;k++)stepOnce(dz,false);out.used=st.amt;}
+  recalc();
+  out.m=cmpMetrics(st,nC,D0,Lf0,rec0);return out;}
+// stop 모드 Edge 잔막 링 (§4): 접촉점(f≥.8) 중 Edge 영향 폭 안에서 정지막 위 막이 1nm 넘게 남은 곳
+function cmpEdgeRing(st,nC,above){let mx=0,dMax=0;
+  for(let i=0;i<nC;i++){const p=pts[i];if(p.f<CMP_DEF.contact[1]||p.d>=st.eroW)continue;const a=above(i);if(a>CMP_DEF.RESID_NM/1000){if(a>mx)mx=a;if(p.d>dMax)dMax=p.d;}}
+  return mx>0?{nm:mx*1e3,dMax}:null;}
+// 지표 (§2.6·§3·§4): 패턴↔떡판 단차(up 표면, 경계 ±Lp) · 면적평균 단차 · 전이폭 · 잔여 패턴 단차 · Edge roll-off · 베벨 W 잔막
+function cmpMetrics(st,nC,D0,Lf0,rec0){const K=CMP_DEF,M={},zUp=i=>LV[i]-rec[i]+(1-PDENS[i])*PSTEP[i];
+  let rp=1;for(let i=0;i<nC;i++)if(pts[i].f>.99&&D0[i]<rp)rp=D0[i];
+  M.hasPat=rp<.999;
+  if(M.hasPat){const thr=.5*(1+rp);let db=null;
+    for(let i=nC-1;i>0;i--){const a=D0[i]-thr,b=D0[i-1]-thr;if(pts[i].f>.99&&pts[i-1].f>.99&&(a>=0)!==(b>=0)){db=pts[i].d+(pts[i-1].d-pts[i].d)*a/(a-b);break;}}
+    // 패턴 쪽 = 경계에서 Lp 떨어진 점(원거리 값), 떡판 쪽 = 경계~Lp 사이 평탄 접촉점 중 패턴 쪽과 높이차가 가장 큰 점 (Edge roll-off가 섞이지 않게)
+    if(db!==null){const iIn=cmpIdxAt(nC,Math.min(pts[0].d-.05,db+st.Lp)),iOut=cmpIdxAt(nC,Math.max(LB+.1,db-st.Lp)),blIn=D0[iIn]>=D0[iOut];
+      const iP=blIn?iOut:iIn,zP=zUp(iP);let iB=blIn?iIn:iOut;
+      for(let j=Math.min(iIn,iOut);j<=Math.max(iIn,iOut);j++){const onB=blIn?pts[j].d>=db:pts[j].d<=db;
+        if(onB&&pts[j].f>.99&&Math.abs(zUp(j)-zP)>Math.abs(zUp(iB)-zP))iB=j;}
+      const zB=zUp(iB),step=zB-zP;
+      let d10=null,d90=null;
+      if(Math.abs(step)>1e-3)for(let j=Math.min(iB,iP);j<=Math.max(iB,iP);j++){if(pts[j].f<=.99)continue;const fr=(zUp(j)-zP)/step;
+        if(fr>=.1&&fr<=.9){d10=d10===null?pts[j].d:Math.min(d10,pts[j].d);d90=d90===null?pts[j].d:Math.max(d90,pts[j].d);}}
+      M.pat={db,rho:rp,dB:pts[iB].d,dP:pts[iP].d,stepNm:step*1e3,avgNm:((LV[iB]-rec[iB])-(LV[iP]-rec[iP]))*1e3,transMm:d10===null?0:d90-d10,
+        refNear:Math.abs(db-(K.ref[0]+K.ref[1])/2)<st.Lp};}}
+  let mh=0;for(let i=0;i<nC;i++)if(pts[i].f>.99&&PSTEP[i]>mh)mh=PSTEP[i];M.residNm=mh*1e3;
+  // Edge roll-off: Edge 1mm 제거량 vs 기준(R145). 시작 높이가 기준과 TOPO_UM 넘게 다르면(PES 단차 아래 등) 지형 효과라 생략
+  const avgAt=(a,b,fn)=>{let s=0,c=0;for(let i=0;i<nC;i++){const p=pts[i];if(p.f>.99&&p.d>a&&p.d<b){s+=fn(i);c++;}}return c?s/c:NaN;};
+  const rem=i=>(Lf0[i]-LV[i])+(rec[i]-rec0[i]),h0=i=>Lf0[i]-rec0[i];
+  const rRef=avgAt(K.ref[0],K.ref[1],rem),r1=avgAt(.9,1.1,rem),flat=Math.abs(avgAt(.9,1.1,h0)-avgAt(K.ref[0],K.ref[1],h0))<=K.TOPO_UM;
+  M.roll=flat&&!(M.pat&&M.pat.refNear)&&rRef>1e-4&&isFinite(r1)?{pct:(r1/rRef-1)*100,nm:(r1-rRef)*1e3}:null;   // 기준이 패턴 경계 전이폭 안이면 생략
+  const Wi=[];layers.forEach((l,k)=>{if(l.mat==='W')Wi.push(k);});
+  if(Wi.length){let mx=0;for(let i=0;i<NP;i++){const p=pts[i];if(p.f>=K.contact[1]||p.d>LB+.05)continue;let w=0;for(const k of Wi)w+=layers[k].h[i];if(w>mx)mx=w;}
+    M.bevelW=mx*1e3;}
+  return M;}
+// CMP 결과 → 영향 문구·지표 칩 (STEP_RES)
+function cmpReport(st,c,R){const S=c.S,m=c.m,ch=[],add=(k,v,lvl,msg)=>ch.push({k,v,lvl,msg});
+  const t=[`CMP ${S.ab}`+(st.mode==='stop'?` · Stop ${shortMat(st.stopMat)} +OP ${st.op}%`:` −${fmtNum(st.amt)}µm`)];
+  if(c.err){add('CMP',c.err,2,c.err);R.chips=ch;R.impact={t:`${R.impact.t} · ✖ ${c.err}`,lvl:2};return;}
+  if(m.pat){const p=m.pat,nm=p.stepNm,hi=nm>0,bad=hi&&Math.abs(nm)>CMP_DEF.STEP_WARN_NM;
+    const v=`${nm>=0?'+':''}${nm.toFixed(0)}nm @ ${p.db.toFixed(1)}mm`;
+    add('패턴↔떡판 단차',v,bad?1:0,`CMP 후 ${hi?'떡판이 패턴보다':'패턴이 떡판보다'} ${Math.abs(nm).toFixed(0)}nm 높음 (경계 ${p.db.toFixed(1)}mm, 전이폭 ${p.transMm.toFixed(1)}mm)${bad?' — Edge 떡판 단차: 접합/후속 Photo 영향':''}`);
+    t.push(`패턴↔떡판 단차 ${v} (면적평균 ${p.avgNm.toFixed(0)}nm, 전이폭 ${p.transMm.toFixed(1)}mm, ρ ${Math.round(p.rho*100)}%)`);
+    if(st.mode==='stop'&&p.refNear)t.push('⚠ endpoint 기준(R145)이 패턴 경계 전이폭 안 — endpoint 치우침');}
+  else if(st.patSrc==='auto')t.push('패턴 밀도 정보 없음(블랭킷 계산) — 수동 지정: CMP … 패턴 30% 5mm');
+  if(m.residNm>1){add('잔여 패턴 단차',`${m.residNm.toFixed(0)}nm`,m.residNm>CMP_DEF.STEP_WARN_NM?1:0,`패턴 단차 ${m.residNm.toFixed(0)}nm 남음 (평탄화 미완)`);t.push(`잔여 패턴 단차 ${m.residNm.toFixed(0)}nm`);}
+  if(m.roll){const r=m.roll;add('Edge roll-off',`${r.pct>=0?'+':''}${r.pct.toFixed(0)}% @1mm`,Math.abs(r.pct)>30?1:0,`Edge 1mm 제거량이 기준(R145) 대비 ${r.pct>=0?'+':''}${r.pct.toFixed(0)}% (${r.nm>=0?'+':''}${r.nm.toFixed(0)}nm)`);
+    t.push(`Edge roll-off ${r.pct>=0?'+':''}${r.pct.toFixed(0)}% @1mm`);}
+  if(st.mode==='stop'){
+    if(c.endpoint){const s=c.stop;add('정지막',`${shortMat(s.mat)} 노출 · 손실 ${s.lossNm.toFixed(1)}nm`,s.lossNm>.5*s.t0Nm?1:0,`정지막 ${shortMat(s.mat)} 과연마 손실 ${s.lossNm.toFixed(1)}nm (endpoint ${c.used.toFixed(2)}µm + OP ${c.opUm.toFixed(2)}µm)`);
+      t.push(`endpoint ${c.used.toFixed(2)}µm + OP ${c.opUm.toFixed(2)}µm · ${shortMat(s.mat)} 손실 ${s.lossNm.toFixed(1)}nm`);}
+    else add('정지막','미도달',1,c.warn.join(' · '));
+    if(c.ring)add('Edge 잔막 링',`${c.ring.nm.toFixed(0)}nm ~${c.ring.dMax.toFixed(1)}mm`,1,`Edge ${c.ring.dMax.toFixed(1)}mm 안 정지막 위 잔막 ${c.ring.nm.toFixed(0)}nm`);}
+  if(m.bevelW>CMP_DEF.RESID_NM){add('베벨 W 잔막',`${m.bevelW.toFixed(0)}nm`,1,`베벨/Apex W 잔막 ${m.bevelW.toFixed(0)}nm (pad 미접촉) → peeling·오염 (US6121111)`);t.push(`베벨 W 잔막 ${m.bevelW.toFixed(0)}nm`);}
+  if(S.recessNm&&m.hasPat){add('W recess (est)',`~${S.recessNm}nm`,0,'W plug recess 지표 — 형상 미반영 (Nitta 2014)');t.push(`W recess ~${S.recessNm}nm(est, 지표)`);}
+  c.warn.forEach(w=>t.push('⚠ '+w));
+  R.chips=ch;R.impact={t:`${R.impact.t} · ${t.join(' · ')}`,lvl:Math.max(R.impact.lvl,...ch.map(q=>q.lvl))};}
 function arcRisk(bias){
   const DI=layers.map(ly=>isDielectric(ly.mat)),metals=new Set();let dl=0,dw=0,step=0,be=0,bw=0;
   for(let i=0;i<NP;i++){const p=pts[i];if(p.d>4)continue;
@@ -1904,11 +2715,14 @@ function arcRisk(bias){
   if(dT>1)why.push(`edge 4mm 내 유전체 ${dT.toFixed(1)}µm → 전하 축적`);if(metal)why.push(`Edge ${[...metals].map(shortMat).join('·')}(금속) 노출`);
   if(step>.5)why.push(`edge 단차 ${step.toFixed(1)}µm → 전계 집중`);if(bare)why.push('bevel Si 노출 + 두꺼운 유전체 경계');
   sc=Math.round(sc*bias);return{score:sc,lvl:sc>=50?2:sc>=25?1:0,why};}
+// Edge 단차 (R=0.3~1.5mm 전면 평균 막 합 − 내측 기준점 iF 막 합, µm): 접합 판정·전/후 비교 공용
+function edgeStepDE(iF){let e=0,ec=0;
+  for(let i=0;i<NP;i++){const p=pts[i];if(p.f>.99&&p.d>.3&&p.d<1.5){e+=LV[i]*ds[i];ec+=ds[i];}}
+  return(ec?e/ec:0)-LV[iF];}
 function bondCheck(iF,iA,sa){
-  let e=0,ec=0,peel=0;
-  for(let i=0;i<NP;i++){const p=pts[i];if(p.f>.99&&p.d>.3&&p.d<1.5){e+=LV[i]*ds[i];ec+=ds[i];}
-    if(p.d<1){let t=0;layers.forEach(l=>t+=Math.abs(MATERIALS[l.mat].stress)*l.h[i]);peel=Math.max(peel,t);}}
-  const dE=(ec?e/ec:0)-LV[iF],bow=Math.abs(bowUm()),lim={s:readNum('bStep'),b:readNum('bBow'),p:readNum('bPeel')};
+  let peel=0;
+  for(let i=0;i<NP;i++)if(pts[i].d<1){let t=0;layers.forEach(l=>t+=Math.abs(MATERIALS[l.mat].stress)*l.h[i]);peel=Math.max(peel,t);}
+  const dE=edgeStepDE(iF),bow=Math.abs(bowUm()),lim={s:readNum('bStep'),b:readNum('bBow'),p:readNum('bPeel')};
   const row=(ok,w,t)=>`<div style="color:${ok?'#10b981':w?'#fbbf24':'#ef4444'}">${ok?'✔':w?'⚠':'✖'} ${t}</div>`;
   $('bondBox').innerHTML=
    row(Math.abs(dE)<=lim.s,Math.abs(dE)<=lim.s*3,`Edge step/roll-off ${dE>=0?'+':''}${dE.toFixed(2)}µm (R=0.3~1.5mm vs 내측 R145, 허용 ±${lim.s}µm)${dE<-lim.s?' — edge가 낮아 접합 gap/void 위험':dE>lim.s?' — edge가 높아 접촉 간섭':''}`)+
@@ -1930,12 +2744,12 @@ function cmdMat(toks){
 // 숫자 + 단위 추출. 음수·소수점 두 개·알 수 없는 단위 접미사는 해석 실패(err). 단위 없는 수는 bare (호출 측이 Å로 해석하고 경고)
 const CMD_UNIT_RE=/^(KÅ|KA|K|Å|ANG|A|NM|UM|ΜM|µM|MM|SEC|S|초|MIN|분|H|HR|HRS|HOUR|HOURS|시간|단|쌍|PAIRS|PAIR|%)$/;
 // 숫자 뒤에 띄어 쓴 단어 중 단위가 아니어도 되는 명령 어휘 (그 외 영문 단어는 '알 수 없는 단위')
-const CMD_WORD_RE=/^(DEPO|DEP|ETCH|CLEAN|CLN|STRIP|PLASMA|WET|GAS|OPEN|FRONT|FRONTSIDE|BACK|BACKSIDE|BS|FS|EDGE|BEVEL|APEX|BVL?|BVO|BSO|BSN|ALL|BOTH|ONLY|EE|PES|EEW|BEW|CMP|MOLD|ON|STACK|PHOTO|RING|PSES|EBR|WEE|POSI|NEGA|POSITIVE|NEGATIVE|MILD|AGGRESSIVE|NONSEL|FURNACE|LPCVD|PECVD|LP|CVD|ALD|PVD|COAT|HM|HARC|SLIT|ACL|SOH|CARBON|TEOS|EXCLUSION|EXCURSION|ASH|ASHING|SPM|SC1|APM|LAL|BOE|BHF|DHF|HF|VHF|VAPOR|XEF2|CLF3|HNO3|HNA|O2|O3|CF4|NF3|SF6|CHF3|C4F8|C4F6|CL2|HBR|N2|H2|FORMING|PIRANHA|H3PO4|H2O2|UV|PR|SELECTIVE|CU|COPPER)$/;
+const CMD_WORD_RE=/^(DEPO|DEP|ETCH|CLEAN|CLN|STRIP|PLASMA|WET|GAS|OPEN|FRONT|FRONTSIDE|BACK|BACKSIDE|BS|FS|EDGE|BEVEL|APEX|BVL?|BVO|BSO|BSN|ALL|BOTH|ONLY|EE|PES|EEW|BEW|CMP|MOLD|ON|STACK|PHOTO|RING|PSES|EBR|WEE|POSI|NEGA|POSITIVE|NEGATIVE|MILD|AGGRESSIVE|NONSEL|FURNACE|BVS|STOP|OP|STI|CERIA|BUFF|PATTERN|PAT|AUTO|BLANKET|TUNGSTEN|ILD|PMD|LEGACY|LPCVD|PECVD|LP|CVD|ALD|PVD|COAT|HM|HARC|SLIT|ACL|SOH|CARBON|TEOS|EXCLUSION|EXCURSION|ASH|ASHING|SPM|SC1|APM|LAL|BOE|BHF|DHF|HF|VHF|VAPOR|XEF2|CLF3|HNO3|HNA|O2|O3|CF4|NF3|SF6|CHF3|C4F8|C4F6|CL2|HBR|N2|H2|FORMING|PIRANHA|H3PO4|H2O2|UV|PR|SELECTIVE|CU|COPPER)$/;
 const cmdKnownWord=w=>CMD_WORD_RE.test(w)||!!matKey(w);
 // 시간 단위 순위: 복합 시간(1h30min)은 큰 단위부터 한 번씩만
 const TIME_RANK=u=>/^(H|HR|HRS|HOUR|HOURS|시간)$/.test(u)?3:/^(MIN|분)$/.test(u)?2:1;
 // o.dists = 거리(mm) 전부 (여러 개 허용 여부는 면 표기를 아는 parseCmd가 판단), o.txt = 두께·단위 없는 수의 원문
-function cmdNums(U){const o={len:null,dist:null,time:null,cnt:null,bare:[],dists:[],txt:[],err:null},fail=e=>({...o,err:e});
+function cmdNums(U){const o={len:null,dist:null,time:null,cnt:null,bare:[],dists:[],pct:[],txt:[],err:null},fail=e=>({...o,err:e});
   if(/\d\s*(?:[A-ZÅΜµ]{1,3})?\s*[-~–—〜∼]\s*\.?\d/.test(U))return fail('범위 대신 값 하나를 적어 주세요 (예: 2.5um)');
   let lens=0,tRank=9;
   const re=/(?<![A-Z0-9.])(\d+(?:\.\d+)*|\.\d+(?:\.\d+)*)(\.?)(\s*)(시간|[A-ZÅΜµ%][A-Z0-9ÅΜµ%]*|초|분|단|쌍)?/g;let m;
@@ -1955,6 +2769,7 @@ function cmdNums(U){const o={len:null,dist:null,time:null,cnt:null,bare:[],dists
       if(rk>=tRank)return fail(`시간이 여러 개입니다 ('${num}${u.toLowerCase()}') — 값 하나만, 또는 1h30min처럼 큰 단위부터 한 번씩 적어 주세요`);
       tRank=rk;o.time=(o.time||0)+v*(rk===3?3600:rk===2?60:1);}
     else if(/^(단|쌍|PAIR)/.test(u)){if(o.cnt!=null)return fail(`쌍 수가 여러 개입니다 ('${fmtNum(o.cnt)}', '${num}') — 값 하나만 적어 주세요`);o.cnt=v;}
+    else if(u==='%')o.pct.push(v);
     else if(!u){o.bare.push(v);o.txt.push(num);}}
   if(lens>1||o.bare.length>1)return fail(`숫자가 여러 개입니다 (${o.txt.map(t=>`'${t}'`).join(', ')}) — 두께·양은 값 하나만 적어 주세요`);
   return o;}
@@ -1973,6 +2788,7 @@ function parseCmd(txt){
   // 막질·약어에 붙여 쓴 두께('SiN300nm', 'BSO5K')는 띄어서 읽음 — 'H3PO4'·'C4F8'처럼 단위가 붙지 않은 화학식은 그대로
   const U0=(txt||'').trim().toUpperCase().replace(/([A-Z])(\d+(?:\.\d+)?)(KÅ|KA|K|Å|ANG|A|NM|UM|ΜM|µM)(?![A-Z0-9ÅΜµ])/g,'$1 $2$3');if(!U0)return null;
   const pre=cmdPrep(U0);if(pre.err)return{err:pre.err};const U=pre.U;
+  if(/\bCMP\b|연마/.test(U))return parseCmp(U,pre.stripped);
   const N=cmdNums(U);if(N.err)return{err:N.err};
   const toks=U.split(/[\s,\/]+/).filter(Boolean),mat=cmdMat(toks),has=re=>re.test(U),D=(t,k,st)=>schemaDef(t,k,st);
   // 영역 판정: 약어 BSO·BSN·BVO는 자기 영역이 있으므로 빼고 읽음 ('BSO'의 BS를 후면 표기로 오인하지 않게)
@@ -1988,12 +2804,13 @@ function parseCmd(txt){
   // 쓰이지 않는 거리(mm)는 조용히 버리지 않고 알림
   const distUnused=(what,how='')=>{if(N.dist!=null)warn(`${fmtNum(N.dist)}mm는 ${what}에 쓰이지 않아 무시됩니다${how?` — ${how}`:''}`);};
   // 베벨 증착 범위: '전면 2mm 후면 1mm'처럼 면별 거리, 아니면 면 표시 없는 mm 값. 후면 거리만 있으면 전면 거리는 따로 받음
+  const sideMm=()=>{const lone=Ur.replace(fMm?fMm[0]:'\u0000',' ').replace(bMm?bMm[0]:'\u0000',' ').match(new RegExp(`(?<![\\d.])${NUM}\\s*MM`));
+    return{f:fMm?+fMm[1]:lone?+lone[1]:null,b:bMm?+bMm[1]:undefined};};
   const edgeRng=region=>{if(region!=='edge')return{};
-    const lone=Ur.replace(fMm?fMm[0]:'\u0000',' ').replace(bMm?bMm[0]:'\u0000',' ').match(new RegExp(`(?<![\\d.])${NUM}\\s*MM`));
-    const f=fMm?+fMm[1]:lone?+lone[1]:null,b=bMm?+bMm[1]:undefined,bk=b!=null?{backMm:b}:{};
+    const{f,b}=sideMm(),bk=b!=null?{backMm:b}:{};
     if(f==null){need.push('distMm');return{distMm:2,...bk};}return{distMm:f,...bk};};
   const regD=reg!=='all'?reg:hasR(/전체|양면|\bALL\b|BOTH|FURNACE|퍼니스|LPCVD|\bLP\b/)?'all':'front';
-  const RM=(action,o)=>({type:'remove',action,distMm:2.5,siLoss:0,amt:1,ero:D('remove','ero'),eroW:D('remove','eroW'),...o});
+  const RM=(action,o)=>({type:'remove',action,distMm:2.5,siLoss:0,...o});
   // 세정 제거량: 시간이면 time 그대로 (제거량 환산·범위 검사는 검증 관문 STEP_POST.clean) · 두께면 제거량 · 둘 다 없으면 입력 요청
   const amtOf=c=>{if(N.time!=null){notes.push(`${fmtNum(N.time)}s × ${c.rate}nm/s(문헌표 기준) ≈ ${fmtNum(roundAmt(N.time*c.rate))}nm`);return{time:N.time};}
     if(N.len)return{amt:roundAmt(N.len.um*1e3)};need.push('amt');return{amt:c.amt};};
@@ -2003,14 +2820,20 @@ function parseCmd(txt){
     if(mode!=='pses'&&N.dist==null)need.push('w');
     return R({type:'photo',mode,prPat:D('photo','prPat'),prBar:D('photo','prBar'),pitch:D('photo','pitch'),dfull:D('photo','dfull'),
       ...(mode==='pses'?{pat:D('photo','pat')}:{w:N.dist??D('photo','w',{mode})}),tone,ringExp:D('photo','ringExp')});}
-  if(has(/\bCMP\b|연마/)){if(N.len&&N.bare.length)return manyNums();if(!N.len&&!N.bare.length)need.push('amt');distUnused('CMP');
-    return R(RM('cmp',{distMm:0,amt:N.len?N.len.um:(N.bare[0]??1)}));}
   if(has(/\bEEW\b|\bBEW\b/)){if(N.dist!=null&&N.bare.length)return manyNums();const a=has(/BEW/)?'bew':'eew',d=N.dist??N.bare[0];if(d==null)need.push('distMm');
     return R(RM(a,{distMm:d??(a==='eew'?2:1)}));}
-  if(has(/\bPES\b|PLASMA ?EDGE|BEVEL ?(ETCH|STRIP)|EDGE ?STRIP|베벨 ?(식각|에치)/)){if(N.dist!=null&&N.bare.length)return manyNums();
-    const g=has(/CF4/)?'cf4':has(/NF3/)?'nf3':has(/SF6/)?'sf6':has(/CHF3|C4F8/)?'chf3':has(/CL2|HBR/)?'cl2':has(/N2 ?\/? ?H2/)?'h2n2':has(/\bO2\b/)?'ash':null;
-    if(g){const d=N.dist??N.bare[0],c=CLEAN[g];if(d==null)need.push('distMm');const am=amtOf(c);
-      notes.push(`${c.ab} 선택 식각 (Edge→${d??2.5}mm)`);return R({type:'clean',cat:c.cat,key:g,...am,mode:'edge',distMm:d??2.5});}
+  // Edge strip에 Gas를 쓰면 그 Gas 선택비로 베벨 식각 (세정 단계, 베벨 폭 = 거리)
+  const edgeGas=dDef=>{const g=has(/CF4/)?'cf4':has(/NF3/)?'nf3':has(/SF6/)?'sf6':has(/CHF3|C4F8/)?'chf3':has(/CL2|HBR/)?'cl2':has(/N2 ?\/? ?H2/)?'h2n2':has(/\bO2\b/)?'ash':null;
+    if(!g)return null;const d=N.dist??N.bare[0],c=CLEAN[g];if(d==null)need.push('distMm');const am=amtOf(c);
+    notes.push(`${c.ab} 선택 식각 (Edge→${d??dDef}mm)`);return R({type:'clean',cat:c.cat,key:g,...am,mode:'edge',distMm:d??dDef});};
+  // BVS (Bevel Strip): 베벨 집중 strip — 전면 Edge→mm, 후면은 '후면 1mm'로 따로 (가정 모델, PES와 구분)
+  if(has(/\bBVS\b|BEVEL ?STRIP|베벨 ?스트립/)){if(N.dist!=null&&N.bare.length&&!(fMm||bMm))return manyNums();
+    const gs=edgeGas(.5);if(gs)return gs;
+    const sm=sideMm(),f=sm.f??N.bare[0]??null;if(f==null)need.push('distMm');
+    notes.push('BVS = 베벨 집중 strip(가정): PES와 달리 전/후면 범위 따로 · 평탄부 영향 거의 없음 · Si 손실 기본 0');
+    return R(RM('bvs',{distMm:f??.5,...(sm.b!=null?{backMm:sm.b}:{}),siLoss:N.len?N.len.um:0}));}
+  if(has(/\bPES\b|PLASMA ?EDGE|BEVEL ?ETCH|EDGE ?STRIP|베벨 ?(식각|에치)/)){if(N.dist!=null&&N.bare.length)return manyNums();
+    const gs=edgeGas(2.5);if(gs)return gs;
     const d=N.dist??N.bare[0],si=has(/AGGRESSIVE|강/)?3:has(/비선택|NON.?SEL/)?1:has(/MILD|약/)?.3:(N.len?N.len.um:0);if(d==null)need.push('distMm');
     return R(RM('strip',{distMm:d??2.5,siLoss:si}));}
   if(has(/MOLD|몰드|\bON\b ?STACK|^ON\b/)){
@@ -2060,6 +2883,41 @@ function parseCmd(txt){
   if(!L){need.push('rawVal');L={um:.1,raw:1,unit:'K'};}
   if(regD!=='edge')distUnused(`${REG_KO[regD]} 증착`,"베벨 범위는 'BEVEL … 2mm'");
   return R({type:'depo',region:regD,material:mat||'SiO2',thicknessUm:L.um,rawVal:L.raw,unit:L.unit,...edgeRng(regD)});}
+// CMP 서술형: 'CMP 1um' · 'OXIDE CMP 1um' · 'W CMP STOP OX OP 20%' · 'CMP STOP SIN' · 'STI CMP' · 'CMP 1um 패턴 30% 5mm' · 'CMP 1um LP 5mm'
+//   슬러리: W(BUFF·저선택 → w_ls, 그 외 w_hs) · STI·CERIA · CU · POLY · 비선택 · 그 외 oxide (oxide + Poly 정지 → ox_ps)
+//   STOP [막] → 정지막 endpoint + OP% (W·STI CMP는 제거량이 없으면 정지막 endpoint가 기본) · LP n mm · 패턴 n% [n mm] · 단차 n um · 패턴 자동/블랭킷
+function parseCmp(U,stripped){
+  const notes=[],need=[],warn=t=>notes.push('⚠ '+t),NUM='(\\d+(?:\\.\\d+)?|\\.\\d+)',st={type:'remove',action:'cmp'};
+  if(stripped)notes.push('혼합비·온도 표기는 계산에 쓰지 않습니다');
+  let rest=U;const take=re=>{const m=rest.match(re);if(m)rest=rest.slice(0,m.index)+' '+rest.slice(m.index+m[0].length);return m;};
+  const lp=take(new RegExp(`\\bLP\\s*=?\\s*${NUM}\\s*MM(?![A-Z])`)),op=take(new RegExp(`\\bOP\\s*=?\\s*${NUM}\\s*%`));
+  const stp=take(new RegExp(`(?:단차|\\bSTEP\\b)\\s*${NUM}\\s*(NM|UM|ΜM|µM|K|Å|A)(?![A-Z])`));
+  const pAuto=take(/(?:패턴|PATTERN)\s*(?:자동|AUTO)/),pOff=take(/블랭킷|BLANKET|(?:패턴|PATTERN)\s*(?:없음|OFF)/);
+  const pat=take(new RegExp(`(?:패턴|PATTERN|\\bPAT\\b)(?:\\s*밀도)?(?:\\s*${NUM}\\s*%)?(?:\\s*${NUM}\\s*MM)?`));
+  const stop=take(/\bSTOP\b(?:\s*ON\b)?(?:\s*([A-Z][A-Z0-9-]*))?/);
+  const has=re=>re.test(rest),W=has(/\bW\b|TUNGSTEN|텅스텐/);
+  let slurry=W?(has(/BUFF|저선택|LOW ?SEL/)?'w_ls':'w_hs'):has(/\bSTI\b|CERIA|세리아/)?'sti':has(/\bCU\b|COPPER|구리/)?'cu':has(/POLY|폴리/)?'poly':has(/NON.?SEL|비선택|LEGACY/)?'legacy':'oxide';
+  const N=cmdNums(rest);if(N.err)return{err:N.err};
+  if(N.len&&N.bare.length)return{err:`숫자가 여러 개입니다 (${N.txt.map(t=>`'${t}'`).join(', ')}) — 제거량은 값 하나만 적어 주세요`};
+  let stopMat=null;
+  if(stop&&stop[1]){stopMat=matKey(stop[1]);if(!stopMat)warn(`'${stop[1]}' — 정지막으로 알 수 없어 슬러리 기본 정지막을 씁니다`);}
+  if(stopMat==='Poly'&&slurry==='oxide'){slurry='ox_ps';notes.push('Poly 정지 → Oxide/Poly-stop 슬러리(PVME)');}
+  const S=SLURRY_DB[slurry],amtGiven=!!(N.len||N.time!=null||N.bare.length);
+  st.slurry=slurry;notes.push(S.name);
+  st.mode=stop||(!amtGiven&&(W||slurry==='sti'))?'stop':'amt';
+  if(st.mode==='stop'){st.stopMat=stopMat||S.stop;if(op)st.op=+op[1];
+    if(!stop)notes.push('정지막 endpoint 기본 (제거량을 적으면 제거량 지정)');
+    notes.push(`Endpoint ${shortMat(st.stopMat)} + OP ${st.op??CMP_DEF.op}%`);if(amtGiven)warn('정지막 endpoint 모드라 제거량·시간은 쓰지 않습니다');}
+  else{if(op)warn('OP(과연마)는 정지막 모드(STOP)에서만 씁니다');
+    if(N.time!=null){st.time=N.time;notes.push(`${fmtNum(N.time)}s × ${SLURRY[slurry].rate}nm/s(문헌) ≈ ${fmtNum(+(N.time*SLURRY[slurry].rate/1000).toFixed(4))}µm`);}
+    else if(N.len)st.amt=N.len.um;else if(N.bare.length){st.amt=N.bare[0];notes.push('단위 없음 → µm로 해석');}else{need.push('amt');st.amt=1;}}
+  if(lp)st.Lp=+lp[1];
+  if(pAuto)st.patSrc='auto';else if(pOff)st.patSrc='off';
+  else if(pat){st.patSrc='manual';if(pat[1]!==undefined)st.patDens=+pat[1];else need.push('patDens');if(pat[2]!==undefined)st.patFrom=+pat[2];else need.push('patFrom');}
+  if(stp){const v=+stp[1],u=stp[2],um=u==='NM'?v/1e3:u==='K'?v/10:/^(Å|A)$/.test(u)?v/1e4:v;if(st.patSrc!=='manual')warn('단차는 수동 패턴(패턴 n% n mm)에서만 씁니다');else st.patStep=um;}
+  if(N.dist!=null)warn(`${fmtNum(N.dist)}mm는 쓰이지 않아 무시됩니다 — 평탄화 길이는 'LP 5mm', 패턴 경계는 '패턴 30% 5mm'`);
+  if(N.pct.length)warn(`${N.pct.map(v=>fmtNum(v)+'%').join(', ')}는 쓰이지 않아 무시됩니다 — 'OP 20%' · '패턴 30%'`);
+  return{st,notes,need};}
 // ---- 세부값 요청 칸 (#ask): 파서가 채운 기본값 중 필수(*) 칸은 비워 두고 예시는 placeholder로 → 사용자가 입력해야 제출 ----
 function openAsk(st,need,src){const F=ASKF;
   F.st={...st};F.orig={...st};F.src=src||'';F.ph={};F.need=(need||[]).filter(k=>fieldOf(st.type,k));
@@ -2118,7 +2976,7 @@ function cmdEnter(detail){const t=$('cmd').value.trim(),r=cmdPreview();if(!r||r.
   if(r.invalid)return false;
   const v=ins({...r.st,src:t});if(!v.ok){showCmdErr(v.errors.map(e=>e.msg).join(' · '));return false;}
   cmdDone(t);return true;}
-const EXAMPLES=['HT-TEOS 8.5K 전면만 DEPO','MOLD 48단','BVO 1K 2mm','PES EE 2.5mm','BEVEL O2 PLASMA 2mm','EE 3mm'];
+const EXAMPLES=['HT-TEOS 8.5K 전면만 DEPO','MOLD 48단','BVO 1K 2mm','PES EE 2.5mm','BVS 0.5mm','BEVEL O2 PLASMA 2mm','W CMP STOP OX OP 20%','CMP 1um 패턴 30% 5mm','EE 3mm'];
 function cmdInit(){const c=$('cmd');
   c.addEventListener('input',cmdPreview);
   c.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();cmdEnter(e.shiftKey);}
@@ -2129,6 +2987,9 @@ function cmdInit(){const c=$('cmd');
   ex.addEventListener('click',pick);ex.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(e);}});
   $('ask').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();askSubmit();}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();askClose();}});
   formBind(ASKF);
+  // 문법 도움말의 예문(code): 해석되는 명령만 눌러서 입력칸에 넣기
+  const hp=$('cmdHelp');if(hp){hp.querySelectorAll('code').forEach(cd=>{const t=cd.textContent.trim(),r=cmdAnalyze(t);if(t&&r&&!r.err){cd.dataset.cmd=t;cd.tabIndex=0;cd.setAttribute('role','button');cd.title='눌러서 입력칸에 넣기';}});
+    hp.addEventListener('click',pick);hp.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-cmd]')){e.preventDefault();pick(e);}});}
   // 모바일: 짧은 placeholder
   const mq=matchMedia('(max-width:999px)'),ph=()=>{c.placeholder=mq.matches?'예: SiN 300nm':'예: HT-TEOS 8.5K 전면만 DEPO';};ph();
   if(mq.addEventListener)mq.addEventListener('change',ph);else if(mq.addListener)mq.addListener(ph);
@@ -2156,11 +3017,227 @@ function presetBond(){return[
  {type:'depo',region:'front',material:'MTTEOS',rawVal:8,unit:'um'},
  {type:'remove',action:'cmp',amt:6,ero:.15,eroW:2}];}
 
+// ---------- 레시피 파일 (이 PC에 저장 / 불러오기 / 자동 복구) ----------
+// 형식 <이름>.webc.json = {format:'webc-recipe', version, app, savedAt(ISO), name, note, steps:[정규화 단계], sel, settings, view}
+//   settings = 계산·판정에 쓰이는 값 {siProf, edgeModel, waferThk, rampUm, apexTaper, wrapMm, eeMm, bStep, bBow, bPeel, coverage:{막질:{side,bot,plan}}}
+//   v3: settings.edgeModel 추가 ('process' | 'legacy'). v1·v2 파일은 기본 'process'로 읽고 Status Bar에 안내 칩(그 레시피를 편집하기 전까지)
+//   view = 보기 설정 {mode, span, grid, zScale, siDisp} (선택) · STEP_RES 같은 파생값은 저장하지 않음(불러올 때 다시 계산)
+// 불러오기 관문: 크기 → JSON(금지 키 __proto__·constructor·prototype은 버리고 파일 거부) → format → version 마이그레이션 →
+//   이름·메모 → 전 단계 validateStep + 누적 막 수(validateRecipe) → 설정은 readNum과 같은 클램프. 모두 통과해야 한 번에 적용(되돌리기 가능)
+const FILE={FMT:'webc-recipe',VER:3,APP:'WEBC Edge Simulator v3',EXT:'.webc.json',MAX_BYTES:2*1024*1024,NAME:80,NOTE:500,FNAME:60,STEPS:1000,READ_MS:10000,ERR_SHOW:12};
+const FILE_SET_NUM=['waferThk','rampUm','apexTaper','wrapMm','eeMm','bStep','bBow','bPeel'];   // SETTINGS 범위 표의 키
+const FILE_ENGINE=['siProf','edgeModel','waferThk','rampUm','apexTaper','wrapMm','coverage'];  // 바뀌면 엔진 전부 재계산
+const BAD_KEYS=new Set(['__proto__','constructor','prototype']);
+let FILE_META={name:'',note:''},SAVED_SIG='';
+// 현재 설정·보기 (항상 같은 키 순서 → 서명 비교 가능)
+function captureSettings(){const s={siProf:hasOwn(PROF,$('siProf').value)?$('siProf').value:'semi',edgeModel:readEdgeModel()};
+  FILE_SET_NUM.forEach(k=>{s[k]=k==='eeMm'?getEE():readNum(k);});
+  s.coverage=Object.fromEntries(KEYS.map(k=>[k,Object.fromEntries(COV_F.map(f=>[f,MATERIALS[k][f]]))]));return s;}
+function captureView(){return{mode:VIEW.mode,span:readNum('viewSpan'),grid:VIEW.grid,zScale:readNum('zScale'),siDisp:readNum('siDisp')};}
+const stateSig=(st,set)=>JSON.stringify([st,set]);
+const currentSig=()=>stateSig(steps,captureSettings());
+function recipeFileObj(meta){return{format:FILE.FMT,version:FILE.VER,app:FILE.APP,savedAt:new Date().toISOString(),name:meta.name,note:meta.note,
+  steps,sel,settings:captureSettings(),view:captureView()};}
+// ---- 검사 (부작용 없음) ----
+const isPlainObj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
+// 설정: 누락 = 기본값, 숫자는 readNum과 같은 클램프(checkNum). 보정한 항목은 warns에
+function checkSettings(raw,warns){const r=isPlainObj(raw)?raw:{},s={};
+  if(raw!==undefined&&!isPlainObj(raw))warns.push('settings가 객체가 아니어서 기본 설정을 씁니다');
+  const sp=r.siProf;s.siProf=sp===undefined?'semi':hasOwn(PROF,sp)?sp:(warns.push(`Si Edge 형상 '${String(sp).slice(0,20)}' → 기본(SEMI형)`),'semi');
+  const em=r.edgeModel;s.edgeModel=em===undefined?EDGE_MODELS[0]:EDGE_MODELS.includes(em)?em:(warns.push(`끝단 프로파일 모델 '${String(em).slice(0,20)}' → 기본(공정별)`),EDGE_MODELS[0]);
+  FILE_SET_NUM.forEach(k=>{const spec=SETTINGS[k],v=r[k];if(v===undefined){s[k]=spec.def;return;}
+    const c=checkNum(typeof v==='number'||typeof v==='string'?v:'',spec);s[k]=c;
+    if(strictNum(v)!==c)warns.push(`${spec.label}: ${fmtNum(spec.min)}~${fmtNum(spec.max)}${spec.unit} 범위 밖이거나 숫자가 아님 → ${c}${spec.unit}`);});
+  const cv=isPlainObj(r.coverage)?r.coverage:{};
+  if(r.coverage!==undefined&&!isPlainObj(r.coverage))warns.push('Step Coverage 표가 객체가 아니어서 기본값을 씁니다');
+  Object.keys(cv).forEach(k=>{if(!hasOwn(MATERIALS,k))warns.push(`Step Coverage: 알 수 없는 막질 '${String(k).slice(0,20)}' 무시`);});
+  s.coverage=Object.fromEntries(KEYS.map(k=>{const e=isPlainObj(cv[k])?cv[k]:{};
+    return[k,Object.fromEntries(COV_F.map(f=>{const d=MAT_DEF[k][f];if(e[f]===undefined)return[f,d];
+      const c=checkNum(typeof e[f]==='number'||typeof e[f]==='string'?e[f]:'',{min:0,max:1,def:d});
+      if(strictNum(e[f])!==c)warns.push(`Step Coverage ${shortMat(k)} ${f}: 0~1 범위 밖이거나 숫자가 아님 → ${c}`);return[f,c];}))];}));
+  return s;}
+// 보기: 잘못된 항목은 버림(현재 보기 유지)
+function checkView(raw){if(!isPlainObj(raw))return null;const v={};
+  if(typeof raw.mode==='string'&&hasOwn(VIEW_MODES,raw.mode))v.mode=raw.mode;
+  if(raw.span!==undefined)v.span=checkNum(raw.span,SETTINGS.viewSpan);
+  if(typeof raw.grid==='boolean')v.grid=raw.grid;
+  ['zScale','siDisp'].forEach(k=>{if(raw[k]!==undefined)v[k]=checkNum(raw[k],SETTINGS[k]);});
+  return v;}
+// 이름·메모: 문자열 · 길이 · 제어 문자 · 꺾쇠(<, >) 금지 (저장 시에는 지워서 씀)
+function checkMetaText(v,label,max,multiline,errors){if(v===undefined||v===null)return'';
+  if(typeof v!=='string'){errors.push(`${label}: 문자열이 아닙니다`);return'';}
+  if(v.length>max)errors.push(`${label}: ${max}자 이하여야 합니다 (${v.length}자)`);
+  if(/[<>]/.test(v))errors.push(`${label}: 꺾쇠(<, >) 문자는 쓸 수 없습니다 — 스크립트·태그로 보이는 값`);
+  if((multiline?/[\u0000-\u0008\u000b-\u001f\u007f]/:/[\u0000-\u001f\u007f]/).test(v))errors.push(`${label}: 제어 문자가 있습니다`);
+  return v;}
+// 구버전 → 현재 (version 누락 = 1). v1 = steps(+name)만 있던 초기 형식: 설정·메모는 기본값, legacy CMP('ero' µm)는 validateStep이 그대로 변환
+//   v2 → v3: settings.edgeModel 없음 = 'process'(기본) — 구버전 결과(legacy)가 아니라 새 끝단 모델로 읽음 (checkSettings가 누락을 기본값으로 채움)
+const MIGRATE={1:o=>({...o,version:2,name:o.name??'',note:o.note??'',settings:o.settings??{}}),
+  2:o=>({...o,version:3})};
+function migrateRecipe(o,errors){let v=o.version===undefined?1:o.version;
+  if(!Number.isInteger(v)||v<1){errors.push(`version '${String(v).slice(0,12)}' — 1 이상의 정수여야 합니다`);return null;}
+  if(v>FILE.VER){errors.push(`더 새로운 버전(v${v})에서 저장한 파일입니다 — 이 시뮬레이터는 v${FILE.VER}까지 읽습니다`);return null;}
+  const from=v;let cur={...o,version:v};
+  while(cur.version<FILE.VER){const m=MIGRATE[cur.version];if(!m){errors.push(`v${cur.version} 변환 규칙이 없습니다`);return null;}cur=m(cur);}
+  return{obj:cur,from};}
+const fieldName=(type,k)=>{const f=fieldOf(type,k);return f?`${fieldLabel(f)} [${k}]`:`[${k}]`;};
+// 텍스트 → {ok, data:{name,note,steps,sel,settings,view}, warns, from} | {ok:false, errors:[문장]}
+function parseRecipeText(text){const errors=[],warns=[],fail=()=>({ok:false,errors});
+  if(typeof text!=='string'){errors.push('파일 내용을 읽지 못했습니다');return fail();}
+  if(text.length>FILE.MAX_BYTES){errors.push(`파일이 너무 큽니다 (${(text.length/1048576).toFixed(1)}MB) — ${FILE.MAX_BYTES/1048576}MB 이하만 불러옵니다`);return fail();}
+  if(!text.trim()){errors.push('빈 파일입니다');return fail();}
+  let bad=false,o;
+  try{o=JSON.parse(text.replace(/^\uFEFF/,''),(k,v)=>{if(BAD_KEYS.has(k)){bad=true;return undefined;}return v;});}
+  catch(e){errors.push(`JSON 형식이 아닙니다 — ${String(e.message).slice(0,120)}`);return fail();}
+  if(bad){errors.push('허용되지 않는 키(__proto__·constructor·prototype)가 있습니다 — 변조된 파일일 수 있어 거부합니다');return fail();}
+  if(!isPlainObj(o)||o.format!==FILE.FMT){errors.push(`WEBC 레시피 파일이 아닙니다 (format: ${isPlainObj(o)&&o.format!==undefined?`'${String(o.format).slice(0,30)}'`:'없음'} — '${FILE.FMT}'이어야 함)`);return fail();}
+  const mg=migrateRecipe(o,errors);if(!mg)return fail();const m=mg.obj;
+  const name=checkMetaText(m.name,'이름',FILE.NAME,false,errors),note=checkMetaText(m.note,'메모',FILE.NOTE,true,errors);
+  if(!Array.isArray(m.steps))errors.push('steps(단계 목록)가 배열이 아닙니다');
+  else if(m.steps.length>FILE.STEPS)errors.push(`단계가 ${m.steps.length}개입니다 — ${FILE.STEPS}개 이하여야 합니다`);
+  else{const r=validateRecipe(m.steps);
+    r.errors.forEach(e=>{const st=m.steps[e.i],ty=isPlainObj(st)&&typeof st.type==='string'&&hasOwn(TYPE_KO,st.type)?st.type:null;
+      errors.push(e.i<0?`레시피 전체: ${e.msg}`:`${e.i+1}단계${ty?` (${TYPE_KO[ty]})`:''} · 필드 ${ty?fieldName(ty,e.k):`[${e.k}]`}: ${e.msg}`);});
+    if(r.ok&&!errors.length){const N=r.steps.length,sl=Number.isInteger(m.sel)&&m.sel>=-1&&m.sel<N?m.sel:N-1;
+      return{ok:true,data:{name,note,steps:r.steps,sel:sl,settings:checkSettings(m.settings,warns),view:checkView(m.view)},warns,from:mg.from};}}
+  return fail();}
+// ---- 적용 (검사를 통과한 데이터만) ----
+const engineSig=()=>JSON.stringify(FILE_ENGINE.map(k=>k==='siProf'?$('siProf').value:k==='edgeModel'?readEdgeModel():k==='coverage'?captureSettings().coverage:readNum(k)));
+function applySettings(s){const before=engineSig();
+  $('siProf').value=s.siProf;$('edgeModel').value=s.edgeModel;
+  FILE_SET_NUM.forEach(k=>{if(k!=='eeMm'){const el=$(k);if(el)el.value=s[k];}});
+  KEYS.forEach(k=>COV_F.forEach(f=>{MATERIALS[k][f]=s.coverage[k][f];}));renderMatTable();
+  eeApply(s.eeMm);
+  if(engineSig()!==before)markGeoDirty();}
+function applyView(v){if(!v)return;
+  if(v.mode&&v.mode!==VIEW.mode){VIEW.mode=v.mode;prefSet(PREF.mode,v.mode);}
+  if(typeof v.grid==='boolean'&&v.grid!==VIEW.grid){VIEW.grid=v.grid;prefSet(PREF.grid,v.grid?'1':'0');}
+  if(v.span!==undefined)$('viewSpan').value=v.span;
+  ['zScale','siDisp'].forEach(k=>{if(v[k]!==undefined)$(k).value=v[k];});
+  zoomReset(false);renderModeSeg();}
+// 원자적 적용: 되돌리기 스냅샷 → 설정·보기·레시피 → 실패하면 스냅샷으로 복원
+function applyRecipeData(d,label){remember(label,true);const snap=UNDO;
+  try{applySettings(d.settings);applyView(d.view);steps=d.steps;sel=d.sel;bumpRecipe();updateUI();}
+  catch(e){console.error('레시피 적용 실패',e);UNDO=null;applySettings(snap.settings);applyView(snap.view);steps=snap.steps;sel=snap.sel;bumpRecipe();updateUI();throw e;}
+  FILE_META={name:d.name,note:d.note};}
+// ---- 저장 ----
+// 사내 코드처럼 보이는 토큰: 영문+숫자 섞인 4자 이상 · 숫자 5자리 이상
+function codeLikeTokens(text){const out=new Set();
+  for(const t of String(text||'').split(/[^A-Za-z0-9]+/)){if(!t)continue;if(/\d{5,}/.test(t)||(t.length>=4&&/[A-Za-z]/.test(t)&&/\d/.test(t)))out.add(t);}
+  return[...out].slice(0,8);}
+// 파일 이름: 금지 문자(\ / : * ? " < > | 제어 문자) → _, 앞뒤 점·공백 제거, 길이 제한, Windows 예약 이름 회피
+function safeFileName(name){let s=String(name||'').normalize('NFC').replace(/[\u0000-\u001f\u007f<>:"/\\|?*]/g,'_').replace(/\s+/g,' ').trim();
+  s=s.replace(/\.webc\.json$|\.json$/i,'').replace(/^[.\s]+|[.\s]+$/g,'');
+  s=Array.from(s).slice(0,FILE.FNAME).join('').trim();
+  if(/^(CON|PRN|AUX|NUL|COM\d|LPT\d)(\..*)?$/i.test(s))s='_'+s;
+  return(s||'webc_recipe')+FILE.EXT;}
+const cleanMeta=(t,max,multiline)=>Array.from(String(t||'').replace(multiline?/[\u0000-\u0008\u000b-\u001f\u007f<>]/g:/[\u0000-\u001f\u007f<>]/g,'')).slice(0,max).join('').trim();
+function downloadText(fname,text){const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+  const a=document.createElement('a');a.href=url;a.download=fname;a.rel='noopener';a.style.display='none';document.body.appendChild(a);
+  try{a.click();}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}}
+// File System Access API가 있으면 저장 위치 선택, 없거나 실패하면 다운로드. 반환 'picker' | 'download' | 'cancel'(사용자 취소)
+async function writeRecipeFile(fname,text){
+  if(typeof window.showSaveFilePicker==='function'){
+    try{const h=await window.showSaveFilePicker({suggestedName:fname,types:[{description:'WEBC 레시피 (.webc.json)',accept:{'application/json':['.json']}}]});
+      const w=await h.createWritable();await w.write(text);await w.close();return'picker';}
+    catch(e){if(e&&e.name==='AbortError')return'cancel';console.warn('저장 위치 선택 실패 — 다운로드로 저장합니다',e);}}
+  downloadText(fname,text);return'download';}
+const dlgOpen=d=>{if(!d||d.open)return;if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');};
+const dlgClose=d=>{if(!d||!d.open)return;if(typeof d.close==='function')d.close();else d.removeAttribute('open');};
+const SAVE={busy:false,opener:null};
+function saveMetaRead(){return{name:cleanMeta($('saveName').value,FILE.NAME,false),note:cleanMeta($('saveNote').value,FILE.NOTE,true)};}
+function saveFileHint(){const el=$('saveFile');if(el)el.textContent=`저장 파일: ${safeFileName(saveMetaRead().name)}`;}
+function saveOpen(){const d=$('saveDlg');if(!d)return;SAVE.opener=document.activeElement;
+  $('saveName').value=FILE_META.name||'';$('saveNote').value=FILE_META.note||'';$('saveMsg').textContent='';$('saveCode').hidden=true;$('saveFoot').hidden=false;
+  saveFileHint();dlgOpen(d);$('saveName').focus();}
+function saveClose(){dlgClose($('saveDlg'));const o=SAVE.opener;SAVE.opener=null;if(o&&o.focus)o.focus();}
+// 저장 실행: 사내 코드 패턴이면 한 번 더 확인(force) → 직렬화 → 파일 쓰기
+async function saveSubmit(force=false){if(SAVE.busy)return false;const meta=saveMetaRead(),toks=force?[]:codeLikeTokens(meta.name+' '+meta.note);
+  if(toks.length){$('saveCodeList').innerHTML=toks.map(t=>`<code>${escHtml(t)}</code>`).join('');$('saveCode').hidden=false;$('saveFoot').hidden=true;$('saveCode').querySelector('[data-act="saveFix"]').focus();return false;}
+  if(!steps.length){$('saveMsg').textContent='저장할 공정이 없습니다 — 공정을 입력하거나 예시를 불러오세요';return false;}
+  SAVE.busy=true;$('saveMsg').textContent='';
+  try{const fname=safeFileName(meta.name),obj=recipeFileObj(meta),text=JSON.stringify(obj,null,1);
+    if(text.length>FILE.MAX_BYTES){$('saveMsg').textContent=`레시피가 너무 큽니다 (${(text.length/1048576).toFixed(1)}MB) — 불러오기 상한 ${FILE.MAX_BYTES/1048576}MB`;return false;}
+    const how=await writeRecipeFile(fname,text);if(how==='cancel')return false;   // 사용자 취소: 조용히 (대화상자 유지)
+    FILE_META=meta;SAVED_SIG=stateSig(obj.steps,obj.settings);updateDirty();saveClose();
+    toast(how==='picker'?`저장했습니다 — ${fname}`:`다운로드 폴더에 저장했습니다 — ${fname}`);return true;}
+  catch(e){console.error('저장 실패',e);$('saveMsg').textContent='저장하지 못했습니다 — 다시 시도해 주세요';return false;}
+  finally{SAVE.busy=false;}}
+function saveFix(){$('saveCode').hidden=true;$('saveFoot').hidden=false;const n=$('saveName');n.focus();n.select();}
+// ---- 불러오기 ----
+function showLoadErrors(src,errs){const d=$('loadDlg');if(!d){toast(errs[0]||'불러오지 못했습니다',{err:true});return;}
+  $('loadFile').textContent=src?`파일: ${src}`:'';
+  const more=errs.length-FILE.ERR_SHOW;$('loadErrs').innerHTML=errs.slice(0,FILE.ERR_SHOW).map(e=>`<li>${escHtml(e)}</li>`).join('')+(more>0?`<li>… 외 ${more}개</li>`:'');
+  dlgOpen(d);const b=d.querySelector('[data-act="loadDlgClose"]');if(b)b.focus();}
+// 텍스트 불러오기 (검사 → 원자적 적용). 반환 = 적용했는지
+function loadRecipeText(text,src='',label='불러오기'){const r=parseRecipeText(text);
+  if(!r.ok){showLoadErrors(src,r.errors);return false;}
+  try{applyRecipeData(r.data,label);}catch(e){showLoadErrors(src,['적용 중 오류가 발생해 원래 상태로 되돌렸습니다']);return false;}
+  SAVED_SIG=currentSig();updateDirty();edgeNoticeAfterLoad(r.from);
+  const nm=r.data.name||src||'레시피',w=r.warns.length?` · 설정 ${r.warns.length}개 보정(${r.warns[0]}${r.warns.length>1?' …':''})`:'',mg=r.from<FILE.VER?` · v${r.from} 형식 변환`:'';
+  if(r.warns.length)console.warn('불러오기 설정 보정',r.warns);
+  offerUndo(`불러왔습니다 — ${nm} (${steps.length}단계)${mg}${w}`);return true;}
+function readFileText(file){if(typeof file.text==='function')return file.text();
+  return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result));fr.onerror=()=>rej(fr.error||new Error('read'));fr.readAsText(file);});}
+function withTimeout(p,ms){let t;return Promise.race([p,new Promise((_,rej)=>{t=setTimeout(()=>rej(new Error('timeout')),ms);})]).finally(()=>clearTimeout(t));}
+async function loadRecipeFile(file){if(!file)return false;const src=String(file.name||'').slice(0,120);
+  if(file.size>FILE.MAX_BYTES){showLoadErrors(src,[`파일이 너무 큽니다 (${(file.size/1048576).toFixed(1)}MB) — ${FILE.MAX_BYTES/1048576}MB 이하만 불러옵니다`]);return false;}
+  let text;try{text=await withTimeout(readFileText(file),FILE.READ_MS);}
+  catch(e){showLoadErrors(src,[e&&e.message==='timeout'?'파일을 읽는 데 시간이 너무 오래 걸립니다':'파일을 읽지 못했습니다']);return false;}
+  return loadRecipeText(text,src);}
+function loadOpen(){const f=$('fileIn');if(f){f.value='';f.click();}}
+// 드래그&드롭: 파일을 끌 때만 페이지 전체 드롭 영역 표시 (텍스트 끌기는 기본 동작)
+const hasFiles=dt=>!!dt&&Array.from(dt.types||[]).includes('Files');
+function dropInit(){const z=$('dropZone');let depth=0;const show=on=>{if(z)z.hidden=!on;};
+  addEventListener('dragenter',e=>{if(!hasFiles(e.dataTransfer))return;e.preventDefault();depth++;show(true);});
+  addEventListener('dragover',e=>{if(!hasFiles(e.dataTransfer))return;e.preventDefault();e.dataTransfer.dropEffect='copy';show(true);});
+  addEventListener('dragleave',e=>{if(!hasFiles(e.dataTransfer))return;depth=Math.max(0,depth-1);if(!depth||!e.relatedTarget)show(false);});
+  addEventListener('drop',e=>{if(!hasFiles(e.dataTransfer))return;e.preventDefault();depth=0;show(false);
+    const fs=e.dataTransfer.files;if(!fs||!fs.length)return;if(fs.length>1)toast('파일은 하나씩 불러옵니다 — 첫 파일만 읽습니다');
+    loadRecipeFile(fs[0]).catch(err=>{console.error(err);showLoadErrors(fs[0].name,['파일을 읽지 못했습니다']);});});}
+// 구버전(v1·v2) 파일 안내: 끝단 모델이 'process'로 바뀌었음을 Status Bar 칩으로 1회 (그 레시피를 편집하면 사라짐)
+const EDGE_NOTICE={ver:-1,msg:'끝단 프로파일 모델 변경 — Plasma 0.5mm / Wet 0.13mm 전이 · PES/BVS는 위 막부터 깎음. 이전 결과는 ⚙ 끝단 프로파일 모델 → legacy'};
+const edgeNoticeOn=()=>EDGE_NOTICE.ver===RECIPE_VER;
+function edgeNoticeAfterLoad(from){if(!(from<3)||readEdgeModel()!=='process')return;EDGE_NOTICE.ver=RECIPE_VER;updatePanels();}
+// ---- 저장 상태 · 자동 복구 ----
+const AUTO={key:'webc.autosave',ms:700,t:0,ok:null,ready:false,hold:false,noticed:false,offer:null};
+function updateDirty(){const d=$('dirtyDot');if(d)d.hidden=!isDirty();}
+const isDirty=()=>currentSig()!==SAVED_SIG;
+// 레시피·설정 변경 알림 → 디바운스 후 저장 상태 점 + 자동 복구 저장
+function noteChange(){if(!AUTO.ready)return;clearTimeout(AUTO.t);AUTO.t=setTimeout(()=>{AUTO.t=0;updateDirty();autosaveNow();},AUTO.ms);}
+function autosaveNow(){if(AUTO.hold)return false;
+  try{const s=window.localStorage;if(!s)throw new Error('localStorage 없음');s.setItem(AUTO.key,JSON.stringify(recipeFileObj(FILE_META)));AUTO.ok=true;return true;}
+  catch(e){AUTO.ok=false;const quota=!!e&&(e.name==='QuotaExceededError'||e.code===22||e.name==='NS_ERROR_DOM_QUOTA_REACHED');
+    autosaveNotice(quota?'자동 복구 저장 공간이 부족해 자동 저장을 건너뜁니다 — 💾 저장으로 파일에 남겨 주세요':'브라우저 저장소를 쓸 수 없어 자동 복구가 꺼져 있습니다 — 💾 저장으로 파일에 남겨 주세요');return false;}}
+// 실패 안내는 한 번만, 되돌리기 토스트가 떠 있으면 그 뒤에
+function autosaveNotice(msg){if(AUTO.noticed)return;AUTO.noticed=true;const show=()=>{if(undoReady()){setTimeout(show,8500);return;}toast(msg,{err:true});};show();}
+function autosaveRead(){try{const s=window.localStorage;return s?s.getItem(AUTO.key):null;}catch(e){return null;}}
+function restoreOffer(r){const bar=$('restoreBar'),m=$('restoreMsg');if(!bar||!m)return;AUTO.offer=r;AUTO.hold=true;
+  const t=Date.parse(r.savedAt||''),when=isFinite(t)?new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+  m.textContent=`이전 작업 복구 — 자동 저장본이 있습니다 (${r.data.steps.length}단계${r.data.name?` · ${r.data.name}`:''}${when?` · ${when}`:''}). 무시하면 지워집니다.`;bar.hidden=false;}
+function restoreClose(){const bar=$('restoreBar');if(bar)bar.hidden=true;AUTO.offer=null;AUTO.hold=false;}
+function restoreYes(){const r=AUTO.offer;restoreClose();if(!r)return;
+  try{applyRecipeData(r.data,'자동 복구');edgeNoticeAfterLoad(r.from);offerUndo(`이전 작업을 복구했습니다 (${steps.length}단계)`);}catch(e){showLoadErrors('자동 복구본',['적용 중 오류가 발생해 원래 상태로 되돌렸습니다']);}
+  updateDirty();autosaveNow();}
+function restoreNo(){restoreClose();autosaveNow();}
+function fileInit(){
+  const fi=$('fileIn');if(fi)fi.addEventListener('change',()=>{const f=fi.files&&fi.files[0];fi.value='';if(f)loadRecipeFile(f).catch(e=>{console.error(e);showLoadErrors(f.name,['파일을 읽지 못했습니다']);});});
+  const sn=$('saveName');if(sn)sn.addEventListener('input',saveFileHint);
+  const sd=$('saveDlg');if(sd)sd.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='saveName'){e.preventDefault();saveSubmit(false);}});
+  dropInit();
+  SAVED_SIG=currentSig();AUTO.ready=true;updateDirty();
+  const raw=autosaveRead();if(raw){const r=parseRecipeText(raw);
+    if(r.ok&&stateSig(r.data.steps,r.data.settings)!==SAVED_SIG){let at=null;try{at=JSON.parse(raw).savedAt;}catch(e){/* parseRecipeText가 이미 검사 */}restoreOffer({...r,savedAt:at});}}
+  // 닫기 경고: 저장 안 된 변경이 있고 자동 복구도 안 됐을 때만
+  addEventListener('beforeunload',e=>{if(!isDirty())return;if(AUTO.t){clearTimeout(AUTO.t);AUTO.t=0;autosaveNow();}
+    if(AUTO.ok===true&&!AUTO.hold)return;e.preventDefault();e.returnValue='';});}
 // ---------- 초기화 (이벤트 위임) ----------
 // 정적 버튼은 data-act 하나로 위임 (inline on* 핸들러 없음)
 const ACTIONS={reset:()=>askReset(),advOpen:()=>toggleAdv(true),advClose:()=>toggleAdv(false),cmdDetail:()=>cmdEnter(true),cmdAdd:()=>cmdEnter(false),
   askSubmit:()=>askSubmit(),askClose:()=>askClose(),help:()=>toggleDetails('cmdHelp'),ref:()=>toggleDetails('refBox'),
-  w3auto:()=>{w3.auto=!w3.auto;},w3diag:()=>{w3.auto=false;w3.rot=.785;}};
+  w3auto:()=>{w3.auto=!w3.auto;},w3diag:()=>{w3.auto=false;w3.rot=.785;},
+  saveOpen:()=>saveOpen(),saveSubmit:()=>saveSubmit(false),saveForce:()=>saveSubmit(true),saveFix:()=>saveFix(),saveCancel:()=>saveClose(),
+  loadOpen:()=>loadOpen(),loadDlgClose:()=>dlgClose($('loadDlg')),restoreYes:()=>restoreYes(),restoreNo:()=>restoreNo()};
 function toggleDetails(id){const el=$(id);if(el)el.open=!el.open;}
 function actInit(){
   document.addEventListener('click',e=>{const b=e.target&&e.target.closest?e.target.closest('[data-act]'):null;if(!b)return;const k=b.dataset.act;if(hasOwn(ACTIONS,k))ACTIONS[k](e);});
@@ -2168,14 +3245,15 @@ function actInit(){
   const wd=$('warpDet');if(wd)wd.addEventListener('toggle',()=>{if(wd.open)openWarp();else closeWarp();});
   const wk=$('w3k');if(wk)wk.addEventListener('input',()=>{const v=strictNum(wk.value);if(isFinite(v))w3.k=Math.min(2,Math.max(.3,v));});}
 function uiInit(){
-  actInit();viewInit();buildMat();refInit();cmdInit();detInit();settingsInit();eeInit();stackInit();zoomInit();
+  actInit();viewInit();buildMat();refInit();cmdInit();detInit();settingsInit();eeInit();stackInit();zoomInit();cmpInit();
   $('stBody').addEventListener('click',e=>{const d=e.target.closest('[data-del]');if(d){e.stopPropagation();removeStep(+d.dataset.del);return;}
-    const tr=e.target.closest('tr[data-i]');if(tr)go(+tr.dataset.i);});
+    const p=e.target.closest('[data-pin]');if(p){e.stopPropagation();togglePin(+p.dataset.pin);return;}
+    const tr=e.target.closest('tr[data-i]');if(!tr)return;if(e.altKey){togglePin(+tr.dataset.i);return;}go(+tr.dataset.i);});
   $('spanSeg').addEventListener('click',e=>{const b=e.target.closest('[data-span]');if(b)setSpan(+b.dataset.span);});
   const bar=document.querySelector('#stBox .stbar');if(bar)bar.addEventListener('click',toggleStChips);   // '지표' 버튼 클릭도 여기로 (버블)
   $('navPrev').addEventListener('click',()=>go(sel-1));$('navNext').addEventListener('click',()=>go(sel+1));
   $('toastUndo').addEventListener('click',()=>{if(!undo())toast('되돌릴 수 없습니다 — 그 뒤에 레시피가 바뀌었습니다',{err:true});});}
-try{uiInit();loadPreset('mold');}
+try{uiInit();loadPreset('mold');fileInit();}
 catch(e){console.error('초기화 실패',e);showCmdErr('초기화 중 오류가 발생했습니다 — 새로고침해 주세요');}
 let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{zoomReset(false);redraw();if(warpOpen)initW3();},120);});
 </script>
