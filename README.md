@@ -7,6 +7,11 @@ Wafer Edge 단면에 공정을 쌓아 가며 **지금 Edge가 어떤 상황인�
 - 조작: 드래그 ↘ 확대 / ↖ 축소 · Space·우클릭 드래그 이동 · 더블클릭 원래 크기 · 모바일은 두 손가락 핀치/이동
 - 표시 방식: 과장(기본) / 실축척 / 단순
 
+## Defect Simulator (프로토타입)
+- `defect_simulator/index.html` · https://rydberg0-droid.github.io/webc-simulator/defect_simulator/
+- Inner(셀 영역) 패턴 단면에서 Mold flow를 동영상처럼 재생하고, 특정 시점·위치에 결함을 떨어뜨려 이후 공정에서의 형상(hole not-open/blocked 등)을 봅니다.
+- **추정 모델 프로토타입**입니다(값은 예시·추정, QA·리뷰 전). 수정 예정 항목이 많습니다.
+
 ## 데이터
 세정·식각률과 선택비는 공개 논문·특허 값이며, 출처와 추정(*) 여부를 앱의 "Gas·약액 표"와 `research/`에 적어 두었습니다. 실제 양산 설비의 절대값과는 다를 수 있습니다.
 
