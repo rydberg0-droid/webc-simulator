@@ -10,9 +10,13 @@ Wafer Edge 단면에 공정을 쌓아 가며 **지금 Edge가 어떤 상황인�
 ## 데이터
 세정·식각률과 선택비는 공개 논문·특허 값이며, 출처와 추정(*) 여부를 앱의 "Gas·약액 표"와 `research/`에 적어 두었습니다. 실제 양산 설비의 절대값과는 다를 수 있습니다.
 
+## 문서
+- 이어받기: `docs/HANDOFF.md` · 사내(외부→사내 단방향) 사용: `docs/INTERNAL_WORKFLOW.md`
+
 ## 폴더
 - `index.html` — 최신 시뮬레이터 (v3)
 - `legacy/webc_simulator_v2.html` — 이전 버전
 - `research/` — 문헌 조사·분석 노트
 - `design/ui-spec.md` — UI 설계 문서
 - `CLAUDE.md`, `.claude/agents/` — 개발에 쓴 작업 규칙과 Sub Agent 정의
+- `tools/` — 사내 단방향 설정·동기화 스크립트, push 차단 hook
