@@ -301,6 +301,20 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
   .seg .u{display:none}.cvgrp .um{display:inline}
   .askgrid .fg.auto{display:none}
 }
+:root[data-theme="light"]{--bg:#f3f4f6;--panel:#ffffff;--card:#f9fafb;--accent:#ff6000;--text:#333d4b;--muted:#6b7583;--border:#e5e7ea;--line:#d1d6dc;--danger:#dc2626;--warn:#b45309;--ok:#059669}
+/* 오렌지 라이트 테마: UI만 바꾸고 단면도(캔버스)·막질 색·위험 신호 체계는 유지 */
+:root[data-theme="light"] body{font-family:Pretendard,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+:root[data-theme="light"] .box{border-radius:16px}
+:root[data-theme="light"] .btn-s{border-radius:12px}
+:root[data-theme="light"] .seg button.on{background:#ffefe5;color:#cc4d00}
+:root[data-theme="light"] .btn-add,:root[data-theme="light"] .btn-primary{background:#ff6000;color:#fff;border-color:#ff6000}
+:root[data-theme="light"] input,:root[data-theme="light"] select,:root[data-theme="light"] textarea{background:#fff;color:#333d4b;border-color:#d1d6dc}
+:root[data-theme="light"] input:focus,:root[data-theme="light"] select:focus,:root[data-theme="light"] textarea:focus{border-color:#ff6000;outline-color:#ff6000}
+:root[data-theme="light"] .stbl tbody tr:hover td,:root[data-theme="light"] .ly:hover{background:#fff5ee}
+:root[data-theme="light"] .stbl tr.on td{background:#ffefe5}
+:root[data-theme="light"] .ly.si{background:#e5e7ea}
+:root[data-theme="light"] .ly.si .nm,:root[data-theme="light"] .ly.si .t{color:#333d4b}
+:root[data-theme="light"] .canvas-wrap{background:#090d16;border-radius:12px}
 </style>
 </head>
 <body>
@@ -317,6 +331,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
       <option value="cell">3-Deck Cell Wafer</option>
     </select>
     <button class="btn-s" data-act="reset">초기화</button>
+    <button class="btn-s" id="themeBtn" type="button" aria-label="테마 전환" title="테마: 다크 / 오렌지 라이트">◐ 테마</button>
     <button class="btn-s" data-act="advOpen">⚙ 고급</button>
     <button class="btn-s btn-file" data-act="saveOpen" title="레시피를 이 PC에 .webc.json 파일로 저장 (Ctrl+S)" aria-label="레시피 저장"><span aria-hidden="true">💾</span><span class="lbl"> 저장</span></button>
     <button class="btn-s btn-file" data-act="loadOpen" title="저장한 .webc.json 파일 불러오기 — 파일을 페이지에 끌어다 놓아도 됩니다" aria-label="레시피 불러오기"><span aria-hidden="true">📂</span><span class="lbl"> 불러오기</span></button>
@@ -3516,6 +3531,17 @@ try{uiInit();loadPreset('mold');fileInit();}
 catch(e){console.error('초기화 실패',e);showCmdErr('초기화 중 오류가 발생했습니다 — 새로고침해 주세요');}
 window.__webcBooted=true;   // 이후 오류는 시작 실패 안내 대상 아님
 let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{zoomReset(false);redraw();if(warpOpen)initW3();},120);});
+</script>
+<script>
+// 테마: 다크(기본) / 오렌지 라이트 — 선택은 브라우저에 기억(try/catch)
+(function(){const KEY='webc.theme',root=document.documentElement;
+  const get=()=>{try{const v=localStorage.getItem(KEY);return v==='light'?'light':'dark';}catch(e){return 'dark';}};
+  const set=t=>{try{localStorage.setItem(KEY,t);}catch(e){}};
+  const apply=t=>{if(t==='light')root.setAttribute('data-theme','light');else root.removeAttribute('data-theme');
+    const b=document.getElementById('themeBtn');if(b)b.textContent=t==='light'?'◐ 다크':'◐ 오렌지 라이트';};
+  apply(get());
+  const b=document.getElementById('themeBtn');if(b)b.addEventListener('click',()=>{const t=get()==='light'?'dark':'light';set(t);apply(t);});
+})();
 </script>
 </body>
 </html>

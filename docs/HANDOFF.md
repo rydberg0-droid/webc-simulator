@@ -24,7 +24,8 @@ Wafer Edge 단면에 공정을 쌓아 "지금 Edge가 어떤 상황인지"를 �
 ## 남은 작업 (backlog)
 - Enlarge(선택적 wet etch: USN/HSP·H3PO4·DSP, TiN, 측면 recess·VOID·처마 판정): 마감으로 기본 확인(문법·예시 6종 에러 0)만 하고 반영 — **전체 QA·코드 리뷰 필요**. 근거 research/analysis/selective-wet-etch.md.
 - Enlarge 알려진 문제(다음 작업): (처마 AR은 중앙값 대표로 보정 완료 — USN 20분 ⚠, H3PO4 60분 ✖) '보호됨 여유 0%' 오판(이번 단계에서 열린 끝단 제외 필요), '보호막 소진' 칩이 Mold 자체 oxide에도 표시, 층 수 표기에 oxide 끝단 포함, SPM에서 TiN·ACL이 저항막으로 판정(임계 0.0005), 처마 µm 확대 도식(STEP_RES.lat.ends 사용) 미구현. 생략된 검증: 체크포인트 정합·불변성·저장 왕복·성능.
-- 미착수: 오렌지 라이트 테마(다크 기본 유지, 선택 추가 — 막질 색·위험 신호 유지, 브랜드명·로고 노출 금지, 외부 글꼴 로드 금지), 끝단 µm 확대 처마 도식.
+- 오렌지 라이트 테마: 기본 적용 완료(헤더 ◐ 버튼, localStorage webc.theme). 단면도 캔버스는 다크 유지. 하드코딩된 색 일부는 라이트에서 미세 조정 필요.
+- 미착수: 끝단 µm 확대 처마 도식(STEP_RES.lat.ends).
 - 코드 리뷰 제안(미반영): `internal/overrides.js` 데이터 계층(buildDb·검증·escHtml·origin 표시), 엔진 순수 함수화(ENG.cfg 스냅샷, DOM 읽기 0), 모듈 분리+단일 HTML 빌드, CSP(connect-src 'none'), 막 배열 Float32·희소 저장(성능 1.5~2.5배 저하 개선).
 - 자동 복구본 name/note 토큰 검사, cmpReport의 noData 필드 유지.
 - `internal/overrides.js` 선택 로드 구조.
