@@ -1,0 +1,5 @@
+# 원문 PDF·다운로드(저작권/기밀 표기 자료) 및 테스트 산출물은 올리지 않음
+research/_tmp/
+design/_shots/
+*.bak
+*_backup*.html
