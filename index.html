@@ -315,6 +315,11 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
 :root[data-theme="light"] .ly.si{background:#e5e7ea}
 :root[data-theme="light"] .ly.si .nm,:root[data-theme="light"] .ly.si .t{color:#333d4b}
 :root[data-theme="light"] .canvas-wrap{background:#eef1f5;border-radius:12px}
+#latInset{position:absolute;left:8px;bottom:26px;z-index:4;background:rgba(9,13,22,.92);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:none;max-width:calc(100% - 16px)}
+#latInset .lt{font-size:.68rem;color:#cbd5e1;margin-bottom:3px;display:flex;justify-content:space-between;gap:8px}
+#latInset .lt b{color:#fbbf24}#latInset canvas{display:block;width:280px;height:150px}
+#latInset button{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.75rem}
+:root[data-theme="light"] #latInset{background:rgba(255,255,255,.95)}:root[data-theme="light"] #latInset .lt{color:#333d4b}:root[data-theme="light"] #latInset .lt b{color:#b45309}
 </style>
 </head>
 <body>
@@ -405,7 +410,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
       <div class="cvgrp cmpgrp"><button class="tgl peek" id="peekBtn" aria-pressed="false">⇄ 전/후</button><button class="tgl" id="cmpTgl" aria-pressed="false" title="기준 단계 대비 변화 — 빨강 제거 · 초록 증착 · 점선 기준 표면 + 판정 줄 옆 Δ 칩">비교</button><span id="cmpBase" hidden></span></div>
     </div>
   </div>
-  <div class="canvas-wrap cvwrap"><canvas id="cv"></canvas><canvas id="ov" aria-hidden="true"></canvas><div id="scaleBadge"></div><div id="viewHint" role="status"></div><div id="tip"></div><div id="zbox"></div><div id="zbadge"></div><canvas id="mini" aria-hidden="true"></canvas><button class="minitgl" id="miniTgl" hidden aria-expanded="true">▾</button><div id="cmpBadge" role="status" hidden></div><div id="gestHint" role="status"></div></div>
+  <div class="canvas-wrap cvwrap"><div id="latInset" role="img" aria-label="끝단 처마 확대 도식"><div class="lt"><span>끝단 확대 도식 (µm, est)</span><button type="button" id="latInsetX" aria-label="도식 닫기">✕</button></div><canvas id="latCv" width="560" height="300"></canvas></div><canvas id="cv"></canvas><canvas id="ov" aria-hidden="true"></canvas><div id="scaleBadge"></div><div id="viewHint" role="status"></div><div id="tip"></div><div id="zbox"></div><div id="zbadge"></div><canvas id="mini" aria-hidden="true"></canvas><button class="minitgl" id="miniTgl" hidden aria-expanded="true">▾</button><div id="cmpBadge" role="status" hidden></div><div id="gestHint" role="status"></div></div>
   <div class="legend" id="legend"></div>
   <div class="stepnav" id="stepNav"><button class="btn-s" id="navPrev" aria-label="이전 단계">◀ 이전</button><span class="pos" id="navPos" aria-live="polite"></span><button class="btn-s" id="navNext" aria-label="다음 단계">다음 ▶</button></div>
 </div>
@@ -3543,6 +3548,44 @@ let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{zoomRe
     const b=document.getElementById('themeBtn');if(b)b.textContent=t==='light'?'◐ 다크':'◐ 오렌지 라이트';};
   apply(get());
   const b=document.getElementById('themeBtn');if(b)b.addEventListener('click',()=>{const t=get()==='light'?'dark':'light';set(t);apply(t);try{if(typeof redraw==='function')redraw();}catch(e){}});
+})();
+</script>
+<script>
+// 끝단 처마 확대 도식: 측면 recess 단계 선택 시 µm 축척으로 Mold 끝단(위 몇 층)의 SiN 공동·Oxide 처마를 그림 (STEP_RES.lat 사용, 도식)
+(function(){let hidden=false;const box=document.getElementById('latInset'),cv=document.getElementById('latCv');if(!box||!cv)return;
+  document.getElementById('latInsetX').addEventListener('click',()=>{hidden=true;box.style.display='none';});
+  const med=a=>{a=a.filter(v=>isFinite(v)&&v>0).sort((x,y)=>x-y);return a.length?a[(a.length-1)>>1]:null;};
+  function draw(){try{
+    const R=(typeof STEP_RES!=='undefined'&&typeof sel!=='undefined'&&sel>=0)?STEP_RES[sel]:null,m=R&&R.lat;
+    if(!m||!(m.Lmax>0.005)||hidden){box.style.display='none';if(!(m&&m.Lmax>0.005))hidden=false;return;}
+    const E=m.ends||[],nit=E.filter(e=>e.mat==='SiN'),oxE=E.filter(e=>e.mat!=='SiN');
+    const L=m.Lmax,Lox=med(oxE.map(e=>e.L))||0,tN=med(nit.map(e=>e.hj))||0.06,tO=Math.max(0.005,med(nit.map(e=>e.heEff))||m.heMin||0.09);
+    const light=document.documentElement.getAttribute('data-theme')==='light';
+    box.style.display='block';const x=cv.getContext('2d'),W=cv.width,H=cv.height;x.setTransform(1,0,0,1,0,0);
+    x.fillStyle=light?'#eef1f5':'#0b1220';x.fillRect(0,0,W,H);
+    const pairs=4,stackH=pairs*(tN+tO)+tO,spanX=Math.max(L*2.2,0.2),pad=36,sx=(W-pad*2)/spanX,sy=(H-60)/stackH;
+    const X=u=>pad+(u+spanX*0.75)*sx,Y=v=>H-30-v*sy; // u: 끝단(0) 기준 µm, 안쪽이 음수
+    const C=(typeof PALETTE!=='undefined'&&PALETTE.mold)?PALETTE.mold:{ox:'#38bdf8',nit:'#22c55e'};
+    x.fillStyle=(typeof SI_COLOR!=='undefined'?SI_COLOR:'#64748b');x.fillRect(X(-spanX*0.75),Y(0),X(0.25*spanX*0.6)-X(-spanX*0.75),12);
+    let z=0;const hatch=(x0,y0,w,h)=>{x.save();x.beginPath();x.rect(x0,y0,w,h);x.clip();x.strokeStyle=light?'#9aa3ad':'#475569';x.lineWidth=1;for(let k=-h;k<w;k+=6){x.beginPath();x.moveTo(x0+k,y0+h);x.lineTo(x0+k+h,y0);x.stroke();}x.restore();x.strokeStyle='#ef4444';x.setLineDash([3,3]);x.strokeRect(x0,y0,w,h);x.setLineDash([]);};
+    for(let k=0;k<pairs;k++){
+      // Oxide 층 (처마): 끝단 근처까지 남음
+      x.fillStyle=C.ox;x.fillRect(X(-spanX*0.75),Y(z+tO),X(-Lox)-X(-spanX*0.75),Y(z)-Y(z+tO));z+=tO;
+      // SiN 층: 끝단에서 L만큼 안쪽까지 제거 → 공동(빗금)
+      x.fillStyle=C.nit;x.fillRect(X(-spanX*0.75),Y(z+tN),X(-L)-X(-spanX*0.75),Y(z)-Y(z+tN));
+      hatch(X(-L),Y(z+tN),X(-Lox)-X(-L),Y(z)-Y(z+tN));z+=tN;}
+    x.fillStyle=C.ox;x.fillRect(X(-spanX*0.75),Y(z+tO),X(-Lox)-X(-spanX*0.75),Y(z)-Y(z+tO));
+    // 치수: recess L
+    const yA=Y(stackH)-14;x.strokeStyle=light?'#333d4b':'#e2e8f0';x.fillStyle=x.strokeStyle;x.lineWidth=1.2;
+    x.beginPath();x.moveTo(X(-L),yA);x.lineTo(X(-Lox),yA);x.stroke();[X(-L),X(-Lox)].forEach(v=>{x.beginPath();x.moveTo(v,yA-4);x.lineTo(v,yA+4);x.stroke();});
+    x.font='bold 16px sans-serif';x.textAlign='center';x.fillText('recess '+L.toFixed(2)+' µm',(X(-L)+X(-Lox))/2,yA-6);
+    x.textAlign='left';x.font='14px sans-serif';
+    const lv=typeof eaveLvl==='function'?eaveLvl(m):0,word=['안정','주의','위험'][lv]||'';
+    x.fillText('처마 AR '+(isFinite(m.ARmax)?m.ARmax.toFixed(1):'—')+' · '+word+'  (Ox '+(tO*1000).toFixed(0)+'nm / SiN '+(tN*1000).toFixed(0)+'nm 대표, 위 '+pairs+'쌍만 도식)',8,H-8);
+    x.textAlign='right';x.fillText('Edge 끝단 →',W-6,18);
+  }catch(e){box.style.display='none';}}
+  ['redraw','updatePanels'].forEach(n=>{const f=window[n];if(typeof f==='function')window[n]=function(){const r=f.apply(this,arguments);draw();return r;};});
+  window.addEventListener('load',()=>setTimeout(draw,0));
 })();
 </script>
 </body>
