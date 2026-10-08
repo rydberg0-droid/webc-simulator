@@ -26,5 +26,5 @@ Wafer Edge 단면에 공정을 쌓아 "지금 Edge가 어떤 상황인지"를 �
 - 자동 복구본 name/note 토큰 검사, cmpReport의 noData 필드 유지.
 - `internal/overrides.js` 선택 로드 구조.
 - 재사용 회귀 테스트 `tests/` 정리(현재 테스트 하네스는 저장소 밖).
-- Defect Simulator 프로토타입(`defect_simulator/`): Inner 패턴 단면 + 메커니즘 재생 + 결함 주입. QA·리뷰 전, 사용자가 수정할 부분이 많다고 함 → 피드백 받아 개선. 저장 파일 version 4(defect 단계)는 메인 v3와 호환 안 됨.
+- Defect Simulator는 별도 저장소로 분리(https://github.com/rydberg0-droid/defect_simulator). WEBC 엔진·데이터를 복사해 시작했으므로 엔진/데이터 수정은 양쪽에 자동 반영되지 않음 — 필요 시 공통 엔진 분리.
 - 결함 SEM 이미지 기반 원인 추정(규칙 기반 → 학습형)은 검토 단계.
