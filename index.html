@@ -1825,7 +1825,9 @@ function lateralEnds(kap,rates,D,wfn,pre){
         if(ly.h0[b]<LAT_DEF.taperFrac*h0m||isPat(pts[b]))continue;                                 // 증착 꼬리 · 셀 hole 측벽 제외
         const{B,cov,nd}=openBudget(j,o),Dw=D*wfn(pts[o]),Blat=Math.max(0,Dw-B),L=kap*rj*Blat,e=(arc[b]+arc[o])/2;
         let q=b;while(q+dir>=0&&q+dir<NP&&h[q+dir]>E)q+=dir;
-        const run=Math.abs(arc[q]-e)*1000,top=eaveAt(j,b);let eaveMat=null,he=null;
+        // 처마 = j보다 느리게 깎이는 위 막, 그 점 두께가 증착 직후의 taperFrac 이상(PES 계단 끝의 얇은 쐐기 끝 = 격자 표본 오차 → AR 판정 제외, est)
+        const run=Math.abs(arc[q]-e)*1000,t0=eaveAt(j,b),rt0=t0>=0?rates[layers[t0].mat]:undefined;
+        const top=t0>=0&&!(rt0>=rj)&&layers[t0].h[b]>=LAT_DEF.taperFrac*layers[t0].h0[b]?t0:-1;let eaveMat=null,he=null;
         if(top>=0){eaveMat=layers[top].mat;const re=rates[eaveMat];if(re===undefined&&Blat>0)noData.add(eaveMat);he=layers[top].h[b]-kap*(re??0)*Blat;}
         ends.push({j,mat:ly.mat,r:rj,b,o,dir,e,L,Blat,B,D:Dw,cov,nd,run,released:L>0&&L>=run,eave:top,eaveMat,heEff:he,hj:h[b]});}}}
   return{ends,noData};}
