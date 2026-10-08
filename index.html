@@ -267,6 +267,9 @@ button.ly{width:100%;background:none;border:none;color:var(--text);font:inherit;
 .secwarn{margin-bottom:.8rem;padding:.6rem .7rem;border:1px solid var(--warn);border-radius:8px;background:rgba(251,191,36,.08);color:var(--warn);font-size:.8rem;line-height:1.55}
 .codechk{margin-top:.6rem;padding:.6rem .7rem;border:1px solid var(--danger);border-radius:8px;background:rgba(239,68,68,.08);font-size:.8rem;line-height:1.6}
 .codechk[hidden]{display:none}
+.codechk small{color:var(--muted,#94a3b8);margin-right:.5rem}
+.restore [hidden]{display:none}
+.bootErr{margin:12px;padding:.7rem .9rem;border:1px solid #ef4444;border-radius:10px;background:#2a0f12;color:#fecaca;font-size:.85rem}
 .codechk code{background:var(--bg);border-radius:4px;padding:0 .3rem;margin-right:.3rem;font-family:ui-monospace,Consolas,monospace}
 .warnbtn{border-color:var(--danger)}
 .errlist{margin:.6rem 0 .4rem 1.1rem;font-size:.8rem;line-height:1.6;color:var(--danger);max-height:45vh;overflow:auto}
@@ -320,7 +323,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
     <input type="file" id="fileIn" accept=".json,.webc.json,application/json" hidden>
   </div>
 </header>
-<div class="restore" id="restoreBar" role="status" hidden><span id="restoreMsg"></span><span class="rbtn"><button class="btn-s" data-act="restoreYes">복구</button><button class="btn-s" data-act="restoreNo">무시</button></span></div>
+<div class="restore" id="restoreBar" role="status" hidden><span id="restoreMsg"></span><span class="rbtn"><button class="btn-s" data-act="restoreYes" id="rsYes">복구</button><button class="btn-s" data-act="restoreNo" id="rsNo">무시</button><button class="btn-s" data-act="restoreRaw" id="rsRaw" hidden>원본 내려받기</button><button class="btn-s" data-act="autoClear" id="rsDel" hidden>지우기</button></span></div>
 <div class="dropzone" id="dropZone" hidden><div>여기에 놓으면 레시피를 불러옵니다<span class="sub">.webc.json · 2MB 이하 · 불러온 뒤 Ctrl+Z로 취소</span></div></div>
 
 <div class="layout">
@@ -422,6 +425,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
       <div class="fg"><label>기타 경계 폭 (µm · Photo·CMP 패턴·Etch 보호)</label><input type="number" id="rampUm" value="20" step="2" data-set="engine"></div>
     </div>
     <div class="row">
+      <div class="fg"><label><input type="checkbox" id="autoOn" checked> 자동 복구 저장 (이 브라우저에만)</label><button class="btn-s" data-act="autoClear" title="이 브라우저에 남은 자동 복구본을 지웁니다">자동 복구본 지우기</button></div>
       <div class="fg"><label>끝단 프로파일 모델</label><select id="edgeModel" data-set="engine"><option value="process">공정별 (Plasma 0.5mm · Wet 0.13mm 전이)</option><option value="legacy">legacy (이전 엔진 재현)</option></select></div>
     </div>
     <div class="sub">끝단 프로파일: PES·BVS 같은 Plasma bevel 공정은 막 끝이 약 0.5mm 폭의 완만한 경사로 남고(위 막부터 깎여 계단처럼 끝남), EEW·BEW 같은 Wet edge 공정은 약 0.13mm 폭입니다(문헌·추정값). Edge→거리는 Bare Si 경계입니다. 단계별로 다르면 해당 단계의 '끝단 전이 폭'에서 지정. 'legacy'는 이전 결과(40µm 컷, 전 막 비율 박막화) 비교용입니다.</div>
@@ -466,7 +470,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
     </div>
   </details>
 
-  <details><summary>막질별 Step Coverage (편집 가능)</summary>
+  <details><summary>막질별 Step Coverage (편집 가능) <span class="sub">추정* = 문헌 근거 없는 대표값(응력·coverage)</span></summary>
     <table><thead><tr><th></th><th>막질</th><th>Side%</th><th>Bot%</th><th>Planar%</th></tr></thead><tbody id="matTable"></tbody></table>
     <div class="note">Side=측벽/상면, Bot=단차 하부/상면, Planar=스핀온 평탄화율.<br>TEOS는 특허 문헌(400℃ 50% → 300℃ 84%)을 기준으로 했고, ACL·SOH·Mold·Etch/CLN 선택비는 <b>가정값</b>입니다. Si Edge 형상은 특허 기준(bevel ≤22°, 300mm R≈200µm 예시)의 근사입니다.</div>
   </details>
@@ -488,7 +492,7 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
   <div class="fg"><label for="saveName">이름</label><input type="text" id="saveName" maxlength="80" autocomplete="off" spellcheck="false" placeholder="예: mold PES 비교"></div>
   <div class="fg"><label for="saveNote">메모 <span class="sub">(선택)</span></label><textarea id="saveNote" rows="3" maxlength="500" placeholder="예: PES 폭 2.5mm 기준"></textarea></div>
   <div class="sub" id="saveFile"></div>
-  <div class="codechk" id="saveCode" hidden><b>사내 코드처럼 보이는 값이 있습니다</b><div id="saveCodeList"></div><div class="sub">제품명·레시피 번호·설비 ID라면 지우고 저장해 주세요.</div>
+  <div class="codechk" id="saveCode" hidden><b>사내 코드처럼 보이는 값이 있습니다</b><div id="saveCodeList"></div><div class="sub">제품명·레시피 번호·설비 ID라면 지우고 저장해 주세요. 'n단계 입력'은 그 단계를 서술형으로 입력한 원문입니다 — 단계를 지우고 다시 입력하면 원문이 바뀝니다.</div>
     <div class="dlgfoot"><button class="btn-s" data-act="saveFix">이름·메모 고치기</button><button class="btn-s warnbtn" data-act="saveForce">사내 정보 아님 — 그대로 저장</button></div></div>
   <div class="askmsg sub" id="saveMsg" role="alert"></div>
   <div class="dlgfoot" id="saveFoot"><button class="btn-add" data-act="saveSubmit">저장</button><button class="btn-s" data-act="saveCancel">취소</button></div>
@@ -501,6 +505,13 @@ button:focus-visible,select:focus-visible,.stbl tr:focus-visible{outline:2px sol
   <div class="dlgfoot"><button class="btn-s" data-act="loadDlgClose">닫기</button></div>
 </dialog>
 
+<script>
+// 시작 실패 안내: 아래 본 스크립트가 데이터 검증·초기화 중 예외로 멈추면 빈 화면 대신 안내 (본 스크립트는 전역 선언이라 try로 감싸지 않음)
+(function(){let shown=false;addEventListener('error',e=>{if(window.__webcBooted||shown)return;shown=true;
+  try{const d=document.createElement('div');d.className='bootErr';d.setAttribute('role','alert');
+    d.textContent='시뮬레이터를 시작하지 못했습니다 — 내장 데이터나 초기화 오류입니다. 새로고침해도 같으면 개발 담당에게 알려 주세요. ('+String(e&&e.message||'알 수 없는 오류').slice(0,160)+')';
+    document.body.insertBefore(d,document.body.firstChild);}catch(_){/* 안내조차 못 하면 콘솔만 */}});})();
+</script>
 <script>
 const $=id=>document.getElementById(id);
 const hasOwn=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
@@ -540,29 +551,32 @@ function photoZoneCss(k){const z=PHOTO_ZONE[k],bg=z.fill||'transparent';
 const MAT_FAMS=['oxide','nitride','oxynitride','carbon','metal','poly','resist'];
 const DIELECTRIC_FAMS=['oxide','nitride','oxynitride'];   // Arcing: 전하 축적 유전체
 // fam = 막 계열(팔레트·Arcing 판정용) · stress(MPa, +인장) · side/bot = 측벽/바닥 step coverage · plan = 평탄화 비율
-// est = 문헌 실측이 아닌 대표값(추정)인 필드
+// est = 문헌 실측이 아닌 대표값(추정)인 필드 — stress·side·bot·plan은 출처가 없는 대표값이라 전부 추정(표시처: 막질 표 '추정' · Bonding peel · Warpage)
+const MAT_EST=Object.freeze(['stress','side','bot','plan']);
 const MATERIALS={
-  SiO2:{name:'SiO2 (Oxide, PECVD)',fam:'oxide',stress:-150,side:.60,bot:.50,plan:0},
-  SiN:{name:'SiN (Nitride)',fam:'nitride',stress:800,side:.70,bot:.60,plan:0},
-  Poly:{name:'Poly-Si (LPCVD)',fam:'poly',stress:-300,side:.95,bot:.90,plan:0},
-  HTTEOS:{name:'HT-TEOS (≥400℃)',fam:'oxide',stress:-200,side:.50,bot:.40,plan:0},
-  MTTEOS:{name:'MT-TEOS (~350℃)',fam:'oxide',stress:-180,side:.75,bot:.65,plan:0},
-  HTACL:{name:'HT-ACL',fam:'carbon',stress:-150,side:.25,bot:.15,plan:0},
-  MTACL:{name:'MT-ACL',fam:'carbon',stress:-250,side:.35,bot:.25,plan:0},
-  SOH:{name:'SOH (Spin-on)',fam:'carbon',stress:50,side:1,bot:1,plan:.85},
-  ESOH:{name:'E-SOH',fam:'carbon',stress:80,side:1,bot:1,plan:.60},
-  W:{name:'W (Tungsten)',fam:'metal',stress:1200,side:.80,bot:.70,plan:0},
-  PR:{name:'PR (Photoresist)',fam:'resist',stress:0,side:1,bot:1,plan:.50},
-  SiON:{name:'SiON (Bevel 보호막)',fam:'oxynitride',stress:-100,side:.70,bot:.60,plan:0},
+  SiO2:{name:'SiO2 (Oxide, PECVD)',fam:'oxide',stress:-150,side:.60,bot:.50,plan:0,est:MAT_EST},
+  SiN:{name:'SiN (Nitride)',fam:'nitride',stress:800,side:.70,bot:.60,plan:0,est:MAT_EST},
+  Poly:{name:'Poly-Si (LPCVD)',fam:'poly',stress:-300,side:.95,bot:.90,plan:0,est:MAT_EST},
+  HTTEOS:{name:'HT-TEOS (≥400℃)',fam:'oxide',stress:-200,side:.50,bot:.40,plan:0,est:MAT_EST},
+  MTTEOS:{name:'MT-TEOS (~350℃)',fam:'oxide',stress:-180,side:.75,bot:.65,plan:0,est:MAT_EST},
+  HTACL:{name:'HT-ACL',fam:'carbon',stress:-150,side:.25,bot:.15,plan:0,est:MAT_EST},
+  MTACL:{name:'MT-ACL',fam:'carbon',stress:-250,side:.35,bot:.25,plan:0,est:MAT_EST},
+  SOH:{name:'SOH (Spin-on)',fam:'carbon',stress:50,side:1,bot:1,plan:.85,est:MAT_EST},
+  ESOH:{name:'E-SOH',fam:'carbon',stress:80,side:1,bot:1,plan:.60,est:MAT_EST},
+  W:{name:'W (Tungsten)',fam:'metal',stress:1200,side:.80,bot:.70,plan:0,est:MAT_EST},
+  PR:{name:'PR (Photoresist)',fam:'resist',stress:0,side:1,bot:1,plan:.50,est:MAT_EST},
+  SiON:{name:'SiON (Bevel 보호막)',fam:'oxynitride',stress:-100,side:.70,bot:.60,plan:0,est:MAT_EST},
   // Cu: 응력 = 어닐 후 ECD/PVD Cu 대표 인장 ~150MPa, coverage = PVD seed + ECD 충전 대표값 (모두 추정)
-  Cu:{name:'Cu (Copper)',fam:'metal',stress:150,side:.40,bot:.50,plan:0,est:['stress','side','bot']}
+  Cu:{name:'Cu (Copper)',fam:'metal',stress:150,side:.40,bot:.50,plan:0,est:MAT_EST}
 };
 const KEYS=Object.keys(MATERIALS);
 // 정의 검증 + 색 결정 (잘못된 정의는 시작 시 바로 실패 → 조용히 틀린 색/계열로 그리지 않음)
 KEYS.forEach(k=>{const m=MATERIALS[k];
   if(!MAT_FAMS.includes(m.fam))throw new Error(`MATERIALS.${k}: 알 수 없는 막 계열 '${m.fam}'`);
   const c=PALETTE[m.fam][k];if(!/^#[0-9a-f]{6}$/i.test(c||''))throw new Error(`PALETTE.${m.fam}.${k}: 색이 없습니다`);
-  m.color=c;});
+  m.color=c;
+  if(m.est!==undefined&&!(Array.isArray(m.est)&&m.est.every(f=>MAT_EST.includes(f))))console.warn(`MATERIALS.${k}.est: 알 수 없는 추정 필드 — 무시하고 계속합니다`,m.est);});
+const matEst=k=>hasOwn(MATERIALS,k)&&Array.isArray(MATERIALS[k].est)?MATERIALS[k].est:[];
 const isMetal=k=>hasOwn(MATERIALS,k)&&MATERIALS[k].fam==='metal';
 const isDielectric=k=>hasOwn(MATERIALS,k)&&DIELECTRIC_FAMS.includes(MATERIALS[k].fam);
 // 제거율 표: 값이 있는 막질만 담음 — 없는 막질은 undefined(= 데이터 없음, 엔진은 그 막에서 정지하고 경고). 0은 '안 깎임' 데이터
@@ -590,12 +604,12 @@ const PROF={semi:{ang:22,Lb:.30,dB:.06,dC:.20},round:{ang:30,Lb:.38,dB:.20,dC:.3
 //            est = 문헌 실측이 없어 추정한 막질('*' = 전부 추정). er에 없는 막질 = 데이터 없음 (W03 표의 '-'·'S'·'R'(값 없음) 포함)
 const W03='Williams, Gupta, Wasilik, "Etch Rates for Micromachining Processing—Part II", J. MEMS 12(6), 2003';
 const CLN_DB={
- dhf:{name:'DHF 100:1',cat:'wet',ab:'DHF',amt:10,tgt:'SiO2',cond:'100:1 HF, 실온',src:W03+' — 10:1 HF 값 ×1/10 (Table VIII: 10:1~100:1에서 농도에 선형)',
-   er:{SiO2:3.4,MTTEOS:3.4,HTTEOS:2.3,SiN:.11,SiON:1,Si:0,Poly:0,PR:0,W:0},est:['SiON'],note:'Oxide strip·native oxide 제거'},
+ dhf:{name:'DHF 100:1',cat:'wet',ab:'DHF',amt:10,tgt:'SiO2',cond:'100:1 HF, 실온',src:'환산값 — '+W03+' 10:1 HF 값 ×1/10 (Table VIII: 10:1~100:1에서 농도에 선형)',
+   er:{SiO2:3.4,MTTEOS:3.4,HTTEOS:2.3,SiN:.11,SiON:1,Si:0,Poly:0,PR:0,W:0},est:['*'],note:'Oxide strip·native oxide 제거'},
  boe:{name:'BOE 5:1 (BHF)',cat:'wet',ab:'BOE',amt:100,tgt:'SiO2',cond:'40% NH4F 5 : 49% HF 1, 실온',src:W03,
    er:{SiO2:490,MTTEOS:490,HTTEOS:240,SiN:8.2,SiON:100,Si:0,Poly:.2,PR:0,W:2,Cu:5},est:['SiON','Cu'],note:'비어닐 PECVD oxide가 열산화막(100)보다 ~5배 빠름 · Cu는 표기 “R <5” — 거칠어짐(R), 상한값 5로 계산'},
- lal:{name:'LAL (계면활성 BHF)',cat:'wet',ab:'LAL',amt:100,tgt:'SiO2',cond:'10:1 BHF 상당으로 근사',src:W03+' — 10:1 BHF = 5:1의 1/2 · Stella Chemifa 특허: BHF 6:1~100:1에서 SiO2 9~120 nm/min',
-   er:{SiO2:245,MTTEOS:245,HTTEOS:120,SiN:4.1,SiON:50,Si:0,Poly:.1,PR:0,W:1},est:['SiON'],note:'등급(LAL500/800…)별 식각률 다름 — 제품 실측 공개값 없음'},
+ lal:{name:'LAL (계면활성 BHF)',cat:'wet',ab:'LAL',amt:100,tgt:'SiO2',cond:'10:1 BHF 상당으로 근사',src:'근사값 — '+W03+' 10:1 BHF = 5:1의 1/2 · Stella Chemifa 특허: BHF 6:1~100:1에서 SiO2 9~120 nm/min',
+   er:{SiO2:245,MTTEOS:245,HTTEOS:120,SiN:4.1,SiON:50,Si:0,Poly:.1,PR:0,W:1},est:['*'],note:'등급(LAL500/800…)별 식각률 다름 — 제품 실측 공개값 없음'},
  hotp:{name:'Hot H3PO4 160℃',cat:'wet',ab:'H3PO4',amt:100,tgt:'SiN',cond:'85% H3PO4, 160℃',src:W03,
    er:{SiN:20,SiO2:.21,MTTEOS:.21,HTTEOS:.18,SiON:2,Si:.17,Poly:.1,PR:55,W:0},est:['SiON','Poly','W'],note:'SiN strip 대표 · LPCVD SiN은 4.5nm/min · PR은 박리'},
  spm:{name:'SPM (Piranha)',cat:'wet',ab:'SPM',amt:1000,tgt:'PR',cond:'H2SO4 + H2O2, 가열',src:W03,
@@ -630,6 +644,7 @@ const CLN_DB={
    er:{PR:30,SOH:12,ESOH:12,HTACL:1.5,MTACL:2.4},est:['*'],note:'유기물 경미 제거'}};
 // CLEAN[k]: 엔진용 상대 제거율 r(target 막=1, 문헌에 없는 막질은 undefined = 데이터 없음) + 시간 환산 식각률 rate(nm/s)
 const CLEAN=Object.fromEntries(Object.entries(CLN_DB).map(([k,d])=>{const t=d.er[d.tgt]||1;
+  if(!(d.er[d.tgt]>0)){console.warn(`CLN_DB.${k}: target 막 ${d.tgt}의 제거율이 없거나 0 — 1nm/min으로 가정(추정 표시)`);d={...d,est:[...new Set([...(d.est||[]),d.tgt])]};}
   return[k,{...d,r:rt(Object.fromEntries(Object.entries(d.er).map(([m,v])=>[m,v/t])),`CLN_DB.${k}.er`),rate:+(t/60).toFixed(4)}];}));
 // ---- CMP 슬러리 DB (nm/min, 공개 문헌) — research/analysis/cmp.md §1·§8 (CONFIDENTIAL 표기 자료는 제외) ----
 // 막질 대응: SiO2·MTTEOS = PECVD TEOS/PETEOS(비어닐), HTTEOS = HDP·어닐 TEOS(SiO2×0.9 est), Poly = LPCVD poly(비어닐),
@@ -699,9 +714,9 @@ const shortMat=k=>k==='Si'?'Si':MATERIALS[k].name.split(' ')[0];
 const hasRate=(r,k)=>!!r&&typeof r[k]==='number';
 function tgtInfo(src){if(!src||!src.r)return'';
   const r=src.r,est=src.est||[],note=src.note;
-  const ks=[...KEYS,'Si'],known=k=>hasRate(r,k),nm=k=>shortMat(k)+(est.includes('*')||est.includes(k)?'*':'');
+  const ks=[...KEYS,'Si'],known=k=>hasRate(r,k),nm=k=>escHtml(shortMat(k))+(est.includes('*')||est.includes(k)?'*':'');
   const f=(a,b)=>ks.filter(k=>known(k)&&r[k]>=a&&r[k]<b).sort((x,y)=>r[y]-r[x]).map(nm);
-  const hi=f(.5,1e9),mid=f(.1,.5),lo=f(-1,.1),nd=ks.filter(k=>!known(k)).map(shortMat);
+  const hi=f(.5,1e9),mid=f(.1,.5),lo=f(-1,.1),nd=ks.filter(k=>!known(k)).map(k=>escHtml(shortMat(k)));
   return`<span class="tg">제거</span> ${hi.join(', ')||'— (뚜렷한 target 없음)'}${mid.length?` <span class="tm">일부</span> ${mid.join(', ')}`:''}`+
     `${lo.length?` <span class="tr">거의 안 깎임</span> ${lo.join(', ')}`:''}${nd.length?` <span class="tr" title="데이터가 없어 계산에서는 이 막에서 정지(안 깎임)로 처리하고 경고합니다">데이터 없음</span> ${nd.join(', ')}`:''}`+
     `${note?` <span class="hint">· ${escHtml(note)}</span>`:''}`;}
@@ -709,9 +724,9 @@ function tgtInfo(src){if(!src||!src.r)return'';
 function refInit(){const body=$('refBody');if(!body)return;
   const tr=(cmd,cells)=>`<tr data-cmd="${escHtml(cmd)}" title="클릭하면 입력칸에 넣습니다">${cells}</tr>`;
   body.innerHTML=['wet','plasma','gas'].map(c=>Object.values(CLEAN).filter(x=>x.cat===c).map(x=>
-    tr(x.ab+' ',`<td><span class="cat ${c}">${CAT_KO[c]}</span></td><td><b>${x.ab}</b><div class="hint">${x.name}</div><div class="hint">${x.cond}</div></td>`+
-    `<td class="w">${tgtInfo(x)}<div class="src">${shortMat(x.tgt)} ${x.er[x.tgt]>=1000?(x.er[x.tgt]/1000).toFixed(1)+' µm':x.er[x.tgt]+' nm'}/min${x.est.includes('*')||x.est.includes(x.tgt)?'*':''} · ${x.src}</div></td>`)).join('')).join('')+
-    Object.entries(ETCH).map(([k,e])=>tr(e.name.split(' ')[0].toUpperCase()+' ETCH ',`<td><span class="cat etch">Etch</span></td><td><b>${e.ab||k}</b><div class="hint">${e.name}</div></td><td class="w">${tgtInfo(e)}<div class="src">${escHtml(e.src)} (Etch 단계)</div></td>`)).join('');
+    tr(x.ab+' ',`<td><span class="cat ${c}">${CAT_KO[c]}</span></td><td><b>${escHtml(x.ab)}</b><div class="hint">${escHtml(x.name)}</div><div class="hint">${escHtml(x.cond)}</div></td>`+
+    `<td class="w">${tgtInfo(x)}<div class="src">${escHtml(shortMat(x.tgt))} ${x.er[x.tgt]>=1000?(x.er[x.tgt]/1000).toFixed(1)+' µm':x.er[x.tgt]+' nm'}/min${x.est.includes('*')||x.est.includes(x.tgt)?'*':''} · ${escHtml(x.src)}</div></td>`)).join('')).join('')+
+    Object.entries(ETCH).map(([k,e])=>tr(e.name.split(' ')[0].toUpperCase()+' ETCH ',`<td><span class="cat etch">Etch</span></td><td><b>${escHtml(e.ab||k)}</b><div class="hint">${escHtml(e.name)}</div></td><td class="w">${tgtInfo(e)}<div class="src">${escHtml(e.src)} (Etch 단계)</div></td>`)).join('');
   body.addEventListener('click',e=>{const row=e.target.closest('tr[data-cmd]');if(row)putCmd(row.dataset.cmd);});}
 // 입력칸에 명령 넣기 (예시 칩·Gas 표 공용)
 function putCmd(t){const c=$('cmd');if(!c)return;c.value=t;cmdPreview();c.focus();}
@@ -857,20 +872,23 @@ const STEP_SCHEMA={
   cmpF(fNum('patFrom','패턴 영역 시작 Edge→','mm',0,LIM.DIST_MM,{def:CMP_DEF.patFrom}),isManPat),
   cmpF(fNum('patDens','패턴 up-area 밀도','%',LIM.CMP_DENS_PCT[0],LIM.CMP_DENS_PCT[1],{def:CMP_DEF.patDens}),isManPat),
   cmpF(fNum('patStep','패턴 초기 단차','µm',0,LIM.CMP_STEP_UM,{def:CMP_DEF.patStep}),isManPat)]};
-// 파생값·교차 검사 (필드 검사를 모두 통과한 뒤)
+// 시간과 제거량을 둘 다 적으면 시간으로 계산 — 조용히 버리지 않고 알림 (폼·서술형 공통 문구)
+const hasVal=v=>v!=null&&!(typeof v==='string'&&v.trim()==='');
+function timeOverAmt(raw,note){if(raw&&hasVal(raw.amt))note(`시간 우선 — 제거량 ${raw.amt} 무시`);}
+// 파생값·교차 검사 (필드 검사를 모두 통과한 뒤). note = 경고(⚠, 계산은 진행)
 const STEP_POST={
  depo(st,add){st.thicknessUm=st.rawVal/UNIT_DIV[st.unit];
    if(!(st.thicknessUm>0&&st.thicknessUm<=LIM.FILM_UM))add('rawVal',`두께: 0 초과 ${LIM.FILM_UM}µm 이하여야 합니다 (입력 ≈ ${fmtNum(st.thicknessUm)}µm)`);},
  mold(st,add){st.thicknessUm=(st.pairs*(st.ox+st.nit)+(st.cap?st.capNm:0))/1e3;
    if(st.thicknessUm>LIM.MOLD_UM)add('pairs',`Mold 전체 ${fmtNum(st.thicknessUm)}µm — ${LIM.MOLD_UM}µm 이하여야 합니다`);},
- clean(st,add){const c=CLEAN[st.key];st.cat=c.cat;
-   if(st.time!==undefined){const amt=roundAmt(st.time*c.rate);   // 시간 → 제거량 (문헌 식각률) — 반올림 전 값으로 판정
+ clean(st,add,raw,note){const c=CLEAN[st.key];st.cat=c.cat;
+   if(st.time!==undefined){timeOverAmt(raw,note);const amt=roundAmt(st.time*c.rate);   // 시간 → 제거량 (문헌 식각률) — 반올림 전 값으로 판정
      if(amt>0&&amt<=cleanAmtMax(st.key))st.amt=amt;else add('time',`또는 시간: ${fmtNum(st.time)}s × ${c.rate}nm/s ≈ ${fmtNum(amt)}nm — 제거량은 0 초과 ${fmtNum(cleanAmtMax(st.key))}nm 이하여야 합니다`);}
    delete st.time;if(st.mode!=='edge')st.distMm=0;},
- remove(st,add){if(st.action!=='cmp')return;
+ remove(st,add,raw,note){if(st.action!=='cmp')return;
    const S=SLURRY[st.slurry];
    if(st.mode==='stop'){if(st.stopMat===S.tgt)add('stopMat',`정지막: 연마 대상 막(${shortMat(S.tgt)})과 같을 수 없습니다 — 다른 정지막이나 슬러리를 골라 주세요`);return;}
-   if(st.time!==undefined){const amt=+(st.time*S.rate/1000).toFixed(6);   // s × nm/s → µm (슬러리 target 막 문헌 속도)
+   if(st.time!==undefined){timeOverAmt(raw,note);const amt=+(st.time*S.rate/1000).toFixed(6);   // s × nm/s → µm (슬러리 target 막 문헌 속도)
      if(amt>0&&amt<=LIM.CMP_UM)st.amt=amt;else add('time',`또는 시간: ${fmtNum(st.time)}s × ${S.rate}nm/s ≈ ${fmtNum(amt)}µm — 제거량은 0 초과 ${LIM.CMP_UM}µm 이하여야 합니다`);}
    delete st.time;}};
 // 스키마 조회: 자기 속성만 ('constructor'·'toString' 같은 상속 이름은 알 수 없는 종류)
@@ -900,18 +918,18 @@ function checkField(f,v,st,raw){
 function validateStep(raw){
   const S=raw&&typeof raw==='object'?schemaOf(raw.type):null;
   if(!S)return{ok:false,errors:[{k:'type',msg:'알 수 없는 공정 종류입니다'}],normalized:null};
-  const st={type:raw.type},errors=[],add=(k,msg)=>errors.push({k,msg});
+  const st={type:raw.type},errors=[],notes=[],add=(k,msg)=>errors.push({k,msg}),note=msg=>notes.push('⚠ '+msg);
   for(const f of S){const v=raw[f.k]!==undefined?raw[f.k]:defOf(f,st,raw),r=checkField(f,v,st,raw);
     if(!isVisible(f,st)){if(!(f.optional||f.allowUndef))st[f.k]=r.err?defOf(f,st,raw):r.v;continue;}   // 숨은 필드: 엔진이 쓰지 않음 → 유효하지 않으면 기본값 (선택 필드는 버림)
     if(r.err)add(f.k,`${fieldLabel(f)}: ${r.err}`);else st[f.k]=r.v;}
-  if(!errors.length&&STEP_POST[st.type])STEP_POST[st.type](st,add);
+  if(!errors.length&&STEP_POST[st.type])STEP_POST[st.type](st,add,raw,note);
   if(!errors.length&&st.backMm!==undefined&&st.distMm===undefined)add('distMm',`${fieldLabel(fieldOf(st.type,'distMm'))}: ${MISSING}`);
   Object.keys(st).forEach(k=>{if(st[k]===undefined)delete st[k];});
   if(errors.length)return{ok:false,errors,normalized:null};
   if(typeof raw.src==='string'&&raw.src.trim())st.src=raw.src.trim().slice(0,LIM.SRC_LEN);
   const tg=TAG_OF[raw.tag];if(st.type==='depo'&&tg&&tg[0]===st.material&&tg[1]===st.region)st.tag=raw.tag;   // 막질/영역을 바꾸면 약어 태그는 버림
   if(Number.isInteger(raw.group)&&raw.group>0&&raw.group<1000)st.group=raw.group;                         // 반복 deck 번호 (스택 접기)
-  return{ok:true,errors,normalized:Object.freeze(st)};}   // 정규화 단계는 불변 (엔진 체크포인트가 단계 내용으로 무효화 범위를 판단)
+  return{ok:true,errors,notes,normalized:Object.freeze(st)};}   // 정규화 단계는 불변 (엔진 체크포인트가 단계 내용으로 무효화 범위를 판단)
 // 레시피 전체 관문: 누적 막 수 상한. 단계 하나가 만드는 막 수 = applyStep의 deposit 횟수와 같게
 const layersOf=st=>st.type==='depo'||st.type==='photo'?1:st.type==='mold'?2*st.pairs+(st.cap&&st.capNm?1:0):0;
 const recipeLayers=arr=>arr.reduce((a,st)=>a+layersOf(st),0);
@@ -1121,7 +1139,7 @@ function tipHtml(h){const i=h.i,pos=posText(i),lay=LASTDRAW;
     return`<b><span class="sw ghost" style="background:${groupColor(G)}"></span>${rmLine(G,i)}</b><br><span class="hint">${G.si+1}. ${stepPlain(st)}${st.region?' · '+regionText(st):''} — 점선 = 원래 있던 자리</span><br><span class="hint">${pos}</span>${tipRemovedHtml(i,G)}${tipStackHtml(i,-1)}`;}
   if(h.L<0){const note=lay?lay.mode.siNote(lay):'';
     return`<b><span class="sw" style="background:${SI_COLOR}"></span>Si sub</b><br>실제 ${readNum('waferThk')}µm${note?` (${note})`:''}${rec[i]>1e-3?` · <span style="color:#fbbf24">Si 손실 ${rec[i].toFixed(2)}µm</span>`:''}<br><span class="hint">${pos}</span>${tipRemovedHtml(i)}${tipStackHtml(i,-1)}`;}
-  const ly=layers[h.L],G=groupOfLayer(h.L),gk=G?layerGroups().indexOf(G):-1,st=steps[ly.si]||{},nm=MATERIALS[ly.mat].name;let head,body;
+  const ly=layers[h.L],G=groupOfLayer(h.L),gk=G?layerGroups().indexOf(G):-1,st=steps[ly.si]||{},nm=escHtml(MATERIALS[ly.mat].name);let head,body;
   if(ly.thin&&G){const m=groupH(G,i);   // Mold는 묶음(ON 적층 전체) 단위로만 표시
     head=`<b><span class="sw" style="background:${moldSw()}"></span>${escHtml(groupName(G))}</b> · 이 위치 <b>${m.toFixed(2)}µm</b>`;
     body=`<span class="hint">Ox ${st.ox} / Nit ${st.nit}nm × ${st.pairs}쌍</span>${vsDepo(m,groupH0(G,i),'um')}`;}
@@ -1360,15 +1378,15 @@ function regionText(st){if(st.region!=='edge')return REG_KO[st.region];if(st.dis
 const swHtml=m=>`<span class="sw" style="background:${MATERIALS[m].color}"></span>`;
 const toneKo=st=>toneOf(st)==='pos'?'Posi':'Nega';
 const STEP_TEXT={
- depo:{cells:st=>[`<span class="bd">${escHtml(st.tag||'DEPO')}</span>`,swHtml(st.material)+shortMat(st.material),escHtml(thk(st)),regionText(st)],
+ depo:{cells:st=>[`<span class="bd">${escHtml(st.tag||'DEPO')}</span>`,swHtml(st.material)+escHtml(shortMat(st.material)),escHtml(thk(st)),regionText(st)],
    detail:st=>`${MATERIALS[st.material].name} ${thk(st)} · ${regionText(st)}`},
  mold:{cells:st=>['<span class="bm">MOLD</span>',`<span class="sw" style="background:${moldSw()}"></span>ON ×${st.pairs}${st.cap?' +cap':''}`,st.thicknessUm.toFixed(2)+'µm',regionText(st)],
    detail:st=>`ON ×${st.pairs} (${st.ox}/${st.nit}nm${st.cap?`, ${st.cap==='SiN'?'N':'O'}-cap ${st.capNm}nm`:''}) ${st.thicknessUm.toFixed(2)}µm · ${regionText(st)}`},
  photo:{cells:st=>['<span class="bp">PHOTO</span>',`${PHOTO_SHORT[st.mode]} · ${toneKo(st)}`,st.mode==='pses'?'shot '+escHtml(st.pat):st.w+'mm','전면'],
    detail:st=>`${PHOTO_KO[st.mode]}(${toneKo(st)}) ${st.mode==='pses'?'shot '+st.pat:st.w+'mm'} · PR ${st.prPat}/${st.prBar}µm · shot ${st.pitch}mm`},
- etch:{cells:st=>['<span class="be">ETCH</span>',ETCH[st.key].name.split(' (')[0],st.depth+'µm','전면'],
+ etch:{cells:st=>['<span class="be">ETCH</span>',escHtml(ETCH[st.key].name.split(' (')[0]),st.depth+'µm','전면'],
    detail:st=>`${ETCH[st.key].name} ${st.depth}µm · edge×${st.ef} · iso ${st.iso}${st.prot?` · 보호 ${st.prot}mm`:''}`},
- clean:{cells:st=>[`<span class="bc">${CLN_TAG[CLEAN[st.key].cat]||'WET'}</span>`,CLEAN[st.key].ab,st.amt+'nm',CLN_MODE_KO[st.mode]+(st.mode==='edge'&&st.distMm?' '+st.distMm+'mm':'')],
+ clean:{cells:st=>[`<span class="bc">${CLN_TAG[CLEAN[st.key].cat]||'WET'}</span>`,escHtml(CLEAN[st.key].ab),st.amt+'nm',CLN_MODE_KO[st.mode]+(st.mode==='edge'&&st.distMm?' '+st.distMm+'mm':'')],
    detail:st=>`${CLEAN[st.key].name} ${st.amt}nm · ${CLN_MODE_KO[st.mode]}${st.mode==='edge'?(st.distMm?` ${st.distMm}mm`:'(베벨만)'):''}${edgeWText(st)}`},
  remove:{cells:st=>{const a=st.action;
      return[`<span class="br">${RM_TAG[a]}</span>`,a==='strip'||a==='bvs'?RM_DESC[a]+(st.siLoss?` · Si −${st.siLoss}µm`:''):a==='cmp'?`${RM_DESC.cmp} · ${escHtml(cmpShort(st))}`:RM_DESC[a],
@@ -1414,7 +1432,7 @@ function renderLegend(){
   const b=$('legend');if(!b)return;
   const live=layerGroups().filter(G=>G.idx.some(k=>layers[k].h.some(v=>v>1e-4))),used=[...new Set(live.filter(G=>!G.thin).map(G=>G.mat))].filter(m=>MATERIALS[m]);
   const li=(bg,t)=>`<div class="li"><div class="sw" style="background:${bg}"></div>${t}</div>`;
-  let h=li(SI_COLOR,'Si')+(live.some(G=>G.thin)?li(moldSw(),'Mold ON (Oxide/Nitride 교번)'):'')+used.map(m=>li(MATERIALS[m].color,MATERIALS[m].name)).join('');
+  let h=li(SI_COLOR,'Si')+(live.some(G=>G.thin)?li(moldSw(),'Mold ON (Oxide/Nitride 교번)'):'')+used.map(m=>li(MATERIALS[m].color,escHtml(MATERIALS[m].name))).join('');
   if(PHOTO)h+=Object.keys(PHOTO_ZONE).map(k=>`<div class="li"><div class="sw" style="${photoZoneCss(k)}"></div>${PHOTO_ZONE[k].label}</div>`).join('')+'<div class="li sub">주황 점선 = shot 경계</div>';
   b.innerHTML=h;}
 
@@ -1422,8 +1440,8 @@ function renderLegend(){
 const COV_F=['side','bot','plan'];
 const MAT_DEF=Object.freeze(Object.fromEntries(KEYS.map(k=>[k,Object.freeze(Object.fromEntries(COV_F.map(f=>[f,MATERIALS[k][f]])))])));
 function renderMatTable(){const t=$('matTable');if(!t)return;
-  t.innerHTML=KEYS.map(k=>{const m=MATERIALS[k];return`<tr><td><div class="sw" style="background:${m.color}"></div></td><td>${m.name}${m.est?`<span class="hint" title="문헌 실측이 아닌 대표값(추정): ${m.est.join(', ')}">*</span>`:''}</td>`+
-    COV_F.map(f=>`<td><input type="number" min="0" max="100" value="${+(m[f]*100).toFixed(4)}" data-mat="${k}" data-f="${f}" aria-label="${m.name} ${f}"></td>`).join('')+'</tr>';}).join('');}
+  t.innerHTML=KEYS.map(k=>{const m=MATERIALS[k];return`<tr><td><div class="sw" style="background:${m.color}"></div></td><td>${escHtml(m.name)}${matEst(k).length?` <span class="hint" title="문헌 실측이 아닌 대표값(추정): ${escHtml(matEst(k).join(', '))}">추정*</span>`:''}</td>`+
+    COV_F.map(f=>`<td><input type="number" min="0" max="100" value="${+(m[f]*100).toFixed(4)}" data-mat="${k}" data-f="${f}" aria-label="${escHtml(m.name)} ${f}"></td>`).join('')+'</tr>';}).join('');}
 function buildMat(){const t=$('matTable');if(!t)return;renderMatTable();
   t.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.mat)setMat(el.dataset.mat,el.dataset.f,el);});}
 // Step Coverage(%) 편집: 0~100 클램프, 입력칸 표시값도 같게
@@ -1655,7 +1673,9 @@ function edgeMetrics(cut,LV0){
   const cross=(v,thr,up)=>{for(let k=1;k<I.length;k++){const a=v(k-1),b=v(k);if(up?b>=thr:b<thr){const t=(thr-a)/((b-a)||1);return D[k-1]+(D[k]-D[k-1])*Math.min(1,Math.max(0,t));}}return null;};
   const rem=k=>LV0[I[k]]-LV[I[k]];let depth=0;for(let k=0;k<I.length;k++)depth=Math.max(depth,rem(k));
   if(!(depth>EDGE_DEF.minDepthUm))return null;
-  const d10=cross(rem,.1*depth,true),d90=cross(rem,.9*depth,true);
+  // 기준점이 형상 영역 밖(가장 안쪽 점보다 더 안쪽)이거나 기준점에서 이미 깊이의 10 % 이상 깎였으면 전이 폭·경사는 정의되지 않음 → 생략
+  const refOk=pts[idx[0]].d>=dRef-1e-6&&rem(0)<.1*depth;
+  const d10=refOk?cross(rem,.1*depth,true):null,d90=refOk?cross(rem,.9*depth,true):null;
   const wUm=d10!=null&&d90!=null?Math.max(0,(d10-d90)*1000):null;
   const slopeDeg=wUm!=null?Math.atan2(.8*depth,Math.max(wUm,1e-6))*180/Math.PI:null;
   // 막 끝 (기준 두께 > 1nm이고 50 % 아래로 내려가는 막만, 아래→위 순)
@@ -1911,7 +1931,13 @@ function redraw(){
     if(!LASTDRAW||LASTDRAW.Wd!==Wd||LASTDRAW.H!==H)zoomClamp(Wd,H);
     LASTDRAW=lay;renderSpanSeg();renderModeSeg();renderCmpCtl();
     inView(()=>{buildDisp(dp,lay);draw(lay);});}   // 배치는 현재 상태 기준 고정 → ⇄ 전/후 전환 때 그림이 흔들리지 않음
-  catch(e){console.error('그리기 실패',e);}}
+  catch(e){console.error('그리기 실패',e);drawFailNotice();}}
+// 그리기 실패 안내: 캔버스 위에 한 줄 (콘솔만으로 끝내지 않음)
+function drawFailNotice(){try{const cv=$('cv'),ctx=cv&&cv.getContext('2d');if(!cv||!ctx)return;const d=window.devicePixelRatio||1;
+  if(!cv.width||!cv.height){cv.width=Math.round(Math.max(280,cv.parentElement?cv.parentElement.clientWidth:280)*d);cv.height=Math.round(40*d);cv.style.height='40px';}
+  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='rgba(15,23,42,.92)';ctx.fillRect(0,0,cv.width,Math.min(cv.height,30*d));
+  ctx.fillStyle='#fca5a5';ctx.font=`${13*d}px sans-serif`;ctx.textBaseline='middle';ctx.fillText('⚠ 단면을 그리지 못했습니다 — 보기 설정을 바꾸거나 새로고침해 주세요',8*d,15*d);}
+  catch(e){console.error('그리기 실패 안내도 실패',e);}}
 function sizeOverlay(H,dpr){const ov=$('ov'),cv=$('cv');if(!ov||!cv)return;const w=cv.width,h=Math.round(H*dpr);
   if(ov.width!==w||ov.height!==h){ov.width=w;ov.height=h;}ov.style.height=H+'px';}
 // 표시 기하(px): 표시 프로파일 → Si 외곽(손실 rec×Z) → 모드 단위의 누적 높이(unitPx 합)를 Si 외곽 법선 방향으로 (+ 단순 표시의 제거된 띠)
@@ -2150,7 +2176,7 @@ function applyStep(st,si,out){CURSI=si;const R=out?out[si]:null;
   if(st.type==='remove'){if(st.action==='cmp'){cmpRes=cmpRun(st);noData=cmpRes.noData;}else removal(st);}
   clearBarePattern();
   if(R){R.impact=impactOf(a,metrics());const nd=noData?[...noData]:[];
-    if(nd.length)Object.assign(R.impact,{noData:nd,t:`${R.impact.t} · ⚠ 데이터 없음 막(${nd.map(shortMat).join(', ')})에서 정지 — 결과 불확실`});
+    if(nd.length)Object.assign(R.impact,{noData:nd,lvl:Math.max(R.impact.lvl??0,1),t:`${R.impact.t} · ⚠ 데이터 없음 막(${nd.map(shortMat).join(', ')})에서 정지 — 결과 불확실`});   // 불확실 결과는 최소 ⚠
     if(cmpRes){cmpReport(st,cmpRes,R);R.dens=cmpDensMap(st,cmpRes);}
     else{const ch=[];
       if(st.type==='remove'&&bb0>1e-3){const bb=backBevelFilm();
@@ -2388,7 +2414,7 @@ function renderStack(iF,iB,iA){STACK_VIEW.args=[iF,iB,iA];
   const g=layerGroups();
   const rowOf=(G,i,resid=false,bit=0)=>{const st=steps[G.si]||{},t=groupH(G,i);if(t<1e-4)return bit&&VIEW.ghost?removedRow(G,i,bit):null;const a=groupH(G,iA),gone=a<1e-3;
     const nm=G.thin?`MOLD<small>ON×${st.pairs||'?'}</small>`:st.type==='photo'?'PR<small>photo</small>':
-      escHtml(st.tag||MATERIALS[G.mat].name.split(' ')[0])+(st.tag?`<small>${MATERIALS[G.mat].name.split(' ')[0]}</small>`:'');
+      escHtml(st.tag||MATERIALS[G.mat].name.split(' ')[0])+(st.tag?`<small>${escHtml(MATERIALS[G.mat].name.split(' ')[0])}</small>`:'');
     const col=G.thin?moldSw():MATERIALS[G.mat].color;
     const unit=G.thin||st.type!=='depo'?'um':st.unit,full=st.type==='depo'&&st.thicknessUm?st.thicknessUm:null;
     const tt=fmtT(t,unit)+(full&&t<full*.98?` <small style="color:var(--warn)">/${fmtT(full,unit)}</small>`:'');
@@ -2727,7 +2753,7 @@ function bondCheck(iF,iA,sa){
   $('bondBox').innerHTML=
    row(Math.abs(dE)<=lim.s,Math.abs(dE)<=lim.s*3,`Edge step/roll-off ${dE>=0?'+':''}${dE.toFixed(2)}µm (R=0.3~1.5mm vs 내측 R145, 허용 ±${lim.s}µm)${dE<-lim.s?' — edge가 낮아 접합 gap/void 위험':dE>lim.s?' — edge가 높아 접촉 간섭':''}`)+
    row(bow<=lim.b,bow<=lim.b*1.5,`Bow ${bow.toFixed(0)}µm (허용 ${lim.b}µm) — 접합 void/정렬 위험`)+
-   row(peel<=lim.p,peel<=lim.p*2,`Bevel 막 응력·두께 지수 ${peel.toFixed(0)} N/m (기준 ${lim.p}) — peeling/shard 위험`);
+   row(peel<=lim.p,peel<=lim.p*2,`Bevel 막 응력·두께 지수 ${peel.toFixed(0)} N/m (기준 ${lim.p}) — peeling/shard 위험 · 막 응력은 추정값`);
   return{dE,peel,lim};}
 function matKey(t){const u=(t||'').toUpperCase().replace(/[\s_\-()]/g,'');
   if(/^CU$|COPPER|구리/.test(u))return'Cu';   // 'CU'는 단독일 때만 ('CURE' 등 오인 방지)
@@ -2787,8 +2813,23 @@ function cmdPrep(U){let stripped=false;const cut=()=>{stripped=true;return' ';};
 function parseCmd(txt){
   // 막질·약어에 붙여 쓴 두께('SiN300nm', 'BSO5K')는 띄어서 읽음 — 'H3PO4'·'C4F8'처럼 단위가 붙지 않은 화학식은 그대로
   const U0=(txt||'').trim().toUpperCase().replace(/([A-Z])(\d+(?:\.\d+)?)(KÅ|KA|K|Å|ANG|A|NM|UM|ΜM|µM)(?![A-Z0-9ÅΜµ])/g,'$1 $2$3');if(!U0)return null;
-  const pre=cmdPrep(U0);if(pre.err)return{err:pre.err};const U=pre.U;
-  if(/\bCMP\b|연마/.test(U))return parseCmp(U,pre.stripped);
+  const pre=cmdPrep(U0);if(pre.err)return{err:pre.err};
+  const ew=edgeWTake(pre.U);if(ew.err)return{err:ew.err};
+  return edgeWApply(/\bCMP\b|연마/.test(ew.U)?parseCmp(ew.U,pre.stripped):parseCmdU(ew.U,pre),ew.um);}
+// 서술형 끝단 전이 폭: '끝단 300um' · '끝단폭 300um' · 'EDGEW 300um' · 'TAPER 300um' → edgeW(µm). 다른 숫자 해석(Si 손실 등)과 섞이지 않게 먼저 떼어 냄
+//   반환 {U(뗀 나머지), um(없으면 null)} | {err}
+const EDGEW_RE=/(?:끝단\s*(?:전이\s*)?폭?|\bEDGEW\b|\bTAPER\b)\s*=?\s*(\d+(?:\.\d+)?|\.\d+)\s*(UM|ΜM|µM|NM|MM)?(?![A-Z0-9ÅΜµ])/;
+function edgeWTake(U){const m=EDGEW_RE.exec(U);if(!m)return{U,um:null};
+  if(!m[2])return{err:`'${m[0].trim()}' — 끝단 폭에 단위를 붙여 주세요 (예: 끝단 300um)`};
+  const v=+m[1],um=m[2]==='MM'?v*1000:m[2]==='NM'?v/1000:v,rest=U.slice(0,m.index)+' '+U.slice(m.index+m[0].length);
+  if(EDGEW_RE.test(rest))return{err:'끝단 폭이 여러 개입니다 — 값 하나만 적어 주세요'};
+  return{U:rest,um:+um.toFixed(6)};}
+// 끝단 폭은 PES·BVS·EEW·BEW·베벨 세정(폭 > 0)에만 — 그 밖에서는 버리고 '무시됨' 경고
+function edgeWApply(r,um){if(um==null||!r||r.err)return r;
+  const st=r.st,ok=!!st&&((st.type==='remove'&&isPesLike(st))||(st.type==='clean'&&st.mode==='edge'&&st.distMm>0));
+  if(ok)st.edgeW=um;else r.notes.push(`⚠ 끝단 폭 ${fmtNum(um)}µm는 이 공정에 쓰이지 않아 무시됩니다 — PES·BVS·EEW·BEW·베벨 세정(폭 지정)에만 적용`);
+  return r;}
+function parseCmdU(U,pre){
   const N=cmdNums(U);if(N.err)return{err:N.err};
   const toks=U.split(/[\s,\/]+/).filter(Boolean),mat=cmdMat(toks),has=re=>re.test(U),D=(t,k,st)=>schemaDef(t,k,st);
   // 영역 판정: 약어 BSO·BSN·BVO는 자기 영역이 있으므로 빼고 읽음 ('BSO'의 BS를 후면 표기로 오인하지 않게)
@@ -2812,7 +2853,7 @@ function parseCmd(txt){
   const regD=reg!=='all'?reg:hasR(/전체|양면|\bALL\b|BOTH|FURNACE|퍼니스|LPCVD|\bLP\b/)?'all':'front';
   const RM=(action,o)=>({type:'remove',action,distMm:2.5,siLoss:0,...o});
   // 세정 제거량: 시간이면 time 그대로 (제거량 환산·범위 검사는 검증 관문 STEP_POST.clean) · 두께면 제거량 · 둘 다 없으면 입력 요청
-  const amtOf=c=>{if(N.time!=null){notes.push(`${fmtNum(N.time)}s × ${c.rate}nm/s(문헌표 기준) ≈ ${fmtNum(roundAmt(N.time*c.rate))}nm`);return{time:N.time};}
+  const amtOf=c=>{if(N.time!=null){if(N.len)warn(`시간 우선 — 제거량 ${N.txt[0]} 무시`);notes.push(`${fmtNum(N.time)}s × ${c.rate}nm/s(문헌표 기준) ≈ ${fmtNum(roundAmt(N.time*c.rate))}nm`);return{time:N.time};}
     if(N.len)return{amt:roundAmt(N.len.um*1e3)};need.push('amt');return{amt:c.amt};};
   // Photo
   if(has(/PHOTO|포토|\bRING\b|PSES|\bEBR\b|\bWEE\b/)){
@@ -2834,7 +2875,8 @@ function parseCmd(txt){
     return R(RM('bvs',{distMm:f??.5,...(sm.b!=null?{backMm:sm.b}:{}),siLoss:N.len?N.len.um:0}));}
   if(has(/\bPES\b|PLASMA ?EDGE|BEVEL ?ETCH|EDGE ?STRIP|베벨 ?(식각|에치)/)){if(N.dist!=null&&N.bare.length)return manyNums();
     const gs=edgeGas(2.5);if(gs)return gs;
-    const d=N.dist??N.bare[0],si=has(/AGGRESSIVE|강/)?3:has(/비선택|NON.?SEL/)?1:has(/MILD|약/)?.3:(N.len?N.len.um:0);if(d==null)need.push('distMm');
+    if(bMm)warn(`PES는 전·후면 동일 범위 — 후면 값 ${fmtNum(+bMm[1])}mm 무시 (면별 범위는 BVS)`);
+    const d=(fMm?+fMm[1]:bMm?sideMm().f:N.dist)??N.bare[0],si=has(/AGGRESSIVE|강/)?3:has(/비선택|NON.?SEL/)?1:has(/MILD|약/)?.3:(N.len?N.len.um:0);if(d==null)need.push('distMm');
     return R(RM('strip',{distMm:d??2.5,siLoss:si}));}
   if(has(/MOLD|몰드|\bON\b ?STACK|^ON\b/)){
     // 쌍 수는 입력 그대로(정수·범위는 검증에서), 두께로 주면 Ox+Nit 한 쌍 두께로 나눠 반올림
@@ -2909,7 +2951,7 @@ function parseCmp(U,stripped){
     if(!stop)notes.push('정지막 endpoint 기본 (제거량을 적으면 제거량 지정)');
     notes.push(`Endpoint ${shortMat(st.stopMat)} + OP ${st.op??CMP_DEF.op}%`);if(amtGiven)warn('정지막 endpoint 모드라 제거량·시간은 쓰지 않습니다');}
   else{if(op)warn('OP(과연마)는 정지막 모드(STOP)에서만 씁니다');
-    if(N.time!=null){st.time=N.time;notes.push(`${fmtNum(N.time)}s × ${SLURRY[slurry].rate}nm/s(문헌) ≈ ${fmtNum(+(N.time*SLURRY[slurry].rate/1000).toFixed(4))}µm`);}
+    if(N.time!=null){st.time=N.time;if(N.len||N.bare.length)warn(`시간 우선 — 제거량 ${N.txt[0]} 무시`);notes.push(`${fmtNum(N.time)}s × ${SLURRY[slurry].rate}nm/s(문헌) ≈ ${fmtNum(+(N.time*SLURRY[slurry].rate/1000).toFixed(4))}µm`);}
     else if(N.len)st.amt=N.len.um;else if(N.bare.length){st.amt=N.bare[0];notes.push('단위 없음 → µm로 해석');}else{need.push('amt');st.amt=1;}}
   if(lp)st.Lp=+lp[1];
   if(pAuto)st.patSrc='auto';else if(pOff)st.patSrc='off';
@@ -2930,7 +2972,9 @@ function askClose(){$('ask').style.display='none';ASKF.st=null;cmdPreview();$('c
 function askSubmit(){const F=ASKF;if(!F.st)return false;formRead(F);
   const r=ins({...F.st,src:F.src});
   if(!r.ok){formShowErrors(F,r.errors,$('askMsg'));return false;}
-  $('ask').style.display='none';F.st=null;cmdDone(F.src);return true;}
+  $('ask').style.display='none';F.st=null;cmdDone(F.src);
+  if(r.notes&&r.notes.length){const el=$('cmdPrev');if(el)el.insertAdjacentHTML('beforeend',' · '+r.notes.map(t=>`<span class="wn">${escHtml(t)}</span>`).join(' · '));}
+  return true;}
 // ---- ⚙ 직접 입력 (모든 파라미터) ----
 function detInit(){const t=$('detType');if(!t)return;
   t.innerHTML=Object.keys(STEP_SCHEMA).map(k=>`<option value="${k}">${escHtml(TYPE_KO[k])}</option>`).join('');
@@ -2941,7 +2985,7 @@ function detInit(){const t=$('detType');if(!t)return;
 function addStep(){const F=DETF;if(!F.st)return false;formRead(F);
   const r=ins({...F.st});
   if(!r.ok){formShowErrors(F,r.errors,$('detMsg'));return false;}
-  formShowErrors(F,[],$('detMsg'));updateUI();toggleAdv(false);toast(`${sel+1}단계로 추가됨 — ${stripTags(stepLabel(steps[sel]))}`);return true;}
+  formShowErrors(F,[],$('detMsg'));updateUI();toggleAdv(false);toast(`${sel+1}단계로 추가됨 — ${stripTags(stepLabel(steps[sel]))}${r.notes&&r.notes.length?' · '+r.notes.join(' · '):''}`);return true;}
 
 // ---- 서술형 입력 미리보기 / 실행 ----
 const cmdHist=[];let cmdHi=0;
@@ -2950,7 +2994,7 @@ function cmdAnalyze(text){let r;
   try{r=parseCmd(text);}catch(e){console.error(e);return{err:'입력을 해석하지 못했습니다'};}
   if(!r||r.err)return r;
   if(r.set){const e=checkEE(r.set.ee);return e.ok?r:{err:e.err};}
-  if(!r.need.length){const v=validateStep(r.st);if(v.ok)r.norm=v.normalized;else r.invalid=v.errors;}
+  if(!r.need.length){const v=validateStep(r.st);if(v.ok){r.norm=v.normalized;v.notes.forEach(t=>{if(!r.notes.includes(t))r.notes.push(t);});}else r.invalid=v.errors;}
   return r;}
 function cmdPreview(){const c=$('cmd'),el=$('cmdPrev');if(!c||!el)return null;
   const r=cmdAnalyze(c.value),bad=!!(r&&(r.err||r.invalid));
@@ -2960,7 +3004,7 @@ function cmdPreview(){const c=$('cmd'),el=$('cmdPrev');if(!c||!el)return null;
   if(r.set){el.innerHTML=`<span class="ok">↵</span> <b>EE ${r.set.ee}mm</b> ${r.set.ee?'설정':'해제'} <span class="hint">· Edge→${r.set.ee}mm를 버림 영역으로 표시하고, 그 안쪽 노출은 허용으로 판정 (0 = 해제)</span>`;return r;}
   if(r.invalid){el.innerHTML=`<span class="err">✖ ${escHtml(r.invalid.map(e=>e.msg).join(' · '))}</span> <span class="hint">· Shift+Enter로 값 고치기</span>`;return r;}
   const st=r.st,lab=k=>escHtml(fieldLabel(fieldOf(st.type,k)||{label:k}));
-  const tl=(st.type==='clean'&&!r.need.includes('key'))?`<div class="tgtline">${CLEAN[st.key].ab} · ${CLN_MODE_KO[st.mode]} → ${tgtInfo(CLEAN[st.key])}</div>`:
+  const tl=(st.type==='clean'&&!r.need.includes('key'))?`<div class="tgtline">${escHtml(CLEAN[st.key].ab)} · ${CLN_MODE_KO[st.mode]} → ${tgtInfo(CLEAN[st.key])}</div>`:
     (st.type==='etch'&&!r.need.includes('key'))?`<div class="tgtline">${tgtInfo(ETCH[st.key])}</div>`:(st.type==='clean'?`<div class="tgtline hint">${CAT_KO[st.cat]} 종류를 고르면 제거되는 막질이 표시됩니다</div>`:'');
   if(r.need.length){el.innerHTML=`<span class="ok">${escHtml(TYPE_KO[st.type])}</span> <span class="hint">· Enter → <b>${r.need.map(lab).join(', ')}</b> 입력 칸이 열립니다</span>${tl}`;return r;}
   const n=r.norm,um=n.type==='depo'?` <span class="hint">(${n.thicknessUm.toFixed(n.thicknessUm<.1?3:2)}µm)</span>`:'';
@@ -3125,6 +3169,14 @@ function applyRecipeData(d,label){remember(label,true);const snap=UNDO;
 function codeLikeTokens(text){const out=new Set();
   for(const t of String(text||'').split(/[^A-Za-z0-9]+/)){if(!t)continue;if(/\d{5,}/.test(t)||(t.length>=4&&/[A-Za-z]/.test(t)&&/\d/.test(t)))out.add(t);}
   return[...out].slice(0,8);}
+// 서술형 원문 전용: 공정 어휘(막질·약액·화학식 'SiO2'·'C4F8')와 숫자+단위('300nm'·'8K')는 사내 코드가 아님
+const SRC_UNIT_TOK=/^\d+(?:KA|K|A|ANG|NM|UM|MM|S|SEC|MIN|H|HR|HRS)$/;
+const srcCodeTokens=src=>codeLikeTokens(src).filter(t=>{const u=t.toUpperCase();return!(SRC_UNIT_TOK.test(u)||cmdKnownWord(u)||matKey(t));});
+// 저장 전 검사 대상: 이름·메모 + 각 단계 서술형 원문(src). 반환 [{t, at(''=이름·메모 | n=단계 번호)}] (최대 12개)
+function saveCodeHits(meta,list){const hits=[];
+  codeLikeTokens(meta.name+' '+meta.note).forEach(t=>hits.push({t,at:''}));
+  (list||[]).forEach((st,i)=>{if(st&&typeof st.src==='string')srcCodeTokens(st.src).forEach(t=>hits.push({t,at:i+1}));});
+  return hits.slice(0,12);}
 // 파일 이름: 금지 문자(\ / : * ? " < > | 제어 문자) → _, 앞뒤 점·공백 제거, 길이 제한, Windows 예약 이름 회피
 function safeFileName(name){let s=String(name||'').normalize('NFC').replace(/[\u0000-\u001f\u007f<>:"/\\|?*]/g,'_').replace(/\s+/g,' ').trim();
   s=s.replace(/\.webc\.json$|\.json$/i,'').replace(/^[.\s]+|[.\s]+$/g,'');
@@ -3152,8 +3204,8 @@ function saveOpen(){const d=$('saveDlg');if(!d)return;SAVE.opener=document.activ
   saveFileHint();dlgOpen(d);$('saveName').focus();}
 function saveClose(){dlgClose($('saveDlg'));const o=SAVE.opener;SAVE.opener=null;if(o&&o.focus)o.focus();}
 // 저장 실행: 사내 코드 패턴이면 한 번 더 확인(force) → 직렬화 → 파일 쓰기
-async function saveSubmit(force=false){if(SAVE.busy)return false;const meta=saveMetaRead(),toks=force?[]:codeLikeTokens(meta.name+' '+meta.note);
-  if(toks.length){$('saveCodeList').innerHTML=toks.map(t=>`<code>${escHtml(t)}</code>`).join('');$('saveCode').hidden=false;$('saveFoot').hidden=true;$('saveCode').querySelector('[data-act="saveFix"]').focus();return false;}
+async function saveSubmit(force=false){if(SAVE.busy)return false;const meta=saveMetaRead(),hits=force?[]:saveCodeHits(meta,steps);
+  if(hits.length){$('saveCodeList').innerHTML=hits.map(h=>`<code>${escHtml(h.t)}</code>${h.at?`<small>${h.at}단계 입력</small>`:''}`).join('');$('saveCode').hidden=false;$('saveFoot').hidden=true;$('saveCode').querySelector('[data-act="saveFix"]').focus();return false;}
   if(!steps.length){$('saveMsg').textContent='저장할 공정이 없습니다 — 공정을 입력하거나 예시를 불러오세요';return false;}
   SAVE.busy=true;$('saveMsg').textContent='';
   try{const fname=safeFileName(meta.name),obj=recipeFileObj(meta),text=JSON.stringify(obj,null,1);
@@ -3200,22 +3252,43 @@ const EDGE_NOTICE={ver:-1,msg:'끝단 프로파일 모델 변경 — Plasma 0.5m
 const edgeNoticeOn=()=>EDGE_NOTICE.ver===RECIPE_VER;
 function edgeNoticeAfterLoad(from){if(!(from<3)||readEdgeModel()!=='process')return;EDGE_NOTICE.ver=RECIPE_VER;updatePanels();}
 // ---- 저장 상태 · 자동 복구 ----
-const AUTO={key:'webc.autosave',ms:700,t:0,ok:null,ready:false,hold:false,noticed:false,offer:null};
+const AUTO={key:'webc.autosave',offKey:'webc.autosaveOff',ms:700,t:0,ok:null,ready:false,hold:false,noticed:false,offer:null,bad:null,off:false};
 function updateDirty(){const d=$('dirtyDot');if(d)d.hidden=!isDirty();}
 const isDirty=()=>currentSig()!==SAVED_SIG;
 // 레시피·설정 변경 알림 → 디바운스 후 저장 상태 점 + 자동 복구 저장
 function noteChange(){if(!AUTO.ready)return;clearTimeout(AUTO.t);AUTO.t=setTimeout(()=>{AUTO.t=0;updateDirty();autosaveNow();},AUTO.ms);}
-function autosaveNow(){if(AUTO.hold)return false;
-  try{const s=window.localStorage;if(!s)throw new Error('localStorage 없음');s.setItem(AUTO.key,JSON.stringify(recipeFileObj(FILE_META)));AUTO.ok=true;return true;}
+// 자동 복구본: 사내 코드처럼 보이는 서술형 원문(src)이 있는 단계는 src를 빼고 저장 (복원 시 src 없음 허용)
+function autosaveObj(){const o=recipeFileObj(FILE_META);
+  o.steps=o.steps.map(st=>{if(!st.src||!srcCodeTokens(st.src).length)return st;const{src,...rest}=st;return rest;});return o;}
+function autosaveNow(){if(AUTO.hold||AUTO.off)return false;
+  try{const s=window.localStorage;if(!s)throw new Error('localStorage 없음');s.setItem(AUTO.key,JSON.stringify(autosaveObj()));AUTO.ok=true;return true;}
   catch(e){AUTO.ok=false;const quota=!!e&&(e.name==='QuotaExceededError'||e.code===22||e.name==='NS_ERROR_DOM_QUOTA_REACHED');
     autosaveNotice(quota?'자동 복구 저장 공간이 부족해 자동 저장을 건너뜁니다 — 💾 저장으로 파일에 남겨 주세요':'브라우저 저장소를 쓸 수 없어 자동 복구가 꺼져 있습니다 — 💾 저장으로 파일에 남겨 주세요');return false;}}
 // 실패 안내는 한 번만, 되돌리기 토스트가 떠 있으면 그 뒤에
 function autosaveNotice(msg){if(AUTO.noticed)return;AUTO.noticed=true;const show=()=>{if(undoReady()){setTimeout(show,8500);return;}toast(msg,{err:true});};show();}
 function autosaveRead(){try{const s=window.localStorage;return s?s.getItem(AUTO.key):null;}catch(e){return null;}}
-function restoreOffer(r){const bar=$('restoreBar'),m=$('restoreMsg');if(!bar||!m)return;AUTO.offer=r;AUTO.hold=true;
+function autosaveRemove(){try{const s=window.localStorage;if(s)s.removeItem(AUTO.key);return true;}catch(e){console.warn('자동 복구본 지우기 실패',e);return false;}}
+// 복구 바 버튼 묶음: 정상 복구본 = 복구/무시 · 읽지 못한 복구본 = 원본 내려받기/지우기
+function restoreButtons(bad){[['rsYes',!bad],['rsNo',!bad],['rsRaw',bad],['rsDel',bad]].forEach(([id,on])=>{const b=$(id);if(b)b.hidden=!on;});}
+// 읽지 못한 복구본: 조용히 버리지 않음 — 사용자가 내려받기·지우기로 처리할 때까지 덮어쓰기 보류(AUTO.hold)
+function restoreBadOffer(raw,errs){const bar=$('restoreBar'),m=$('restoreMsg');AUTO.bad=raw;AUTO.hold=true;
+  console.warn('자동 복구본을 읽지 못했습니다',errs);if(!bar||!m)return;restoreButtons(true);
+  m.textContent=`복구본을 읽지 못했습니다 (${errs&&errs[0]?String(errs[0]).slice(0,80):'형식 오류'}) — 원본 내려받기 / 지우기. 처리하기 전까지 자동 저장을 멈춥니다.`;bar.hidden=false;}
+function restoreRaw(){if(AUTO.bad==null)return;
+  try{downloadText('webc_autosave_raw.txt',AUTO.bad);toast('복구본 원문을 내려받았습니다 — 확인 후 지우기를 눌러 주세요');}
+  catch(e){console.error('복구본 내려받기 실패',e);toast('복구본을 내려받지 못했습니다',{err:true});}}
+// 자동 복구본 지우기 (⚙ · 복구 바 공용): 읽지 못한 복구본 보류도 해제
+function autoClear(){const ok=autosaveRemove();
+  if(ok&&AUTO.bad!=null){AUTO.bad=null;restoreClose();}
+  toast(ok?'자동 복구본을 지웠습니다 — 다음 변경부터 다시 자동 저장합니다':'자동 복구본을 지우지 못했습니다 — 브라우저 저장소를 쓸 수 없습니다',{err:!ok});}
+// ⚙ 자동 복구 켜기/끄기 (설정 기억). 끄면 남은 복구본도 지움 (읽지 못한 복구본은 사용자가 처리할 때까지 둠)
+function autoSetOff(off){AUTO.off=!!off;prefSet(AUTO.offKey,AUTO.off?'1':'0');
+  if(AUTO.off){clearTimeout(AUTO.t);AUTO.t=0;AUTO.ok=null;if(AUTO.bad==null)autosaveRemove();toast('자동 복구를 껐습니다 — 저장하지 않은 변경은 💾 저장으로 남겨 주세요');}
+  else{toast('자동 복구를 켰습니다');autosaveNow();}}
+function restoreOffer(r){const bar=$('restoreBar'),m=$('restoreMsg');if(!bar||!m)return;AUTO.offer=r;AUTO.hold=true;restoreButtons(false);
   const t=Date.parse(r.savedAt||''),when=isFinite(t)?new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
   m.textContent=`이전 작업 복구 — 자동 저장본이 있습니다 (${r.data.steps.length}단계${r.data.name?` · ${r.data.name}`:''}${when?` · ${when}`:''}). 무시하면 지워집니다.`;bar.hidden=false;}
-function restoreClose(){const bar=$('restoreBar');if(bar)bar.hidden=true;AUTO.offer=null;AUTO.hold=false;}
+function restoreClose(){if(AUTO.bad!=null)return;const bar=$('restoreBar');if(bar)bar.hidden=true;AUTO.offer=null;AUTO.hold=false;}
 function restoreYes(){const r=AUTO.offer;restoreClose();if(!r)return;
   try{applyRecipeData(r.data,'자동 복구');edgeNoticeAfterLoad(r.from);offerUndo(`이전 작업을 복구했습니다 (${steps.length}단계)`);}catch(e){showLoadErrors('자동 복구본',['적용 중 오류가 발생해 원래 상태로 되돌렸습니다']);}
   updateDirty();autosaveNow();}
@@ -3225,9 +3298,12 @@ function fileInit(){
   const sn=$('saveName');if(sn)sn.addEventListener('input',saveFileHint);
   const sd=$('saveDlg');if(sd)sd.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='saveName'){e.preventDefault();saveSubmit(false);}});
   dropInit();
+  AUTO.off=prefGet(AUTO.offKey,v=>v==='0'||v==='1','0')==='1';
+  const ao=$('autoOn');if(ao){ao.checked=!AUTO.off;ao.addEventListener('change',()=>autoSetOff(!ao.checked));}
   SAVED_SIG=currentSig();AUTO.ready=true;updateDirty();
   const raw=autosaveRead();if(raw){const r=parseRecipeText(raw);
-    if(r.ok&&stateSig(r.data.steps,r.data.settings)!==SAVED_SIG){let at=null;try{at=JSON.parse(raw).savedAt;}catch(e){/* parseRecipeText가 이미 검사 */}restoreOffer({...r,savedAt:at});}}
+    if(!r.ok)restoreBadOffer(raw,r.errors);
+    else if(stateSig(r.data.steps,r.data.settings)!==SAVED_SIG){let at=null;try{at=JSON.parse(raw).savedAt;}catch(e){/* parseRecipeText가 이미 검사 */}restoreOffer({...r,savedAt:at});}}
   // 닫기 경고: 저장 안 된 변경이 있고 자동 복구도 안 됐을 때만
   addEventListener('beforeunload',e=>{if(!isDirty())return;if(AUTO.t){clearTimeout(AUTO.t);AUTO.t=0;autosaveNow();}
     if(AUTO.ok===true&&!AUTO.hold)return;e.preventDefault();e.returnValue='';});}
@@ -3237,7 +3313,7 @@ const ACTIONS={reset:()=>askReset(),advOpen:()=>toggleAdv(true),advClose:()=>tog
   askSubmit:()=>askSubmit(),askClose:()=>askClose(),help:()=>toggleDetails('cmdHelp'),ref:()=>toggleDetails('refBox'),
   w3auto:()=>{w3.auto=!w3.auto;},w3diag:()=>{w3.auto=false;w3.rot=.785;},
   saveOpen:()=>saveOpen(),saveSubmit:()=>saveSubmit(false),saveForce:()=>saveSubmit(true),saveFix:()=>saveFix(),saveCancel:()=>saveClose(),
-  loadOpen:()=>loadOpen(),loadDlgClose:()=>dlgClose($('loadDlg')),restoreYes:()=>restoreYes(),restoreNo:()=>restoreNo()};
+  loadOpen:()=>loadOpen(),loadDlgClose:()=>dlgClose($('loadDlg')),restoreYes:()=>restoreYes(),restoreNo:()=>restoreNo(),restoreRaw:()=>restoreRaw(),autoClear:()=>autoClear()};
 function toggleDetails(id){const el=$(id);if(el)el.open=!el.open;}
 function actInit(){
   document.addEventListener('click',e=>{const b=e.target&&e.target.closest?e.target.closest('[data-act]'):null;if(!b)return;const k=b.dataset.act;if(hasOwn(ACTIONS,k))ACTIONS[k](e);});
@@ -3255,6 +3331,7 @@ function uiInit(){
   $('toastUndo').addEventListener('click',()=>{if(!undo())toast('되돌릴 수 없습니다 — 그 뒤에 레시피가 바뀌었습니다',{err:true});});}
 try{uiInit();loadPreset('mold');fileInit();}
 catch(e){console.error('초기화 실패',e);showCmdErr('초기화 중 오류가 발생했습니다 — 새로고침해 주세요');}
+window.__webcBooted=true;   // 이후 오류는 시작 실패 안내 대상 아님
 let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{zoomReset(false);redraw();if(warpOpen)initW3();},120);});
 </script>
 </body>

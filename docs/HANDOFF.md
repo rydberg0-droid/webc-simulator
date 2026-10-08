@@ -22,7 +22,8 @@ Wafer Edge 단면에 공정을 쌓아 "지금 Edge가 어떤 상황인지"를 �
 - 데이터: CLN_DB(세정, 문헌 출처·추정 표시), SLURRY_DB(CMP), EDGE_PROFILE(끝단), ETCH(가정값 *).
 
 ## 남은 작업 (backlog)
-- 최종 QA·코드 리뷰 지적 반영(진행 중이던 항목).
+- 코드 리뷰 제안(미반영): `internal/overrides.js` 데이터 계층(buildDb·검증·escHtml·origin 표시), 엔진 순수 함수화(ENG.cfg 스냅샷, DOM 읽기 0), 모듈 분리+단일 HTML 빌드, CSP(connect-src 'none'), 막 배열 Float32·희소 저장(성능 1.5~2.5배 저하 개선).
+- 자동 복구본 name/note 토큰 검사, cmpReport의 noData 필드 유지.
 - `internal/overrides.js` 선택 로드 구조.
 - 재사용 회귀 테스트 `tests/` 정리(현재 테스트 하네스는 저장소 밖).
 - 프로토타입: 공정 메커니즘 플레이어 + Inner(셀 영역) 패턴 단면 + 결함 주입 → 검증 후 메인 병합 검토.
