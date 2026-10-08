@@ -30,7 +30,7 @@ model: opus
 ## 산출물
 결과는 `research/analysis/<주제>.md`에 저장한다.
 - 요약: 채택한 값, 신뢰도(상/중/하), 남은 공백
-- writer가 그대로 붙여 넣을 수 있는 JS 객체 블록. `CLN_DB` 항목 형식을 따른다.
+- backend-dev가 그대로 붙여 넣을 수 있는 JS 객체 블록. `CLN_DB` 항목 형식을 따른다.
   ```js
   boe:{name:'BOE 5:1 (BHF)',cat:'wet',ab:'BOE',amt:100,tgt:'SiO2',cond:'...',src:'저자, 저널 권(호) 연도',
     er:{SiO2:490,...},est:['SiON'],note:'...'},
