@@ -520,16 +520,18 @@ const NUM_RE=/^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
 const strictNum=v=>typeof v==='number'?v:typeof v==='string'&&NUM_RE.test(v.trim())?Number(v.trim()):NaN;
 const smooth=(a,b,v)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t);};
 // ---- 막질 팔레트 (다크 배경 #090d16 대비 3:1 이상) ----
-// 계열(fam)별 색상군: Oxide=파랑(명도로 구분) · Nitride=녹색 · Oxynitride=청록 · Carbon=보라(명도·채도로 구분) · Metal=은색/구리색 · Poly=노랑 · Resist=빨강
+// 계열(fam)별 색상군: Oxide=파랑(명도로 구분) · Nitride=녹색 · Oxynitride=청록 · Carbon=보라(명도·채도로 구분) · Metal=금속 톤(W 은색 · Cu 구리 · TiN 금빛 갈색) · Poly=노랑 · Resist=빨강
+//   Void = 측면 wet etch로 비운 공동(표시 전용 막 — 그리기는 반투명·점선 권장, 색은 범례 견본용 무채색)
 // 그리기 쪽은 MATERIALS[k].color · PALETTE.mold · SI_COLOR 만 읽는다 (색 값은 여기 한 곳에서만 정의)
 const PALETTE=Object.freeze({
   oxide:{SiO2:'#38bdf8',HTTEOS:'#3b82f6',MTTEOS:'#93c5fd'},
   nitride:{SiN:'#22c55e'},
   oxynitride:{SiON:'#2dd4bf'},
   carbon:{HTACL:'#7c3aed',MTACL:'#a78bfa',SOH:'#c026d3',ESOH:'#e879f9'},
-  metal:{W:'#c0c6cf',Cu:'#c87533'},
+  metal:{W:'#c0c6cf',Cu:'#c87533',TiN:'#b38b3d'},
   poly:{Poly:'#facc15'},
   resist:{PR:'#ef4444'},
+  void:{VOID:'#94a3b8'},
   mold:{ox:'#38bdf8',nit:'#22c55e'}});   // Mold ON 교번 표시 (= SiO2 · SiN 색)
 const SI_COLOR='#64748b';                 // Si 기판 (막질 색과 겹치지 않게 별도)
 // 색 섞기: hex를 검정 쪽으로 f(0~1)만큼 남김 — 캔버스 Si 그라데이션 음영을 SI_COLOR에서 만듦
@@ -548,7 +550,7 @@ const PHOTO_ZONE=Object.freeze({
 function photoZoneCss(k){const z=PHOTO_ZONE[k],bg=z.fill||'transparent';
   if(z.hatch)return`background:repeating-linear-gradient(${HATCH_DEG[z.hatch.kind]}deg,${z.hatch.color} 0 1px,${bg} 1px 3px)`;
   return z.dash?`background:transparent;border:1px dashed ${z.dash}`:`background:${bg}`;}
-const MAT_FAMS=['oxide','nitride','oxynitride','carbon','metal','poly','resist'];
+const MAT_FAMS=['oxide','nitride','oxynitride','carbon','metal','poly','resist','void'];
 const DIELECTRIC_FAMS=['oxide','nitride','oxynitride'];   // Arcing: 전하 축적 유전체
 // fam = 막 계열(팔레트·Arcing 판정용) · stress(MPa, +인장) · side/bot = 측벽/바닥 step coverage · plan = 평탄화 비율
 // est = 문헌 실측이 아닌 대표값(추정)인 필드 — stress·side·bot·plan은 출처가 없는 대표값이라 전부 추정(표시처: 막질 표 '추정' · Bonding peel · Warpage)
@@ -567,11 +569,18 @@ const MATERIALS={
   PR:{name:'PR (Photoresist)',fam:'resist',stress:0,side:1,bot:1,plan:.50,est:MAT_EST},
   SiON:{name:'SiON (Bevel 보호막)',fam:'oxynitride',stress:-100,side:.70,bot:.60,plan:0,est:MAT_EST},
   // Cu: 응력 = 어닐 후 ECD/PVD Cu 대표 인장 ~150MPa, coverage = PVD seed + ECD 충전 대표값 (모두 추정)
-  Cu:{name:'Cu (Copper)',fam:'metal',stress:150,side:.40,bot:.50,plan:0,est:MAT_EST}
+  Cu:{name:'Cu (Copper)',fam:'metal',stress:150,side:.40,bot:.50,plan:0,est:MAT_EST},
+  // TiN: 응력·coverage 출처 없음(전부 추정). 응력은 증착법(PVD 압축 / CVD 인장)에 따라 부호가 바뀌어 0(중립)으로 둠 — research/analysis/selective-wet-etch.md §1.3
+  TiN:{name:'TiN (Barrier)',fam:'metal',stress:0,side:.80,bot:.70,plan:0,est:MAT_EST},
+  // VOID: 측면 wet etch로 비운 자리 (displayOnly = 엔진이 만드는 파생 막). 식각·세정·CMP 비용 0(위가 다 지워지면 사라짐), 증착·정지막 목록·막질 표·저장 파일에서 제외
+  VOID:{name:'Void (측면 식각 공동)',fam:'void',stress:0,side:0,bot:0,plan:0,est:MAT_EST,displayOnly:true}
 };
-const KEYS=Object.keys(MATERIALS);
+const VOID_MAT='VOID';
+const isVoid=k=>k===VOID_MAT;
+// KEYS = 사용자가 고르는 막질(증착·정지막·막질 표·Step Coverage 저장) — 표시 전용 막(VOID) 제외
+const KEYS=Object.keys(MATERIALS).filter(k=>!MATERIALS[k].displayOnly);
 // 정의 검증 + 색 결정 (잘못된 정의는 시작 시 바로 실패 → 조용히 틀린 색/계열로 그리지 않음)
-KEYS.forEach(k=>{const m=MATERIALS[k];
+Object.keys(MATERIALS).forEach(k=>{const m=MATERIALS[k];
   if(!MAT_FAMS.includes(m.fam))throw new Error(`MATERIALS.${k}: 알 수 없는 막 계열 '${m.fam}'`);
   const c=PALETTE[m.fam][k];if(!/^#[0-9a-f]{6}$/i.test(c||''))throw new Error(`PALETTE.${m.fam}.${k}: 색이 없습니다`);
   m.color=c;
@@ -600,20 +609,37 @@ const ETCH={
 const PROF={semi:{ang:22,Lb:.30,dB:.06,dC:.20},round:{ang:30,Lb:.38,dB:.20,dC:.38}};
 // ---- 세정·Strip 식각률 DB (nm/min, 공개 문헌) ----
 // 막질 대응: SiO2·MT-TEOS = PECVD oxide(비어닐), HT-TEOS = 어닐 PECVD oxide/열산화막(치밀), SiN = PECVD SiN(고굴절, 없으면 LPCVD),
-//            Poly = LPCVD 비도핑, PR = S1822/OCG820, W = sputter W, Cu = 증착(evap) Cu (W03 Table VI 'Copper Evap').
+//            Poly = LPCVD 비도핑, PR = S1822/OCG820, W = sputter W, Cu = 증착(evap) Cu (W03 Table VI 'Copper Evap'), TiN = sputter TiN (W03 Table VI).
 //            est = 문헌 실측이 없어 추정한 막질('*' = 전부 추정). er에 없는 막질 = 데이터 없음 (W03 표의 '-'·'S'·'R'(값 없음) 포함)
 const W03='Williams, Gupta, Wasilik, "Etch Rates for Micromachining Processing—Part II", J. MEMS 12(6), 2003';
+// 선택적 wet etch (Enlarge·W/TiN recess) 출처 — research/analysis/selective-wet-etch.md §1. 온도 파라미터 없음:
+//   hotp = 85% H3PO4 160℃ · usn = 첨가제 인산(실리카/실란계) 150~160℃ 상당 · dsp = 희석 H2SO4/H2O2 실온~60℃
+const YMTC893='YMTC, US 10,913,893 B2 (Additive to phosphoric acid etchant)';
+const HSP_SRC='선택비 문헌 범위: YMTC US 10,913,893 (무첨가 ~30 → 목표 >400) · TEL US 10,886,290 (>100:1) · Chung-Ang ACS SCE 2021 (up to 940, 검색발췌) · Entegris US 11,421,157/12,203,022 (실시형태 100~2000)';
+const VER236='Versum Materials, US 11,499,236 B2 (Etching solution for tungsten word line recess)';
+const INT456='Intel, US 9,472,456 B2 (selectively etching Ti/TiN)';
+// tag(선택) = 공정 순서 표 태그 (없으면 CLN_TAG[cat]) · sel/selRange(선택) = SiN:SiO2 선택비 기본값/문헌 범위 (표시·근거용)
 const CLN_DB={
  dhf:{name:'DHF 100:1',cat:'wet',ab:'DHF',amt:10,tgt:'SiO2',cond:'100:1 HF, 실온',src:'환산값 — '+W03+' 10:1 HF 값 ×1/10 (Table VIII: 10:1~100:1에서 농도에 선형)',
    er:{SiO2:3.4,MTTEOS:3.4,HTTEOS:2.3,SiN:.11,SiON:1,Si:0,Poly:0,PR:0,W:0},est:['*'],note:'Oxide strip·native oxide 제거'},
  boe:{name:'BOE 5:1 (BHF)',cat:'wet',ab:'BOE',amt:100,tgt:'SiO2',cond:'40% NH4F 5 : 49% HF 1, 실온',src:W03,
-   er:{SiO2:490,MTTEOS:490,HTTEOS:240,SiN:8.2,SiON:100,Si:0,Poly:.2,PR:0,W:2,Cu:5},est:['SiON','Cu'],note:'비어닐 PECVD oxide가 열산화막(100)보다 ~5배 빠름 · Cu는 표기 “R <5” — 거칠어짐(R), 상한값 5로 계산'},
+   er:{SiO2:490,MTTEOS:490,HTTEOS:240,SiN:8.2,SiON:100,Si:0,Poly:.2,PR:0,W:2,Cu:5,TiN:2.5},est:['SiON','Cu'],note:'비어닐 PECVD oxide가 열산화막(100)보다 ~5배 빠름 · Cu는 표기 “R <5” — 거칠어짐(R), 상한값 5로 계산 · TiN = W03 Table VI TiN Sputtered 5:1 BHF'},
  lal:{name:'LAL (계면활성 BHF)',cat:'wet',ab:'LAL',amt:100,tgt:'SiO2',cond:'10:1 BHF 상당으로 근사',src:'근사값 — '+W03+' 10:1 BHF = 5:1의 1/2 · Stella Chemifa 특허: BHF 6:1~100:1에서 SiO2 9~120 nm/min',
    er:{SiO2:245,MTTEOS:245,HTTEOS:120,SiN:4.1,SiON:50,Si:0,Poly:.1,PR:0,W:1},est:['*'],note:'등급(LAL500/800…)별 식각률 다름 — 제품 실측 공개값 없음'},
- hotp:{name:'Hot H3PO4 160℃',cat:'wet',ab:'H3PO4',amt:100,tgt:'SiN',cond:'85% H3PO4, 160℃',src:W03,
-   er:{SiN:20,SiO2:.21,MTTEOS:.21,HTTEOS:.18,SiON:2,Si:.17,Poly:.1,PR:55,W:0},est:['SiON','Poly','W'],note:'SiN strip 대표 · LPCVD SiN은 4.5nm/min · PR은 박리'},
- spm:{name:'SPM (Piranha)',cat:'wet',ab:'SPM',amt:1000,tgt:'PR',cond:'H2SO4 + H2O2, 가열',src:W03,
-   er:{PR:92000,SOH:500,ESOH:500,HTACL:20,MTACL:20,SiO2:0,MTTEOS:0,HTTEOS:0,SiN:0,SiON:0,Si:0,Poly:0,W:50,Cu:88},est:['SOH','ESOH','HTACL','MTACL','W'],note:'PR >92µm/min (측정 하한) · 무기막 0'},
+ hotp:{name:'Hot H3PO4 160℃',cat:'wet',ab:'H3PO4',amt:100,tgt:'SiN',tag:'WET ETCH',cond:'85% H3PO4, 160℃ (무첨가)',src:W03+' · 교차: '+YMTC893+' oxide 70~130 Å/h(=0.12~0.22 nm/min)',
+   er:{SiN:20,SiO2:.21,MTTEOS:.21,HTTEOS:.18,SiON:2,Si:.17,Poly:.1,PR:55,W:0},est:['SiO2','MTTEOS','SiON','Poly','W'],
+   note:'SiN strip·Enlarge(무첨가) · SiN:SiO2 ≈ 95 (PECVD 고RI 기준) · SiO2 = LTO 값 대용(PECVD oxide 미측정) · LPCVD SiN은 4.5nm/min · 3D NAND 특허 문맥 SiN 3.5~6.5nm/min(YMTC) · PR은 박리'},
+ usn:{name:'고선택 인산 (USN/HSP)',cat:'wet',ab:'USN',amt:100,tgt:'SiN',tag:'WET ETCH',sel:500,selRange:[100,2000],
+   cond:'H3PO4 + Si계 첨가제(실리카/실란), 150~160℃ 상당 — 온도 파라미터 없음',src:HSP_SRC+' · SiN 기준값 '+W03+' (hotp와 같은 기준)',
+   er:{SiN:20,SiO2:.04,MTTEOS:.04,HTTEOS:.034,SiON:.9,Si:.17,Poly:.1,PR:55,W:0},est:['*'],
+   note:'초고선택 SiN 인산계 · SiN:SiO2 = 500 (est, 문헌 100~2000) · SiO2 = 20/500, HTTEOS = SiO2×0.857(hotp 비율), SiON = √(SiN·SiO2) · 첨가제의 SiN 식각률 영향 0 가정 — 3D NAND mold SiN은 ~1/3일 수 있음 · oxide regrowth(silica 재침적) 미반영'},
+ dsp:{name:'DSP (희석 H2SO4/H2O2, W·TiN recess)',cat:'wet',ab:'DSP',amt:30,tgt:'W',tag:'WET ETCH',
+   cond:'Diluted Sulfuric-Peroxide 계열, 실온~60℃ 상당 — 온도 파라미터 없음',src:VER236+' W·TiN 10~400 Å/min(=1~40 nm/min), 모재 대비 ≥10~20 · 산화막·SiN 0 = '+W03+' Piranha·H2O2 50℃ 실측 유추',
+   er:{W:6,TiN:6,SiO2:0,MTTEOS:0,HTTEOS:0,SiN:0,SiON:0,Si:0,Poly:0},est:['*'],
+   note:'W = TiN (Versum: "TiN and W should be simultaneously etched with equal thickness") · 1~40 nm/min의 로그 중앙값 · DSP+(HF 첨가)의 W/TiN/oxide 식각률 문헌 없음 — oxide 0은 DSP+에서 과소 · PR·Carbon·Cu 데이터 없음(정지+경고)'},
+ spm:{name:'SPM (Piranha)',cat:'wet',ab:'SPM',amt:1000,tgt:'PR',cond:'H2SO4 + H2O2, 가열',src:W03+' · TiN·W: '+INT456,
+   er:{PR:92000,SOH:500,ESOH:500,HTACL:20,MTACL:20,SiO2:0,MTTEOS:0,HTTEOS:0,SiN:0,SiON:0,Si:0,Poly:0,W:0,Cu:88,TiN:14},est:['SOH','ESOH','HTACL','MTACL','W','TiN'],
+   note:'PR >92µm/min (측정 하한) · 무기막 0 · W 0 = Intel H2SO4:H2O2 7:1 실측 0 Å/min (H2O2 비율이 높으면 72~240nm/min — 진한 SPM 기준 0) · TiN = Intel 92.1% H2SO4 + 7.9% H2O2 100℃ 2.1~2.6 Å/s ×6 ≈ 14nm/min'},
  sc1:{name:'SC1 / APM',cat:'wet',ab:'SC1',amt:2,tgt:'Si',cond:'NH4OH:H2O2:H2O = 1:1:5, 70~80℃',src:'RCA SC1 — 공개 정량값 미확보 (Si 수 Å/min 수준으로 보고됨)',
    er:{Si:.3,Poly:.3,SiO2:.1,MTTEOS:.1,HTTEOS:.05,SiN:.02,SiON:.05,PR:.5},est:['*'],note:'막 제거보다 파티클 제거 목적'},
  hfhno3:{name:'HF-Nitric (Si Iso Etch)',cat:'wet',ab:'HF/HNO3',amt:1000,tgt:'Si',cond:'126 HNO3 : 60 H2O : 5 NH4F, 실온',src:W03,
@@ -644,6 +670,7 @@ const CLN_DB={
    er:{PR:30,SOH:12,ESOH:12,HTACL:1.5,MTACL:2.4},est:['*'],note:'유기물 경미 제거'}};
 // CLEAN[k]: 엔진용 상대 제거율 r(target 막=1, 문헌에 없는 막질은 undefined = 데이터 없음) + 시간 환산 식각률 rate(nm/s)
 const CLEAN=Object.fromEntries(Object.entries(CLN_DB).map(([k,d])=>{const t=d.er[d.tgt]||1;
+  if(d.tag!==undefined&&!(typeof d.tag==='string'&&d.tag.trim()))throw new Error(`CLN_DB.${k}.tag: 비어 있지 않은 문자열이어야 합니다`);
   if(!(d.er[d.tgt]>0)){console.warn(`CLN_DB.${k}: target 막 ${d.tgt}의 제거율이 없거나 0 — 1nm/min으로 가정(추정 표시)`);d={...d,est:[...new Set([...(d.est||[]),d.tgt])]};}
   return[k,{...d,r:rt(Object.fromEntries(Object.entries(d.er).map(([m,v])=>[m,v/t])),`CLN_DB.${k}.er`),rate:+(t/60).toFixed(4)}];}));
 // ---- CMP 슬러리 DB (nm/min, 공개 문헌) — research/analysis/cmp.md §1·§8 (CONFIDENTIAL 표기 자료는 제외) ----
@@ -681,7 +708,7 @@ const SLURRY_DB={
    er:{Cu:600},est:[],note:'10µm line dishing ~40nm · oxide RR 미보고(데이터 없음 = 정지) · Rodel 2002 자료는 CONFIDENTIAL 표기로 제외'},
  legacy:{name:'비선택 (v3 기존 CMP 근사)',ab:'Non-sel',tgt:'SiO2',stop:'SiN',cond:'모든 막 같은 속도 · Si 미연마',
    src:'v3 기존 모델(기준 R145 평면 절단, 비선택)의 하위 호환 근사 — 문헌값 아님',
-   er:{...Object.fromEntries(Object.keys(MATERIALS).map(k=>[k,100])),Si:0},est:['*'],note:'구 레시피(ERO µm 형식) 전용 — 새 공정은 막질 슬러리 선택 권장'}};
+   er:{...Object.fromEntries(KEYS.map(k=>[k,100])),Si:0},est:['*'],note:'구 레시피(ERO µm 형식) 전용 — 새 공정은 막질 슬러리 선택 권장'}};
 // 엔진용: 상대율 r (tgt=1) + 시간 환산 rate(nm/s). CLEAN과 같은 규칙 — er에 없는 막은 undefined(데이터 없음 → consume이 정지·경고)
 const SLURRY=Object.fromEntries(Object.entries(SLURRY_DB).map(([k,d])=>{const t=d.er[d.tgt]||1;
   if(!hasOwn(d.er,d.tgt))throw new Error(`SLURRY_DB.${k}: target 막 ${d.tgt}의 제거율이 없습니다`);
@@ -1347,6 +1374,7 @@ function stepDetail(st){const t=stepText(st);return t?t.detail(st):'';}
 const thk=st=>`${st.rawVal}${st.unit==='um'?'µm':st.unit==='A'?'Å':st.unit}`;
 // 공정 분류 태그: 공정 순서·Status Bar·툴팁·미리보기 공통 기준
 const CLN_TAG={plasma:'PLASMA',gas:'GAS',wet:'WET'};
+const cleanTag=c=>c.tag||CLN_TAG[c.cat]||'WET';   // 약액별 태그(CLN_DB.tag, 예: 'WET ETCH') → 없으면 구분별
 const RM_TAG={strip:'PES',bvs:'BVS',eew:'EEW',bew:'BEW',backClean:'BACK CLN',frontClean:'FRONT CLN',edgeClean:'EDGE CLN',cmp:'CMP'};
 const RM_DESC={strip:'전 막 제거',bvs:'베벨 집중 strip',eew:'최상단 막 제거',bew:'최상단 막 제거',backClean:'후면 막 제거',frontClean:'전면 막 제거',edgeClean:'베벨 막 제거',cmp:'평탄화'};
 const RM_AREA={strip:'Edge',bvs:'베벨',eew:'전면 Edge',bew:'후면 Edge',backClean:'후면',frontClean:'전면',edgeClean:'베벨',cmp:'전면'};
@@ -1386,7 +1414,7 @@ const STEP_TEXT={
    detail:st=>`${PHOTO_KO[st.mode]}(${toneKo(st)}) ${st.mode==='pses'?'shot '+st.pat:st.w+'mm'} · PR ${st.prPat}/${st.prBar}µm · shot ${st.pitch}mm`},
  etch:{cells:st=>['<span class="be">ETCH</span>',escHtml(ETCH[st.key].name.split(' (')[0]),st.depth+'µm','전면'],
    detail:st=>`${ETCH[st.key].name} ${st.depth}µm · edge×${st.ef} · iso ${st.iso}${st.prot?` · 보호 ${st.prot}mm`:''}`},
- clean:{cells:st=>[`<span class="bc">${CLN_TAG[CLEAN[st.key].cat]||'WET'}</span>`,escHtml(CLEAN[st.key].ab),st.amt+'nm',CLN_MODE_KO[st.mode]+(st.mode==='edge'&&st.distMm?' '+st.distMm+'mm':'')],
+ clean:{cells:st=>[`<span class="bc">${escHtml(cleanTag(CLEAN[st.key]))}</span>`,escHtml(CLEAN[st.key].ab),st.amt+'nm',CLN_MODE_KO[st.mode]+(st.mode==='edge'&&st.distMm?' '+st.distMm+'mm':'')],
    detail:st=>`${CLEAN[st.key].name} ${st.amt}nm · ${CLN_MODE_KO[st.mode]}${st.mode==='edge'?(st.distMm?` ${st.distMm}mm`:'(베벨만)'):''}${edgeWText(st)}`},
  remove:{cells:st=>{const a=st.action;
      return[`<span class="br">${RM_TAG[a]}</span>`,a==='strip'||a==='bvs'?RM_DESC[a]+(st.siLoss?` · Si −${st.siLoss}µm`:''):a==='cmp'?`${RM_DESC.cmp} · ${escHtml(cmpShort(st))}`:RM_DESC[a],
@@ -1592,6 +1620,17 @@ function pushLayer(mat,nx,ny,h,thin){
   layers.push({...meta,meta,h});
   for(let i=lo;i<hi;i++){const v=h[i];if(v){SX[i]+=nx[i]*v;SY[i]+=ny[i]*v;LV[i]+=v;}}}
 function topLayerAt(i){for(let L=layers.length-1;L>=0;L--)if(layers[L].h[i]>1e-4)return L;return -1;}
+// 막을 stack 중간(idx)에 끼워 넣기 (측면 식각 VOID 전용): 법선은 기준 막 base의 증착 시점 법선을 그대로 씀 — h는 base가 있던 자리라
+//   base의 법선 구간 안이어야 함. b0 없음(표시 기준은 묶음 첫 막). 표면·막 합계는 호출 측이 recalc
+function insertLayerAt(idx,mat,h,base){
+  if(!Number.isInteger(idx)||idx<0||idx>layers.length)throw new Error(`막 끼워 넣기: 위치 ${idx}가 범위(0~${layers.length}) 밖입니다`);
+  if(!hasOwn(MATERIALS,mat))throw new Error(`알 수 없는 막질: ${mat}`);
+  if(!(h instanceof Float64Array)||h.length!==NP)throw new Error('막 두께 배열 길이가 형상과 맞지 않습니다');
+  const[lo,hi]=nzRange(h);if(hi<=lo)return false;
+  const bm=base&&base.meta,off=bm?lo-bm.nlo:-1;
+  if(!bm||off<0||hi-bm.nlo>bm.nx.length)throw new Error('막 끼워 넣기: 기준 막의 법선 구간 밖입니다');
+  const meta=Object.freeze({mat,nlo:lo,nx:bm.nx.slice(off,off+hi-lo),ny:bm.ny.slice(off,off+hi-lo),h0:Float32Array.from(h),b0:NO_B0,thin:bm.thin,si:CURSI});
+  layers.splice(idx,0,{...meta,meta,h});return true;}
 
 // ---- 끝단(film edge) 단면 프로파일 (research/analysis/edge-profile.md §2~5) ----
 // W(mm) = 막 두께 0 %(bare, Edge→dd) → 100 %(dd+W) 거리. F(u) = 잔막 비율, u = (d−dd)/W ∈ [0,1] (d = Edge로부터 반경 거리 mm)
@@ -1657,7 +1696,9 @@ function edgeCutOf(st){const proc=edgeProc();
   const mk=(side,dd,prof,rates)=>{const W=proc?edgeWidthMm(prof,st.edgeW):rampMm;return{side,dd,W,rates:proc?rates:null,kLat:proc?EDGE_PROFILE[prof].kLat:0};};
   if(st.type==='remove'&&isPesLike(st)){const prof=EDGE_PROC[st.action];
     return mk(st.action==='bew'?-1:1,st.distMm,prof,st.action==='strip'||st.action==='bvs'?edgeStripRates():null);}
-  if(st.type==='clean'&&st.mode==='edge'&&st.distMm>0){const c=CLEAN[st.key];return mk(1,st.distMm,EDGE_PROC.clean[c.cat],c.r);}
+  if(st.type==='clean'&&st.mode==='edge'&&st.distMm>0){const c=CLEAN[st.key],cut=mk(1,st.distMm,EDGE_PROC.clean[c.cat],c.r);
+    if(latKappa(c)>0)cut.kLat=0;   // wet·gas는 측면 wet etch 모델(lateralEnds)이 끝단 recess를 따로 보고 → undercut 중복 방지
+    return cut;}
   return null;}
 // 끝단 지표 (§3.2·§5.5). 한 면(side)의 평탄부(|f|>.9) 점을 안쪽(dRef = dd+W+0.2mm)→Edge 순으로 훑음. LV0 = 단계 직전 막 합계
 //   깊이 = 제거된 두께(LV0−LV)의 최대 → 그 10 %·90 % 지점 거리 = wUm, slopeDeg = atan(0.8·깊이/wUm) (실제 물리 각도 — 표시 과장 무관)
@@ -1680,7 +1721,7 @@ function edgeMetrics(cut,LV0){
   const slopeDeg=wUm!=null?Math.atan2(.8*depth,Math.max(wUm,1e-6))*180/Math.PI:null;
   // 막 끝 (기준 두께 > 1nm이고 50 % 아래로 내려가는 막만, 아래→위 순)
   const ends=[];
-  layers.forEach(ly=>{const h0=ly.h[I[0]];if(!(h0>1e-3))return;const T=cross(k=>ly.h[I[k]],.5*h0,false);if(T!=null)ends.push({T:T*1000,h:h0,r:cut.rates?cut.rates[ly.mat]:undefined});});
+  layers.forEach(ly=>{if(isVoid(ly.mat))return;const h0=ly.h[I[0]];if(!(h0>1e-3))return;const T=cross(k=>ly.h[I[k]],.5*h0,false);if(T!=null)ends.push({T:T*1000,h:h0,r:cut.rates?cut.rates[ly.mat]:undefined});});
   let stepMaxUm=null,undercutUm=0;
   if(ends.length){let sh=0,sn=0;const ok=e=>e.r>RESIST_R;
     ends.forEach(e=>{if(ok(e)){sh+=e.h;sn+=e.h/e.r;}});
@@ -1703,17 +1744,19 @@ function edgeChips(m){const ch=[],f1=v=>v>=100?v.toFixed(0):v.toFixed(1);
 //   남은 budget이 STOP_UM 미만이면(가장자리 가중치 꼬리) 데이터 없음으로 세지 않음
 //   패턴 영역 target 막 손실은 CMP 패턴 상태로도 기록: ρ = min(ρ, 1−open), H += 실제 hole 깊이 = 면적평균 손실/open (cmp.md §2.3 auto)
 //   opts.top(Int32Array, 선택) = 점별 최상단 막 시작 인덱스 캐시(CMP 서브스텝용). 반환 = 이 호출로 줄어든 막 두께 합(µm, Si 제외)
+//   VOID(측면 식각 공동)는 rate를 보지 않고 budget 0으로 사라짐 (budget이 닿았다 = 위 막이 다 지워져 공동이 열림)
+//   opts.log(배열, 선택) = 식각률로 깎은 막의 [점 i, 막 L, 깎기 전 h] — 측면 식각이 단계 직전 두께를 다시 읽는 데 씀(lateralPre)
 const isPat=p=>!!PHOTO&&p.f>.3&&PHOTO.zones.some(q=>(q.k==='pattern'||q.k==='broken')&&p.d>=q.a&&p.d<q.b);
 const STOP_UM=1e-3,RESIST_R=.0005;
 function consume(i,bud,rates,opts){
   const tg=opts.tg,pz=!!tg&&isPat(pts[i]),top=opts.top;let L=top?Math.min(top[i],layers.length-1):layers.length-1,gone=0;
   const done=()=>{if(top)top[i]=L;return gone;};
-  for(;L>=0&&bud>1e-9;L--){const ly=layers[L],h=ly.h[i];if(h<1e-5){gone+=h;ly.h[i]=0;continue;}
+  for(;L>=0&&bud>1e-9;L--){const ly=layers[L],h=ly.h[i];if(h<1e-5||isVoid(ly.mat)){gone+=h;ly.h[i]=0;continue;}
     const r=rates[ly.mat];
     if(r===undefined||r<=RESIST_R){if(r===undefined&&bud>=STOP_UM)opts.noData.add(ly.mat);return done();}
     if(pz&&tg.includes(ly.mat)){const loss=Math.min(h,bud*opts.open*r);ly.h[i]=h-loss;gone+=loss;
       if(loss>0&&opts.open>0){PDENS[i]=Math.min(PDENS[i],1-opts.open);PSTEP[i]+=loss/opts.open;}return done();}
-    const need=h/r;if(bud>=need){ly.h[i]=0;gone+=h;bud-=need;}else{ly.h[i]=h-bud*r;gone+=bud*r;bud=0;return done();}}
+    const need=h/r;if(opts.log)opts.log.push(i,L,h);if(bud>=need){ly.h[i]=0;gone+=h;bud-=need;}else{ly.h[i]=h-bud*r;gone+=bud*r;bud=0;return done();}}
   if(L<0)L=0;
   if(bud>1e-9){const r=rates.Si;if(r===undefined){if(bud>=STOP_UM)opts.noData.add('Si');}else rec[i]+=bud*r;}
   return done();}
@@ -1726,10 +1769,130 @@ function etch(rates,D,iso,ef,zone,prot,wfn,tg,open){
     if(bud<=1e-9)continue;consume(i,bud,rates,opts);}
   recalc();return opts.noData;}
 // 세정 단계: 제거량 D(target 막 µm) × 처리 영역 가중(wfn) — 등방, edge 가속 없음. 반환 = 데이터 없음 막질 Set
-function clean(rates,D,wfn){
-  const opts={tg:null,open:0,noData:new Set()};
+//   log(배열, 선택) = consume 로그 (측면 식각용 단계 직전 두께)
+function clean(rates,D,wfn,log=null){
+  const opts={tg:null,open:0,noData:new Set(),log};
   for(let i=0;i<NP;i++){const bud=D*wfn(pts[i]);if(bud<=1e-9)continue;consume(i,bud,rates,opts);}
   recalc();return opts.noData;}
+// ---- 측면 wet etch (lateral recess → VOID · 처마 지표) — research/analysis/selective-wet-etch.md §2~4 ----
+// 노출된 막 끝단(side face)에서 안쪽으로 L_j = κ·r_j·max(0, D·w − B_open) (µm). B_open = 끝단 바깥 점 o에서 막 j와 그 위 막을
+//   모두 지우는 budget(단계 직전 두께, target 막 환산 µm) = 보호막 소진·SiN 테라스 수직 제거 시간. 덮은 막의 식각률이 없으면 보호(∞) + 데이터 없음
+//   κ = wet·gas 1 (등방), plasma 0 (이 모델 안 씀 — 기존 edgeMetrics kLat 경로). 처리 순서: 수직 소모(clean) → 끝단 찾기(단계 후) → B_open(단계 전) → VOID
+//   격자(끝단 10µm)보다 작은 L은 형상에 거의 안 보임 → 판정은 지표(칩), 격자 VOID는 L이 끝단에서 격자 점까지 거리보다 클 때만 생김
+const LAT_DEF=Object.freeze({
+  EPS:1e-3,                        // µm, 막 존재 판정 (1nm)
+  kappa:Object.freeze({wet:1,gas:1,plasma:0}),   // 등방 측면 계수 (est)
+  taperFrac:.25,                   // 증착 직후 두께가 그 막 최대의 25 % 미만인 끝(증착 가장자리 꼬리 — 수직 식각이 이미 처리)은 끝단으로 안 셈 (est)
+  mainR:.5,                        // 상대 식각률 ≥ 0.5 = 식각 대상 막 (보호 판정 대상 — tgtInfo '제거'와 같은 기준)
+  minUm:.005,chipUm:.01,           // 처마로 세는 최소 recess · 칩 표시 하한 (µm)
+  arWarn:3,arHigh:10,              // 처마 AR 임계 (est — 공개 정량 사례 없음)
+  marginWarn:.2,                   // 보호 여유 경고 (공정 산포, est)
+  diffAR:20,                       // L/h > 20 → 좁은 틈 확산 제한 정보 (est)
+  pinchSide:.7,                    // 이후 증착 측벽 coverage ≥ 이 값이면 공동 입구 pinch-off 가능 (est)
+  topEnds:8,                       // STEP_RES.lat.ends에 남기는 끝단 수 (frontend 확대 도식용, recess 큰 순)
+  src:'est — 등방 wet 측면 = 수직 식각률, 전달 제한·regrowth·처마 처짐 미반영 · 위험 근거: Nanja, Semiconductor Engineering 2019 (bevel wet undercut, peeling)'});
+const latKappa=c=>!!c&&hasOwn(LAT_DEF.kappa,c.cat)?LAT_DEF.kappa[c.cat]:0;
+// clean 로그([점 i, 막 L, 깎기 전 h] …) → 단계 직전 두께 조회 (L, i). 로그에 없는 (막, 점) = 이번 단계에서 안 바뀜 = 지금 두께
+function lateralPre(log){const m=new Map();
+  for(let k=0;k<log.length;k+=3){let q=m.get(log[k]);if(!q)m.set(log[k],q=new Map());q.set(log[k+1],log[k+2]);}
+  return(L,i)=>{const q=m.get(i);return q&&q.has(L)?q.get(L):layers[L].h[i];};}
+// 막 meta별 증착 직후 최대 두께 (끝단/꼬리 구분 기준, 불변이라 캐시)
+const H0MAX=new WeakMap();
+function h0Max(meta){let v=H0MAX.get(meta);if(v===undefined){v=0;for(const x of meta.h0)if(x>v)v=x;H0MAX.set(meta,v);}return v;}
+// 점 i에서 막 j 바로 위(처마) / 바로 아래(바닥)의 non-VOID 막 인덱스 (h > EPS), 없으면 −1
+function eaveAt(j,i){for(let k=j+1;k<layers.length;k++){const l=layers[k];if(!isVoid(l.mat)&&l.h[i]>LAT_DEF.EPS)return k;}return -1;}
+function floorAt(j,i){for(let k=j-1;k>=0;k--){const l=layers[k];if(!isVoid(l.mat)&&l.h[i]>LAT_DEF.EPS)return k;}return -1;}
+// 끝단 찾기 + recess 깊이 (단계 후 상태에서 끝단, B_open은 단계 전 두께 pre(L,i)). kap = κ, D = target 환산 µm, wfn = 처리 영역 가중
+//   반환 {ends:[{j, mat, r, b(막 쪽 점), o(바깥 점), dir(recess 방향 ±1), e(끝단 위치 arc mm), L(µm), Blat, B(B_open), D(D·w),
+//          cov(덮었던 가장 바깥 막질 | null), nd(덮은 막 데이터 없음), run(막 연속 구간 µm), released, eave(처마 막 인덱스 | −1), eaveMat, heEff(µm), hj(µm)}], noData:Set}
+function lateralEnds(kap,rates,D,wfn,pre){
+  if(!(kap>0))return null;
+  if(!(D>=0&&isFinite(D)))throw new Error(`측면 식각: 제거량이 올바르지 않습니다 (${D})`);
+  if(typeof pre!=='function'||typeof wfn!=='function')throw new Error('측면 식각: 단계 전 두께·처리 영역 함수가 필요합니다');
+  const E=LAT_DEF.EPS,L0=layers.length,ends=[],noData=new Set();
+  // 바깥 점 o에서 막 j 이상(stack 위)을 지우는 budget. o에서 j 바로 위가 이미 공동(VOID)이면 측면이 열려 있음 → j 자신만
+  const openBudget=(j,o)=>{let B=0,cov=null;
+    for(let k=j;k<L0;k++){const h=pre(k,o);if(!(h>E))continue;const m=layers[k].mat;
+      if(isVoid(m)){if(k>j)break;continue;}
+      const r=rates[m];if(r===undefined){noData.add(m);return{B:Infinity,cov:m,nd:true};}
+      if(r<=RESIST_R)return{B:Infinity,cov:k>j?m:cov,nd:false};
+      B+=h/r;if(k>j)cov=m;}
+    return{B,cov,nd:false};};
+  for(let j=0;j<L0;j++){const ly=layers[j];if(isVoid(ly.mat))continue;const rj=rates[ly.mat];if(!(rj>RESIST_R))continue;
+    const h=ly.h,[lo,hi]=nzRange(h);if(hi<=lo)continue;const h0m=h0Max(ly.meta);
+    for(let b=Math.max(1,lo);b<Math.min(NP-1,hi);b++){if(!(h[b]>E))continue;
+      for(const dir of[1,-1]){const o=b-dir;if(o<=0||o>=NP-1||h[o]>E)continue;                     // 도메인 끝은 끝단 아님
+        if(ly.h0[b]<LAT_DEF.taperFrac*h0m||isPat(pts[b]))continue;                                 // 증착 꼬리 · 셀 hole 측벽 제외
+        const{B,cov,nd}=openBudget(j,o),Dw=D*wfn(pts[o]),Blat=Math.max(0,Dw-B),L=kap*rj*Blat,e=(arc[b]+arc[o])/2;
+        let q=b;while(q+dir>=0&&q+dir<NP&&h[q+dir]>E)q+=dir;
+        const run=Math.abs(arc[q]-e)*1000,top=eaveAt(j,b);let eaveMat=null,he=null;
+        if(top>=0){eaveMat=layers[top].mat;const re=rates[eaveMat];if(re===undefined&&Blat>0)noData.add(eaveMat);he=layers[top].h[b]-kap*(re??0)*Blat;}
+        ends.push({j,mat:ly.mat,r:rj,b,o,dir,e,L,Blat,B,D:Dw,cov,nd,run,released:L>0&&L>=run,eave:top,eaveMat,heEff:he,hj:h[b]});}}}
+  return{ends,noData};}
+// 점 i에서 막 j 위아래 인접 막(처마 아랫면·바닥 윗면)을 κ·r·tau만큼 깎음 → 깎인 두께 합(공동이 넓어짐)
+function thinAround(j,i,kTau,rates,noData){if(!(kTau>0))return 0;let t=0;
+  for(const k of[eaveAt(j,i),floorAt(j,i)]){if(k<0)continue;const ly=layers[k],r=rates[ly.mat];
+    if(r===undefined){noData.add(ly.mat);continue;}const d=Math.min(ly.h[i],kTau*r);ly.h[i]-=d;t+=d;}
+  return t;}
+// 격자 VOID 변환: 끝단 위치 e에서 L 안에 드는 점의 막 j 두께(+ 깎인 처마·바닥)를 VOID 막으로 옮김 → 표면 높이 유지(처마는 원래 높이에 떠 있음).
+//   같은 j는 VOID 막 하나로 모아 j 바로 위에 끼워 넣음 (뒤 인덱스부터 → 앞 인덱스가 밀리지 않게). 반환 = 끼워 넣은 VOID 막 수
+function applyVoids(res,rates,kap){const byJ=new Map(),E=LAT_DEF.EPS;
+  for(const e of res.ends){if(!(e.L>0))continue;const ly=layers[e.j];
+    for(let i=e.b;i>=0&&i<NP;i+=e.dir){const s=Math.abs(arc[i]-e.e)*1000;if(s>e.L)break;const v=ly.h[i];if(!(v>E))break;
+      const tau=Math.max(0,e.Blat-s/(kap*e.r));   // 측면 전선이 점 i를 지난 뒤 남은 budget
+      ly.h[i]=0;let vh=byJ.get(e.j);if(!vh)byJ.set(e.j,vh=new Float64Array(NP));
+      vh[i]+=v+thinAround(e.j,i,kap*tau,rates,res.noData);}}
+  if(!byJ.size)return 0;let n=0;
+  [...byJ.keys()].sort((a,b)=>b-a).forEach(j=>{if(insertLayerAt(j+1,VOID_MAT,byJ.get(j),layers[j]))n++;});
+  recalc();return n;}
+// 위가 모두 지워진(열린) 공동은 사라짐: 점마다 최상단 non-VOID 막(h > 1e-5) 위의 VOID 두께를 0으로. 반환 = 바뀌었는지
+function dropOpenVoids(){if(!layers.some(l=>isVoid(l.mat)))return false;let ch=false;
+  for(let i=0;i<NP;i++)for(let L=layers.length-1;L>=0;L--){const ly=layers[L];
+    if(isVoid(ly.mat)){if(ly.h[i]>0){ly.h[i]=0;ch=true;}continue;}if(ly.h[i]>1e-5)break;}
+  if(ch)recalc();return ch;}
+const hasVoid=()=>layers.some(l=>isVoid(l.mat)&&l.h.some(v=>v>LAT_DEF.EPS));
+// 지표 (§4): 끝단 목록 → STEP_RES.lat. nVoid = 이번 단계에 끼워 넣은 격자 VOID 막 수
+function lateralMetrics(res,nVoid){const M=LAT_DEF,E=res.ends;
+  const act=E.filter(e=>e.L>M.minUm),eav=act.filter(e=>e.eave>=0),main=E.filter(e=>e.r>=M.mainR);
+  const ar=e=>e.heEff>0?e.L/e.heEff:Infinity,maxBy=(a,f)=>a.reduce((x,e)=>!x||f(e)>f(x)?e:x,null);
+  const top=maxBy(act,e=>e.L),worst=maxBy(eav,ar),nJ=a=>new Set(a.map(e=>e.j)).size;
+  const prot=main.filter(e=>!(e.Blat>0)&&e.D>0),protOk=prot.filter(e=>!e.nd),exh=act.filter(e=>e.cov&&!e.nd);
+  const margin=protOk.length?Math.min(...protOk.map(e=>isFinite(e.B)?1-e.D/e.B:1)):null;
+  const mode=a=>{const c=new Map();a.forEach(x=>{if(x)c.set(x,(c.get(x)||0)+1);});let b=null;c.forEach((n,k)=>{if(!b||n>c.get(b))b=k;});return b;};
+  const pt=e=>({mat:e.mat,L:e.L,AR:e.eave>=0?ar(e):null,heEff:e.heEff,eaveMat:e.eaveMat,hj:e.hj,cov:e.cov,d:pts[e.b].d,f:pts[e.b].f,dir:e.dir});
+  const byMat={};act.forEach(e=>{byMat[e.mat]=Math.max(byMat[e.mat]||0,e.L);});
+  return{Lmax:top?top.L:0,mat:top?top.mat:null,n:nJ(act),nEave:nJ(eav),ARmax:worst?ar(worst):0,heMin:worst?worst.heEff:null,eaveMat:worst?worst.eaveMat:null,
+    gone:eav.some(e=>!(e.heEff>0)),released:act.some(e=>e.released),
+    nMain:main.length,nProt:protOk.length,margin,protCov:mode(protOk.map(e=>e.cov)),
+    nProtND:prot.length-protOk.length,ndCov:mode(prot.filter(e=>e.nd).map(e=>e.cov)),
+    exhausted:exh.length?{n:nJ(exh),Lmax:Math.max(...exh.map(e=>e.L)),cov:mode(exh.map(e=>e.cov))}:null,
+    diff:act.some(e=>e.L/Math.max(e.hj,1e-6)>M.diffAR),byMat,nVoid,noData:[...res.noData],
+    ends:act.slice().sort((a,b)=>b.L-a.L).slice(0,M.topEnds).map(pt)};}
+// 처마 판정 lvl: 처마 소실·막 이탈 → 2, AR ≥ 10 → 2, ≥ 3 → 1 (est)
+const eaveLvl=m=>m.gone||m.released?2:m.ARmax>=LAT_DEF.arHigh?2:m.ARmax>=LAT_DEF.arWarn?1:0;
+const fmtLat=v=>v<.1?v.toFixed(3):v.toFixed(2);
+const fmtAR=v=>isFinite(v)?v.toFixed(1):'∞';
+// 지표 칩 + 영향 문구 → {chips:[{k,v,lvl,msg}], lvl, t(영향 문구 추가분 | '')}
+function latChips(m){const M=LAT_DEF,ch=[],add=(k,v,lvl,msg)=>ch.push({k,v,lvl,msg}),show=m.Lmax>=M.chipUm,lv=show?eaveLvl(m):0;
+  const word=lv===2?'붕괴·박리 위험':lv===1?'박리·particle 주의':'처마 안정';
+  if(show){const others=Object.entries(m.byMat).filter(([k,v])=>k!==m.mat&&v>=M.chipUm).map(([k,v])=>`${shortMat(k)} ${fmtLat(v)}µm`);
+    add('측면 recess',`${shortMat(m.mat)} ${fmtLat(m.Lmax)}µm · ${m.n}층`,lv,`Edge 끝단 ${shortMat(m.mat)} 측면 recess 최대 ${fmtLat(m.Lmax)}µm (${m.n}층 끝단${others.length?` · ${others.join(', ')}`:''}) — L = κ·r·(D·w − B_open), ${M.src}`+
+      (m.nVoid?` · 격자 VOID ${m.nVoid}막`:' · 끝단 격자(10µm)보다 작아 단면에는 거의 안 보임 — 지표로 판정'));
+    if(m.nEave)add('처마 (est)',`${m.nEave}층 · AR ${fmtAR(m.ARmax)}`,lv,`처마(${shortMat(m.eaveMat)} 끝, 아래 공동) 최대 AR ${fmtAR(m.ARmax)} = recess ÷ 처마 두께 ${m.heMin!=null?fmtT(Math.max(0,m.heMin),'nm'):'—'} — ${word} (AR 임계 ${M.arWarn}/${M.arHigh} est · Nanja, SemiEng 2019: bevel wet undercut → peeling)`);
+    if(m.gone)add('처마 소실',`${shortMat(m.eaveMat)} 처마 두께 0`,2,'처마 막이 아랫면 식각으로 다 없어짐 — 위아래 공동이 이어져 층 분리 (est)');
+    if(m.released)add('막 이탈','recess ≥ 막 구간',2,'측면 recess가 막 연속 구간 전체를 넘음 — 위 적층이 떠 있는 상태 (est)');
+    if(m.exhausted){const x=m.exhausted;add('보호막 소진',`${shortMat(x.cov)} 소진 후 ${fmtLat(x.Lmax)}µm`,Math.max(1,lv),`끝단을 덮은 ${shortMat(x.cov)}이(가) 단계 중 소진 → 그 뒤 측면 recess ${fmtLat(x.Lmax)}µm (${x.n}층) — 보호막 식각률 추정값에 민감`);}
+    if(m.diff)add('확산 제한?',`L/h > ${M.diffAR}`,0,'좁은 틈 안쪽은 약액 확산·silica 재침적으로 느려질 수 있음 — 실제 recess는 더 작을 수 있음 (est)');}
+  if(m.nProt){const pct=Math.round(100*m.margin),w=m.margin<M.marginWarn?1:0,part=m.nProt<m.nMain?`${m.nProt}/${m.nMain}곳 · `:'';
+    add('보호됨',`${part}${m.protCov?shortMat(m.protCov)+' · ':''}여유 ${pct}%`,w,`끝단 측면이 ${m.protCov?shortMat(m.protCov)+'(으)로 ':''}덮여 이번 단계에 열리지 않음 — 최소 여유 ${pct}% (1 − D·w/B_open)${w?` · 여유 ${Math.round(100*M.marginWarn)}% 미만: 공정 산포로 열릴 수 있음 (est)`:''}`);}
+  if(m.nProtND)add('보호 (데이터 없음)',`${shortMat(m.ndCov)} 덮음`,1,`끝단을 덮은 ${shortMat(m.ndCov)}의 식각률 데이터가 없어 보호로 계산 — 실제 recess 불확실`);
+  const lvl=Math.max(0,...ch.map(c=>c.lvl));
+  const t=show?`측면 recess ${shortMat(m.mat)} ${fmtLat(m.Lmax)}µm(${m.n}층)${m.nEave?` — 처마 AR ${fmtAR(m.ARmax)}: ${word}`:''} (est)`:'';
+  return{chips:ch,lvl,t};}
+// 이후 증착이 공동 위에 올 때 (1D는 공동 내부 재충전 무시) — 정보 칩. mats = 이번 단계에 쌓은 막질
+function voidFillChip(mats){if(!hasVoid())return null;const side=Math.max(...mats.map(m=>MATERIALS[m].side));
+  return{k:'공동 충전 (est)',v:side>=LAT_DEF.pinchSide?'입구 pinch-off 가능':'재충전 무시',lvl:0,
+    msg:`측면 식각 공동 위에 증착 — 1D 모델은 공동 안 재충전을 무시하고 위에 쌓음${side>=LAT_DEF.pinchSide?' · conformal 막(측벽 coverage ≥ 70 %)은 입구가 막 두께 절반쯤에서 막힐 수 있음':''} (est)`};}
 
 function metrics(){let eL=0,eW=0,cL=0,cW=0,ex=0,exD=0;
   for(let i=0;i<NP;i++){const p=pts[i],w=ds[i];
@@ -1792,7 +1955,8 @@ function advanceTo(n,out=null,stash=-1){const focus=stash>=0?stash:n;
 const PRES_BIT={F:1,B:2,A:4};
 function groupPresence(){const{iF,iB,iA}=refPts(),out=[];let prev=null,sF=0,sB=0,sA=0;
   const flush=()=>{if(prev)out.push((sF>=BAND_EPS?PRES_BIT.F:0)|(sB>=BAND_EPS?PRES_BIT.B:0)|(sA>=BAND_EPS?PRES_BIT.A:0));};
-  for(const ly of layers){if(!prev||!sameGroup(prev,ly)){flush();sF=sB=sA=0;}const h=ly.h;sF+=h[iF];sB+=h[iB];sA+=h[iA];prev=ly;}
+  for(const ly of layers){if(prev&&isVoid(ly.mat))continue;   // 공동은 막이 아님 (묶음도 끊지 않음 — groupLayers와 같은 규칙)
+    if(!prev||!sameGroup(prev,ly)){flush();sF=sB=sA=0;}const h=ly.h;sF+=h[iF];sB+=h[iB];sA+=h[iA];prev=ly;}
   flush();return Uint8Array.from(out);}
 
 // ---------- 갱신 파이프라인 ----------
@@ -2159,29 +2323,38 @@ function applyStep(st,si,out){CURSI=si;const R=out?out[si]:null;
   if(st.type==='depo'||st.type==='mold'){const pec=isPecvd(st),wp=pec?pecvdOf(st):null,rg=edgeRange(st),L0=R&&pec?LV.slice():null;
     if(st.type==='depo')deposit(st.material,st.thicknessUm,st.region,false,rg,wp);
     else{for(let k=0;k<st.pairs;k++){deposit('SiO2',st.ox/1e3,st.region,true,rg,wp);deposit('SiN',st.nit/1e3,st.region,true,rg,wp);}if(st.cap&&st.capNm)deposit(st.cap,st.capNm/1e3,st.region,false,rg,wp);}
-    if(L0)R.chips=[wrapChip(L0,st.region)];return;}
+    if(R){const ch=L0?[wrapChip(L0,st.region)]:[],vf=voidFillChip(st.type==='depo'?[st.material]:st.cap?['SiO2','SiN',st.cap]:['SiO2','SiN']);
+      if(vf)ch.push(vf);if(ch.length)R.chips=ch;}
+    return;}
   if(st.type==='photo'){applyPhoto(st);if(R)R.impact=photoImpact(st,PHOTO.r);return;}
   const bias=st.type==='etch'?({harc:1,slit:1,teos:.6,acl:.5,poly:.5,nit:.5}[st.key]||.5):st.type==='clean'?(CLEAN[st.key].cat==='plasma'?.3:0):(st.type==='remove'&&(st.action==='strip'||st.action==='bvs'))?.6:0;
   if(R)R.arc=bias>0?arcRisk(bias):null;
   const a=R?metrics():null,cut=R?edgeCutOf(st):null,LV0=cut?LV.slice():null;   // cut·LV0: 끝단 지표 (단계 직전 막 합계)
-  let noData=null;   // etch·clean: 제거율 데이터가 없어 정지한 막질 Set
+  let noData=null,latM=null;   // etch·clean: 제거율 데이터가 없어 정지한 막질 Set · latM: 측면 wet etch 지표 (lateralMetrics)
   if(st.type==='etch'){const e=ETCH[st.key];if(!e)throw new Error(`알 수 없는 Etch 종류: ${st.key}`);
     noData=etch(e.r,st.depth,st.iso,st.ef,st.zone,st.prot,p=>(1+p.f)/2,e.tg,(st.open===undefined?3:st.open)/100);}
   else if(st.type==='clean'){const c=CLEAN[st.key];if(!c)throw new Error(`알 수 없는 약액: ${st.key}`);
     const dd=st.distMm||0,prof=EDGE_PROC.clean[c.cat];if(!prof)throw new Error(`알 수 없는 세정 구분: ${c.cat}`);
     const wf={imm:()=>1,front:p=>(1+p.f)/2,back:p=>(1-p.f)/2,edge:dd>0?p=>1-edgeRemain(p.d,dd,prof,st.edgeW):p=>1-bevelOnlyRemain(p.d)}[st.mode];
     if(!wf)throw new Error(`알 수 없는 처리 영역: ${st.mode}`);
-    noData=clean(c.r,st.amt/1000,wf);}
+    const kap=latKappa(c),log=kap>0?[]:null;   // wet·gas: 수직 소모 뒤 측면 recess (단계 직전 두께는 consume 로그로)
+    noData=clean(c.r,st.amt/1000,wf,log);dropOpenVoids();
+    if(log){const lat=lateralEnds(kap,c.r,st.amt/1000,wf,lateralPre(log));lat.noData.forEach(m=>noData.add(m));
+      const nv=applyVoids(lat,c.r,kap);if(R)latM=lateralMetrics(lat,nv);}}
   let cmpRes=null;const bb0=R&&st.type==='remove'?backBevelFilm():0;
   if(st.type==='remove'){if(st.action==='cmp'){cmpRes=cmpRun(st);noData=cmpRes.noData;}else removal(st);}
+  if(st.type!=='clean')dropOpenVoids();   // 위가 열린 공동은 사라짐 (clean은 측면 식각 전에 이미 처리)
   clearBarePattern();
   if(R){R.impact=impactOf(a,metrics());const nd=noData?[...noData]:[];
     if(nd.length)Object.assign(R.impact,{noData:nd,lvl:Math.max(R.impact.lvl??0,1),t:`${R.impact.t} · ⚠ 데이터 없음 막(${nd.map(shortMat).join(', ')})에서 정지 — 결과 불확실`});   // 불확실 결과는 최소 ⚠
+    const lc=latM?latChips(latM):null;
+    if(lc){R.lat=latM;if(lc.t)Object.assign(R.impact,{t:`${R.impact.t} · ${lc.t}`,lvl:Math.max(R.impact.lvl,lc.lvl)});}
     if(cmpRes){cmpReport(st,cmpRes,R);R.dens=cmpDensMap(st,cmpRes);}
     else{const ch=[];
       if(st.type==='remove'&&bb0>1e-3){const bb=backBevelFilm();
         ch.push(bb>1e-3?{k:'후면 베벨 잔막',v:fmtT(bb,'um'),lvl:1,msg:`후면 베벨 잔막 ${fmtT(bb,'um')} — PES/BVS로 제거 검토`}:{k:'후면 베벨 잔막',v:'없음',lvl:0,msg:'후면 베벨 막 제거됨'});}
       if(cut){const m=edgeMetrics(cut,LV0);if(m){R.edge=m;ch.push(...edgeChips(m));}}
+      if(lc)ch.push(...lc.chips);
       if(ch.length)R.chips=ch;}}}
 // 밀도 띠(표시 전용): 패턴 밀도를 쓴 CMP 단계의 ρ_eff = CMP 시작 시점 밀도의 Lp 창 평균 (cmpRun의 유효 밀도와 같은 정의, 하한 RHO_MIN). 패턴이 없으면 null
 function cmpDensMap(st,c){const d0=c.d0;if(st.patSrc==='off'||!d0||!d0.some(v=>v<.999))return null;
@@ -2400,10 +2573,11 @@ function fmtT(um,unit){const r=v=>+v.toFixed(v<10?2:1);
 const STACK_VIEW={apexOnly:false,open:new Set(),args:null};
 // 막 묶음 (스택 행 · 툴팁 Mold 범위 · 범례 공용): 같은 단계의 연속 Mold 층(thin)은 하나로, 그 밖은 같은 단계·같은 막질의 연속 층을 하나로.
 // Mold cap(thin=false)은 Mold 묶음과 분리. 반환 [{si, mat, thin, idx:[layers 인덱스…]}]
+//   VOID(측면 식각 공동)는 바로 아래 막의 묶음에 붙고 묶음 판정에서는 건너뜀 → Mold 묶음이 공동마다 쪼개지지 않고, 묶음 번호(단계별 pres)도 그대로
 const sameGroup=(a,b)=>a.si===b.si&&a.thin===b.thin&&(b.thin||a.mat===b.mat);   // b가 a의 묶음에 이어지는가 (groupPresence와 공용)
 function groupLayers(L){const g=[];
   L.forEach((ly,k)=>{const last=g[g.length-1];
-    if(last&&sameGroup(last,ly))last.idx.push(k);else g.push({si:ly.si,mat:ly.mat,thin:ly.thin,idx:[k]});});
+    if(last&&(isVoid(ly.mat)||sameGroup(last,ly)))last.idx.push(k);else g.push({si:ly.si,mat:ly.mat,thin:ly.thin,idx:[k]});});
   return g;}
 // 현재 layers의 묶음 (캐시: 묶음은 막 구성(si·mat·thin)에만 의존 → layers 배열·길이가 같으면 그대로)
 let GROUPS={src:null,n:-1,g:[]};
@@ -2756,6 +2930,7 @@ function bondCheck(iF,iA,sa){
    row(peel<=lim.p,peel<=lim.p*2,`Bevel 막 응력·두께 지수 ${peel.toFixed(0)} N/m (기준 ${lim.p}) — peeling/shard 위험 · 막 응력은 추정값`);
   return{dE,peel,lim};}
 function matKey(t){const u=(t||'').toUpperCase().replace(/[\s_\-()]/g,'');
+  if(/^TIN$|TITANIUMNITRIDE|질화티타늄|티타늄나이트라이드/.test(u))return'TiN';   // 'NITRIDE'·'SIN' 검사보다 먼저 ('TIN'은 단독일 때만)
   if(/^CU$|COPPER|구리/.test(u))return'Cu';   // 'CU'는 단독일 때만 ('CURE' 등 오인 방지)
   if(/ESOH/.test(u))return'ESOH';if(/SOH/.test(u))return'SOH';if(/MT.?ACL/.test(u))return'MTACL';if(/ACL|CARBON/.test(u))return'HTACL';
   if(/MT.?TEOS/.test(u))return'MTTEOS';if(/TEOS/.test(u))return'HTTEOS';if(/SION/.test(u))return'SiON';if(/SIN|NITRIDE|질화/.test(u))return'SiN';
@@ -2770,7 +2945,7 @@ function cmdMat(toks){
 // 숫자 + 단위 추출. 음수·소수점 두 개·알 수 없는 단위 접미사는 해석 실패(err). 단위 없는 수는 bare (호출 측이 Å로 해석하고 경고)
 const CMD_UNIT_RE=/^(KÅ|KA|K|Å|ANG|A|NM|UM|ΜM|µM|MM|SEC|S|초|MIN|분|H|HR|HRS|HOUR|HOURS|시간|단|쌍|PAIRS|PAIR|%)$/;
 // 숫자 뒤에 띄어 쓴 단어 중 단위가 아니어도 되는 명령 어휘 (그 외 영문 단어는 '알 수 없는 단위')
-const CMD_WORD_RE=/^(DEPO|DEP|ETCH|CLEAN|CLN|STRIP|PLASMA|WET|GAS|OPEN|FRONT|FRONTSIDE|BACK|BACKSIDE|BS|FS|EDGE|BEVEL|APEX|BVL?|BVO|BSO|BSN|ALL|BOTH|ONLY|EE|PES|EEW|BEW|CMP|MOLD|ON|STACK|PHOTO|RING|PSES|EBR|WEE|POSI|NEGA|POSITIVE|NEGATIVE|MILD|AGGRESSIVE|NONSEL|FURNACE|BVS|STOP|OP|STI|CERIA|BUFF|PATTERN|PAT|AUTO|BLANKET|TUNGSTEN|ILD|PMD|LEGACY|LPCVD|PECVD|LP|CVD|ALD|PVD|COAT|HM|HARC|SLIT|ACL|SOH|CARBON|TEOS|EXCLUSION|EXCURSION|ASH|ASHING|SPM|SC1|APM|LAL|BOE|BHF|DHF|HF|VHF|VAPOR|XEF2|CLF3|HNO3|HNA|O2|O3|CF4|NF3|SF6|CHF3|C4F8|C4F6|CL2|HBR|N2|H2|FORMING|PIRANHA|H3PO4|H2O2|UV|PR|SELECTIVE|CU|COPPER)$/;
+const CMD_WORD_RE=/^(DEPO|DEP|ETCH|CLEAN|CLN|STRIP|PLASMA|WET|GAS|OPEN|FRONT|FRONTSIDE|BACK|BACKSIDE|BS|FS|EDGE|BEVEL|APEX|BVL?|BVO|BSO|BSN|ALL|BOTH|ONLY|EE|PES|EEW|BEW|CMP|MOLD|ON|STACK|PHOTO|RING|PSES|EBR|WEE|POSI|NEGA|POSITIVE|NEGATIVE|MILD|AGGRESSIVE|NONSEL|FURNACE|BVS|STOP|OP|STI|CERIA|BUFF|PATTERN|PAT|AUTO|BLANKET|TUNGSTEN|ILD|PMD|LEGACY|LPCVD|PECVD|LP|CVD|ALD|PVD|COAT|HM|HARC|SLIT|ACL|SOH|CARBON|TEOS|EXCLUSION|EXCURSION|ASH|ASHING|SPM|SC1|APM|LAL|BOE|BHF|DHF|HF|VHF|VAPOR|XEF2|CLF3|HNO3|HNA|O2|O3|CF4|NF3|SF6|CHF3|C4F8|C4F6|CL2|HBR|N2|H2|FORMING|PIRANHA|H3PO4|H2O2|UV|PR|SELECTIVE|CU|COPPER|USN|HSP|DSP|ENLARGE|TIN|TITANIUM|BARRIER|ULTRA)$/;
 const cmdKnownWord=w=>CMD_WORD_RE.test(w)||!!matKey(w);
 // 시간 단위 순위: 복합 시간(1h30min)은 큰 단위부터 한 번씩만
 const TIME_RANK=u=>/^(H|HR|HRS|HOUR|HOURS|시간)$/.test(u)?3:/^(MIN|분)$/.test(u)?2:1;
@@ -2885,8 +3060,8 @@ function parseCmdU(U,pre){
     if(c==null)need.push('pairs');if(given==null&&N.len)notes.push(`${N.len.um}µm ÷ ${o+n}nm ≈ ${p}쌍`);
     notes.push(`Ox ${o} / Nit ${n} nm`);if(regD!=='edge')distUnused(`${REG_KO[regD]} Mold 증착`);
     return R({type:'mold',region:regD,pairs:p,ox:o,nit:n,cap:'',...edgeRng(regD)});}
-  // 세정·Strip (Wet 약액 / Plasma / Gas)
-  const ck=has(/XEF2/)?'xef2':has(/CLF3/)?'clf3':has(/VHF|VAPOR ?HF|HF ?VAPOR|기상 ?HF/)?'vhf':has(/HNO3|질산|\bHNA\b|MIXED ?ACID/)?'hfhno3':has(/CF4/)?'cf4':has(/NF3/)?'nf3':has(/SF6/)?'sf6':
+  // 세정·Strip (Wet 약액 / Plasma / Gas). 선택적 wet etch(USN·HSP·DSP)는 맨 앞: 'DSP H2SO4'·'DSP+ HF'가 spm·dhf로 새지 않게
+  const ck=has(/\bUSN\b|\bHSP\b|ULTRA ?SEL|초?고선택 ?(인산|질화|SIN)/)?'usn':has(/\bDSP\b|DILUTED ?SULF|희석 ?황산/)?'dsp':has(/XEF2/)?'xef2':has(/CLF3/)?'clf3':has(/VHF|VAPOR ?HF|HF ?VAPOR|기상 ?HF/)?'vhf':has(/HNO3|질산|\bHNA\b|MIXED ?ACID/)?'hfhno3':has(/CF4/)?'cf4':has(/NF3/)?'nf3':has(/SF6/)?'sf6':
     has(/CHF3|C4F8|C4F6|CXFY/)?'chf3':has(/CL2|HBR/)?'cl2':has(/N2 ?\/? ?H2|H2 ?\/? ?N2|FORMING/)?'h2n2':has(/\bLAL/)?'lal':has(/BOE|BHF/)?'boe':has(/DHF|\bHF\b|불산/)?'dhf':
     has(/H3PO4|인산|PHOS/)?'hotp':has(/SC1|APM/)?'sc1':has(/SPM|H2SO4|황산|PIRANHA/)?'spm':has(/H2O2|과수/)?'h2o2':has(/\bO3\b|오존|UV.?O3/)?'o3':has(/\bO2\b|ASH|애싱|PR ?STRIP|STRIP ?PR/)?'ash':null;
   const cmode=reg==='back'?'back':reg==='front'?'front':reg==='edge'?'edge':'imm';
@@ -2894,9 +3069,13 @@ function parseCmdU(U,pre){
     const c=CLEAN[key],am=amtOf(c);if(mode!=='edge')distUnused(`${CLN_MODE_KO[mode]} 처리`,"베벨 폭은 'BEVEL … 2mm'");
     return R({type:'clean',cat:cat||c.cat,key,...am,mode,distMm:mode==='edge'?(N.dist??0):0});};
   const eKey=has(/SLIT/)?'slit':has(/HARC/)?'harc':has(/ACL|SOH|CARBON/)?'acl':has(/TEOS|\bHM\b/)?'teos':has(/POLY|폴리/)?'poly':has(/SIN|NIT|질화/)?'nit':null;
-  const isEtch=has(/ETCH|식각|에치|HARC|SLIT|OPEN/);
-  if(ck&&!(isEtch&&eKey))return CL(ck,cmode);
-  if(has(/CLEAN|세정|CLN|STRIP|PLASMA|플라즈마|\bWET\b|습식|\bGAS\b|기상/)&&!isEtch){
+  const isEtch=has(/ETCH|식각|에치|HARC|SLIT|OPEN/),enlarge=has(/ENLARGE|인라지|엔라지/);
+  // WET·ENLARGE를 적으면 건식 Etch 키(SIN→nit 등)보다 세정 우선: 'WET ETCH SIN USN'이 건식 nit로 가지 않게
+  const wetForced=enlarge||has(/\bWET\b|습식/),ckE=ck??(enlarge?'usn':null);
+  if(enlarge&&!ck)notes.push('Enlarge 약액 미지정 — 고선택 인산(USN) 가정');
+  if(ckE==='dsp'&&has(/DSP ?\+/))warn('DSP+(HF 첨가) 식각률 문헌 없음 — DSP로 근사 (oxide 식각 과소)');
+  if(ckE&&(!(isEtch&&eKey)||wetForced))return CL(ckE,cmode);
+  if(has(/CLEAN|세정|CLN|STRIP|PLASMA|플라즈마|\bWET\b|습식|\bGAS\b|기상/)&&(!isEtch||wetForced)){
     const cat=has(/PLASMA|플라즈마/)?'plasma':has(/\bGAS\b|기상/)?'gas':'wet',k0=clnOpts(cat)[0][0];
     need.push('key');return CL(k0,cmode,cat);}
   if(isEtch){if(N.len&&N.bare.length)return manyNums();

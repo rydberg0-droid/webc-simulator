@@ -22,6 +22,8 @@ Wafer Edge 단면에 공정을 쌓아 "지금 Edge가 어떤 상황인지"를 �
 - 데이터: CLN_DB(세정, 문헌 출처·추정 표시), SLURRY_DB(CMP), EDGE_PROFILE(끝단), ETCH(가정값 *).
 
 ## 남은 작업 (backlog)
+- Enlarge(선택적 wet etch: USN/HSP·H3PO4·DSP, TiN, 측면 recess·VOID·처마 판정): 마감으로 기본 확인(문법·예시 6종 에러 0)만 하고 반영 — **전체 QA·코드 리뷰 필요**. 근거 research/analysis/selective-wet-etch.md.
+- 미착수: 오렌지 라이트 테마(다크 기본 유지, 선택 추가 — 막질 색·위험 신호 유지, 브랜드명·로고 노출 금지, 외부 글꼴 로드 금지), 끝단 µm 확대 처마 도식.
 - 코드 리뷰 제안(미반영): `internal/overrides.js` 데이터 계층(buildDb·검증·escHtml·origin 표시), 엔진 순수 함수화(ENG.cfg 스냅샷, DOM 읽기 0), 모듈 분리+단일 HTML 빌드, CSP(connect-src 'none'), 막 배열 Float32·희소 저장(성능 1.5~2.5배 저하 개선).
 - 자동 복구본 name/note 토큰 검사, cmpReport의 noData 필드 유지.
 - `internal/overrides.js` 선택 로드 구조.
